@@ -674,9 +674,53 @@ function applyNavPin(){var on=false;try{on=localStorage.getItem("rs_nav_pin")===
     </div>
     <div class="brand-sub">부자언니 로드맵</div>
   </div>
-  <div class="header-right" style="align-items:center;gap:10px">
+ <div class="header-right" style="position:relative;align-items:center;gap:10px">
+    <button class="btn btn-ol" id="helpBtn" onclick="openHelp()" style="font-size:13px;padding:6px 11px" title="도움말">❓</button>
+    <button class="btn btn-ol" id="hdrMenuBtn" onclick="toggleHeaderMenu()" style="font-size:15px;padding:6px 13px" title="메뉴 열기">⚙</button>
     <div class="brand-accent"></div>
+    <div id="headerMenu" style="display:none;position:absolute;right:0;top:calc(100% + 8px);background:#fff;border:1px solid var(--tbl-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.14);padding:12px;z-index:60;min-width:212px;text-align:left">
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <button class="btn btn-ol" style="font-size:13px;padding:7px 11px;justify-content:flex-start" onclick="exportData();closeHeaderMenu()" title="데이터 저장"><span class="mic">💾</span>저장하기</button>
+        <button class="btn btn-ol" style="font-size:13px;padding:7px 11px;justify-content:flex-start" onclick="importData();closeHeaderMenu()" title="저장한 파일 불러오기"><span class="mic">📂</span>불러오기</button>
+        <button class="btn btn-ol" style="font-size:13px;padding:7px 11px;justify-content:flex-start;white-space:nowrap" onclick="openStorageMod()" title="저장공간 확인·정리"><span class="mic"><img src="data:image/png;base64,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" alt="" style="height:1em;vertical-align:-2px"></span>저장공간</button>
+        <button class="btn btn-ol" style="font-size:13px;padding:7px 11px;justify-content:flex-start;white-space:nowrap" onclick="openLedgerImport();closeHeaderMenu()" title="엑셀 가계부(주간 인증표·월간 정산표)로 지난 기록 채우기"><span class="mic">🧾</span>가계부 가져오기</button>
+        <button id="importReviewBtn" onclick="showImportReview();closeHeaderMenu()" style="display:none;align-items:center;gap:5px;padding:7px 11px;background:var(--ac-light);color:var(--ac);border:1px solid var(--ac);border-radius:2px;font-size:13px;cursor:pointer"><span class="mic">🔍</span>가져오기 검토</button>
+        <button onclick="resetAll()" title="데이터 초기화" style="padding:7px 11px;background:transparent;color:#999;border:1px solid #ddd;border-radius:2px;font-size:13px;cursor:pointer;text-align:left;display:inline-flex;align-items:center;gap:5px"><span class="mic">🔄</span>초기화</button>
+      </div>
+      <div style="border-top:1px solid var(--tbl-border);margin:11px 0 9px"></div>
+      <div class="theme-sw" style="flex-wrap:wrap">
+        <span>테마</span>
+        <div class="swatch sw-crimson active" id="sw-crimson" onclick="setTheme('crimson')" title="크림슨"></div>
+        <div class="swatch sw-mint" id="sw-mint" onclick="setTheme('mint')" title="민트"></div>
+        <div class="swatch sw-clay" id="sw-clay" onclick="setTheme('clay')" title="클레이"></div>
+        <div class="swatch sw-clay2" id="sw-clay2" onclick="setTheme('clay2')" title="클레이 화려"></div>
+        <div class="swatch sw-fiesta" id="sw-fiesta" onclick="setTheme('fiesta')" title="멀티컬러"></div>
+      </div>
+      <div class="theme-sw" style="margin-top:10px">
+        <span>글자크기</span>
+        <button class="fsz-btn" onclick="changeFontSize(-1)" title="글자 작게">가−</button>
+        <button class="fsz-btn" onclick="changeFontSize(0)" title="기본 크기">가</button>
+        <button class="fsz-btn" onclick="changeFontSize(1)" title="글자 크게">가+</button>
+      </div>
+      <div class="theme-sw" style="margin-top:10px">
+        <span>도움말</span>
+        <button class="fsz-btn" id="helpToggleBtn" onclick="toggleHelpHidden()" title="화면 도움말(ⓘ·안내) 표시/숨김">표시</button>
+      </div>
+      <div class="theme-sw" style="margin-top:10px">
+        <span style="white-space:nowrap">쓸쓰안쓰</span>
+        <button class="fsz-btn" id="spendRulesToggleBtn" onclick="toggleSpendRulesOn()" title="일일 화면의 「나의 쓸쓰안쓰」 카드 표시/숨김">표시</button>
+      </div>
+      <div class="theme-sw" style="margin-top:10px">
+        <span style="white-space:nowrap">식단표</span>
+        <button class="fsz-btn" id="mealToggleBtn" onclick="toggleMealOn()" title="주간 화면의 「🍚 이번 주 식단」 표시/숨김">숨김</button>
+      </div>
+      <div style="border-top:1px solid var(--tbl-border);margin:11px 0 9px"></div>
+      <div class="theme-sw"><span>주 시작</span><select id="weekStartSel" onchange="setWeekStartDay(this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111;background:#fff"><option value="1">월요일</option><option value="2">화요일</option><option value="3">수요일</option><option value="4">목요일</option><option value="5">금요일</option><option value="6">토요일</option><option value="0">일요일</option></select></div>
+      <div class="theme-sw" style="margin-top:10px"><span>월 시작</span><select id="settleStartSel" onchange="setSettleStart(this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111;background:#fff"></select></div>
+      <div class="theme-sw" style="margin-top:10px"><span style="white-space:nowrap">공휴일</span><button class="fsz-btn" style="white-space:nowrap" onclick="openHolidayMod();closeHeaderMenu()" title="공휴일 등록 관리">📅&nbsp;관리</button></div>
+    </div>
   </div>
+</div>
 </div>
 
 <div id="backupReminder" style="display:none;align-items:center;gap:9px;flex-wrap:wrap;background:var(--ac-light);border:1px solid var(--ac);border-radius:10px;padding:10px 13px;margin:0 0 14px;font-size:17.5px;color:#111">
