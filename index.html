@@ -674,9 +674,9 @@ function applyNavPin(){var on=false;try{on=localStorage.getItem("rs_nav_pin")===
     </div>
     <div class="brand-sub">부자언니 로드맵</div>
   </div>
- <div class="header-right" style="position:relative;align-items:center;gap:10px">
-    <button class="btn btn-ol" id="helpBtn" onclick="openHelp()" style="font-size:15px;padding:2px 1px" title="도움말">❓</button>
-    <button class="btn btn-ol" id="hdrMenuBtn" onclick="toggleHeaderMenu()" style="font-size:20px;padding:0px 1px" title="메뉴 열기"> ⚙</button>
+ <div class="header-right" style="position:relative;display:flex; flex-direction:row;align-items:center;gap:5px">
+    <button class="btn btn-ol" id="helpBtn" onclick="openHelp()" style="font-size:15px;padding:2px 1px" title="도움말"> ❓</button>
+    <button class="btn btn-ol" id="hdrMenuBtn" onclick="toggleHeaderMenu()" style="font-size:20px;padding:2px 1px" title="메뉴 열기"> ⚙</button>
     <div class="brand-accent"></div>
     <div id="headerMenu" style="display:none;position:absolute;right:0;top:calc(100% + 8px);background:#fff;border:1px solid var(--tbl-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.14);padding:12px;z-index:60;min-width:212px;text-align:left">
       <div style="display:flex;flex-direction:column;gap:7px">
