@@ -125,7 +125,27 @@ body{font-family:"DM Sans",sans-serif;background:#f7f7f7;min-height:100vh;color:
   #long .ny-box{order:3}
 }
 /* ── 좌측 드로어 내비게이션 (STEP 1 · #4-1) ── */
-#navHandle{position:fixed;left:0;top:0;width:10px;height:100vh;z-index:290;cursor:pointer;background:transparent}
+#navHandle {
+  position: fixed;
+  left: 0;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  width: 10px;
+  height: 50px;
+  border-radius: 0 8px 8px 0;
+  background: var(--ac);
+  opacity: 0.85;
+  z-index: 290;
+  cursor: pointer;
+  transition: opacity 0.2s ease, width 0.2s ease, background-color 0.2s ease;
+}
+
+/* PC Hover effects */
+@media (hover: hover) {
+  #navHandle:hover {
+    opacity: 1;
+    width: 14px; /* Slightly widens on mouse hover for feedback */
+  }
+}
 @media (hover:none){
   #navHandle{
     top: calc(12px + env(safe-area-inset-top)); /* 상단 고정 + 모바일 안전 영역 반영 */
