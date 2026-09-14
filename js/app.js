@@ -140,6 +140,7 @@ function weeklyRsDirection(weekDate){
     var color=over?'#d9534f':'var(--ac)';
     var bv=budget>0?budget:'';
     var spentTxt=fmtComma(spent)+'원'+(budget>0?' · '+pct+'%':'');
+    var mobileSpentTxt=budget>0?fmtComma(spent)+' / '+fmtComma(budget)+'원':fmtComma(spent)+'원';
     var rLabel=budget>0?(over?'초과':'남음'):'';
     var rVal=budget>0?(over?fmtComma(spent-budget)+'원':fmtComma(budget-spent)+'원'):'예산을 정해보세요';
     var rColor=budget>0?(over?'#d9534f':'var(--ac)'):'var(--gray)';
@@ -159,7 +160,7 @@ function weeklyRsDirection(weekDate){
       '<rect x="0" y="0" width="1160" height="1355" fill="url(#'+gradientId+')" mask="url(#'+maskId+')"></rect>'+
       '<image class="weekly-rs-outline" href="'+weeklyRsImage+'" x="0" y="0" width="1160" height="1355"></image></svg></div>';
     return '<div class="weekly-budget-panel"><div class="weekly-budget-head"><span style="font-size:13px;color:var(--gray)">'+title+'</span>'+right+'</div>'+meter+
-      '<div class="weekly-budget-labels"><span>썼어요</span><span>'+rLabel+'</span></div><div class="weekly-budget-values"><span style="font-weight:600">'+spentTxt+'</span><span style="color:'+rColor+';font-weight:'+rWeight+'">'+rVal+'</span></div></div>';
+      '<div class="weekly-budget-desktop"><div class="weekly-budget-labels"><span>썼어요</span><span>'+rLabel+'</span></div><div class="weekly-budget-values"><span style="font-weight:600">'+spentTxt+'</span><span style="color:'+rColor+';font-weight:'+rWeight+'">'+rVal+'</span></div></div><div class="weekly-budget-mobile weekly-budget-values"><span style="font-weight:600;color:'+rColor+'">'+mobileSpentTxt+'</span></div></div>';
   }
 
   var originalBudgetCard=budgetCard;
