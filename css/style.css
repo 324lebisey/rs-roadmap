@@ -526,8 +526,12 @@ body.fiesta .xl th,body.fiesta .xl td{font-family:"Hi Melody",sans-serif}
 .dash-progress-fill{height:100%;background:var(--ac);border-radius:99px}
 .dash-progress-over .dash-progress-fill{background:#d9534f}
 @media (max-width:640px){
-  .dash-hero-top{flex-direction:column;align-items:stretch}
-  .dash-hero-chart{align-self:center;width:100%;max-width:220px}
+  .dash-hero-top{flex-direction:column;align-items:stretch;justify-content:flex-start}
+  .dash-hero-chart{align-self:center;width:100%;max-width:220px;max-height:220px;flex:0 0 auto}
+  .proj-row{padding:12px}
+  .proj-row-header{flex-wrap:wrap}
+  .proj-hd-mid{flex-basis:180px}
+  .proj-hd-act{margin-left:auto}
 }
 @media (max-width:640px){
   body .xl{table-layout:fixed !important;width:max-content !important;min-width:100% !important}
@@ -654,3 +658,20 @@ body.fiesta .xl th,body.fiesta .xl td{font-family:"Hi Melody",sans-serif}
 .ptbl tr.ptbl-done td{color:var(--gray)}
 .ptbl .ptbl-soon{color:var(--ac);font-weight:600}
 .ptbl tr.ptbl-tot td{font-weight:600;border-top:2px solid var(--tbl-border);border-bottom:none}
+
+/* 주간 예산 RS 미터 + 예정 고정지출 짝 카드 */
+.weekly-summary-grid{display:flex;gap:16px;align-items:stretch;margin-bottom:14px}
+.weekly-summary-card{width:calc(50% - 8px);height:286px;min-width:0;margin-bottom:0!important;flex:1 1 0}
+.weekly-budget-panel,.weekly-due-panel{height:100%;box-sizing:border-box;border-radius:8px}
+.weekly-budget-panel{padding:11px 12px;border:1px solid var(--tbl-border);background:#fff;display:flex;flex-direction:column}
+.weekly-budget-head{display:flex;justify-content:space-between;align-items:center;min-height:26px;flex-wrap:wrap;gap:6px}
+.weekly-rs-meter{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.weekly-rs-meter svg{display:block;width:100%;height:100%;max-width:100%}
+.weekly-budget-labels,.weekly-budget-values{display:flex;justify-content:space-between;font-size:13px}
+.weekly-budget-labels{color:var(--gray)}
+.weekly-budget-values{margin-top:2px}
+.weekly-due-panel{background:#f6f4ef!important;padding:11px 13px!important;margin:0!important;overflow-y:auto;overscroll-behavior:contain}
+@media(max-width:640px){
+  .weekly-summary-grid{gap:8px}
+  .weekly-summary-card{width:calc(50% - 4px)!important;height:286px}
+}
