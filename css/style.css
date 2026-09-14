@@ -679,6 +679,12 @@ body.fiesta .xl th,body.fiesta .xl td{font-family:"Hi Melody",sans-serif}
 }
 
 /* Daily planner: ordinary views are summaries; editing lives behind 예산 세우기. */
+.week-due-box{background:#f6f4ef;border-radius:8px;padding:11px 13px;margin-bottom:14px}
+.week-due-title{font-size:13px;font-weight:600;color:#111;margin-bottom:6px}
+.week-due-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid var(--tbl-border)}
+.week-due-main{display:flex;flex:1 1 auto;flex-direction:column;gap:2px;min-width:0;font-size:13px;color:#111}.week-due-meta{display:flex;flex-wrap:wrap;gap:7px;color:var(--gray);font-size:13px}.week-due-meta>span{white-space:nowrap}.week-due-actions{display:flex;align-self:center;align-items:center;gap:4px;flex-shrink:0}.week-due-status{font-size:13px;white-space:nowrap}.week-due-status-icon{font-size:13px}.week-due-status.week-due-pending .week-due-status-icon{display:none}.week-due-status.week-due-pending:before{content:'납부 전';color:var(--gray)}.week-due-status.week-due-paid:after{content:' 납부 완료';color:var(--ac)}.week-due-remove{border:none;background:none;cursor:pointer;color:#ccc;font-size:15px;line-height:1;padding:2px 4px;font-family:inherit}
+.daily-sections{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}.daily-sections>div{min-width:0}
+#dlWeekCat .dlbgt{display:none!important}#dlWeekCat .dlbgt+span{display:none!important}#dlWeekCat .empty-guide,#dlWeekCat button[onclick^="toggleSubHidden("],#dlWeekCat button[onclick^="deleteDlSub("],#dlWeekCat button[onclick^="moveCat("],#dlWeekCat button[onclick^="toggleCatCollapse("],#dlWeekCat button[onclick^="pullLastWeek("],#dlWeekCat button[onclick^="openPullWeek("],#dlWeekCat button[onclick="openCatManage()"],#dlWeekCat button[onclick="toggleDlPlanAll()"]{display:none!important}
 #dlWeekCat button[onclick^="addDlSub("],#dlMoCat button[onclick^="addDlSub("]{display:none!important}
 .cat-budget-mobile,.weekly-budget-mobile,.daily-budget-mobile{display:none}
 body:not(.dl-plan-open) #dlMoCat div:has(>input[onchange^="setFixedDueDay("])>span:first-child,
@@ -692,11 +698,9 @@ body:not(.dl-plan-open) #dlMoCat div:has(>input[onchange^="setFixedDueDay("])>di
   #dlWkBudget .weekly-budget-head>span:last-child{display:none!important}
   .cat-budget-desktop,.weekly-budget-desktop,.daily-budget-desktop{display:none!important}
   .cat-budget-mobile,.weekly-budget-mobile,.daily-budget-mobile{display:flex!important}
-  #dlWeekCat .dlbgt,#dlMoCat .dlbgt,
-  #dlWeekCat .dlbgt+span,#dlMoCat .dlbgt+span{display:none!important}
-  #dlWeekCat button[onclick^="toggleSubHidden("],
+  #dlMoCat .dlbgt,
+  #dlMoCat .dlbgt+span{display:none!important}
   #dlMoCat button[onclick^="toggleSubHidden("],
-  #dlWeekCat button[onclick^="deleteDlSub("],
   #dlMoCat button[onclick^="deleteDlSub("],
   #dlWeekDue button[onclick^="dismissFixedPlan("]{display:none!important}
   #dlWeekDue>div>div:not(:first-child){gap:4px!important}
@@ -709,6 +713,8 @@ body:not(.dl-plan-open) #dlMoCat div:has(>input[onchange^="setFixedDueDay("])>di
   #dlWeekDue .week-due-meta>span{font-size:13px!important;color:var(--gray)!important}
   #dlWeekDue .week-due-actions{align-self:center!important}
   .week-due-status{display:inline-flex!important;align-items:center}
+  .week-due-status.week-due-pending:before,.week-due-status.week-due-paid:after{display:none}
+  .week-due-status.week-due-pending .week-due-status-icon{display:inline;font-size:17px}
   .week-due-status-text{display:none}
-  .week-due-status-icon{font-size:17px;line-height:1}
+  .week-due-status-icon{font-size:15.5px;line-height:1}
 }
