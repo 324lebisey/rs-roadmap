@@ -1,5 +1,20 @@
 var _navFoldOpen=null,_navPinned=false;
 function openNav(){var d=document.getElementById("navDrawer");if(d)d.classList.add("open");if(window.matchMedia&&window.matchMedia("(hover:none)").matches){var dim=document.getElementById("navDim");if(dim)dim.classList.add("open");}}
+/* Wide tables: horizontal dragging belongs to their own wrapper, while vertical swipes still scroll the page. */
+var _tblDrag=null;
+document.addEventListener('pointerdown',function(e){
+  var w=e.target&&e.target.closest?e.target.closest('.tbl-wrap'):null;
+  if(!w||(e.pointerType==='mouse'&&e.button!==0))return;
+  _tblDrag={wrap:w,pointerId:e.pointerId,x:e.clientX,left:w.scrollLeft,moved:false};
+  if(w.setPointerCapture)w.setPointerCapture(e.pointerId);
+},true);
+document.addEventListener('pointermove',function(e){
+  var d=_tblDrag;if(!d||d.pointerId!==e.pointerId)return;
+  var dx=e.clientX-d.x;if(Math.abs(dx)<3&&!d.moved)return;
+  d.moved=true;d.wrap.scrollLeft=d.left-dx;e.preventDefault();
+},{capture:true,passive:false});
+document.addEventListener('pointerup',function(e){if(_tblDrag&&_tblDrag.pointerId===e.pointerId)_tblDrag=null;},true);
+document.addEventListener('pointercancel',function(e){if(_tblDrag&&_tblDrag.pointerId===e.pointerId)_tblDrag=null;},true);
 function closeNav(){if(_navPinned)return;var d=document.getElementById("navDrawer");if(d)d.classList.remove("open");var dim=document.getElementById("navDim");if(dim)dim.classList.remove("open");}
 function applyNavFoldState(){["roadmap","assets","menu"].forEach(function(k){var sub=document.getElementById("navSub-"+k),btn=document.getElementById("navFoldBtn-"+k);var on=(_navFoldOpen===k);if(sub){if(on)sub.classList.add("open");else sub.classList.remove("open");}if(btn){if(on)btn.classList.add("open");else btn.classList.remove("open");}});}
 function openNavFold(key){_navFoldOpen=key;applyNavFoldState();}
@@ -1061,4 +1076,3 @@ function updateLongChart(rows){
     }
   });
 }
-
