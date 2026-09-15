@@ -2563,7 +2563,9 @@ function compactMobileSubSummaries(){
     });
   });
   var dueRoot=g('dlMoCat');if(!dueRoot)return;
-  dueRoot.querySelectorAll('span').forEach(function(el){if((el.textContent||'').indexOf('결제 예정')>=0)el.style.display='none';});
+  dueRoot.querySelectorAll('span').forEach(function(el){
+    if(el.children.length===0&&(el.textContent||'').indexOf('결제 예정')>=0)el.textContent=el.textContent.replace(/\s*결제 예정\s*/g,' ').trim();
+  });
 }
 function compactMobileWeekDueTitle(){
   if(!(window.matchMedia('(max-width:900px)').matches||window.matchMedia('(hover:none)').matches))return;

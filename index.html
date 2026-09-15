@@ -14,7 +14,7 @@
 
 
 
-<link rel="stylesheet" href="css/style.css?v=20260914-mobile-breakpoint">
+<link rel="stylesheet" href="css/style.css?v=20260915-daily-entry-v3">
 </head>
 <body class="crimson">
 <div id="navHandle" onclick="openNav()"></div>
@@ -240,30 +240,19 @@
 
   <div id="dlEntryBox" style="padding:12px;background:var(--ac-light);border-radius:6px;border:1px solid var(--tbl-border);margin-bottom:16px">
     <div style="background:#f6f4ef;border-left:3px solid var(--ac);border-radius:6px;padding:8px 11px;margin-bottom:14px;font-size:13px;color:#555;line-height:1.5">✍️ 귀찮아도 한 건 한 건 직접 적어요. 기록하는 순간을 의식하면 소비가 달라져요 :)</div>
-      <div class="dl-frow" style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin-bottom:14px">
-      <div class="dl-fg" style="display:flex;align-items:center;gap:8px">
+    <div class="dl-frow" style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin-bottom:14px">
+      <div class="dl-fg dl-primary-row" style="display:flex;align-items:center;gap:8px">
         <label class="dl-flab" style="font-size:13px;color:var(--gray)">금액(원)</label>
-        <div class="dl-fctl dl-amtwrap" style="display:flex;align-items:center;gap:8px">
-          <input type="number" id="dlAmount" oninput="dlAmountInput(this)" placeholder="예) 12000" style="width:130px;height:34px;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111">
+        <div class="dl-fctl dl-entry-line" style="display:flex;align-items:center;gap:8px">
+          <span class="dl-amount-control"><input type="number" id="dlAmount" oninput="dlAmountInput(this)" placeholder="예) 12000" style="width:130px;height:34px;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111"><span id="dlAmountWords" class="dl-fcap" style="font-size:13px;color:var(--ac);font-weight:500;white-space:nowrap"></span></span>
           <button type="button" id="dlSignBtn" class="dl-sign" onclick="toggleAmountSign()" style="height:34px;box-sizing:border-box;padding:0 12px;border:1px solid var(--border);border-radius:6px;background:#fff;color:#111;font-size:13px;font-family:inherit;line-height:1;cursor:pointer;white-space:nowrap;align-items:center">±</button>
-        </div><span id="dlAmountWords" class="dl-fcap" style="font-size:13px;color:var(--ac);font-weight:500;white-space:nowrap"></span>
-      </div>
-      <div class="dl-fg" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <label class="dl-flab" style="font-size:13px;color:var(--gray)">분류</label>
-        <div class="dl-fctl" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <button type="button" id="dlCatBtn" onclick="openCatModal()" style="height:34px;box-sizing:border-box;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111;background:#fff;cursor:pointer;white-space:nowrap">분류 선택 ▾</button>
           <span id="dlCatPick" style="font-size:13px;color:var(--ac);font-weight:600"></span>
-        </div>
-      </div>
-      <div class="dl-fg" style="display:flex;align-items:center;gap:8px">
-        <label class="dl-flab" style="font-size:13px;color:var(--gray)">캐시백</label>
-        <div class="dl-fctl" style="display:flex;align-items:center;gap:8px">
-          <input type="number" id="dlCashback" placeholder="0" style="width:84px;height:34px;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111">
-          <label style="font-size:13px;color:var(--gray);display:inline-flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap"><input type="checkbox" id="dlCbDeduct" checked style="margin:0;vertical-align:middle;accent-color:var(--ac)"> 지출 차감</label>
+          <span class="dl-cash-control"><span class="dl-cash-label">캐시백</span><input type="number" id="dlCashback" placeholder="0" style="width:84px;height:34px;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111"><label class="dl-cash-deduct" title="지출 차감" style="font-size:13px;color:var(--gray);display:inline-flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap"><input type="checkbox" id="dlCbDeduct" checked style="margin:0;vertical-align:middle;accent-color:var(--ac)"> 차감</label></span>
         </div>
       </div>
     </div>
-    <div style="margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" id="dlMoodToggle" onclick="toggleMoodPanel()" class="btn btn-ol" style="font-size:13px">기분 <span id="dlMoodCur"></span> <span class="mood-caret">▸</span></button><button type="button" id="dlConsumeToggle" onclick="toggleConsumePanel()" class="btn btn-ol" style="font-size:13px">오늘 나의 소비는? <span id="dlConsumeCur"></span> <span class="consume-caret">▸</span></button><label id="dlConsumeOpt" style="display:none;align-items:center;gap:5px;font-size:13px;color:var(--gray);cursor:pointer"><input type="checkbox" id="dlEmptyCarrot" onchange="setConsumeEmptyCarrot(this.checked)" style="margin:0;accent-color:var(--ac)"> 무지출 데이도 당근</label></div><div id="dlMoodRow" style="display:none;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap"></div><div id="dlConsumePanel" style="display:none;margin-top:8px"></div></div>
+    <div class="dl-reflection" style="margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" id="dlMoodToggle" onclick="toggleMoodPanel()" class="btn btn-ol" style="font-size:13px">기분 <span id="dlMoodCur"></span> <span class="mood-caret">▸</span></button><button type="button" id="dlConsumeToggle" onclick="toggleConsumePanel()" class="btn btn-ol" style="font-size:13px">오늘 나의 소비는? <span id="dlConsumeCur"></span> <span class="consume-caret">▸</span></button><input type="text" inputmode="numeric" id="dlCashbackMobile" placeholder="캐시백" oninput="var target=g('dlCashback');if(target)target.value=this.value" aria-label="캐시백"><label class="dl-cash-deduct-mobile" title="지출 차감"><input type="checkbox" id="dlCbDeductMobile" checked onchange="var target=g('dlCbDeduct');if(target)target.checked=this.checked"> 차감</label><label id="dlConsumeOpt" style="display:none;align-items:center;gap:5px;font-size:13px;color:var(--gray);cursor:pointer"><input type="checkbox" id="dlEmptyCarrot" onchange="setConsumeEmptyCarrot(this.checked)" style="margin:0;accent-color:var(--ac)"> 무지출 데이도 당근</label></div><div id="dlMoodRow" style="display:none;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap"></div><div id="dlConsumePanel" style="display:none;margin-top:8px"></div></div>
     <textarea id="dlNote" placeholder="오늘 하루 어땠나요? 나에게 따듯한 말 한마디 :)" style="width:100%;box-sizing:border-box;min-height:48px;padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111;resize:vertical;margin-bottom:14px"></textarea>
     <div id="dlPendingBox" style="display:none;margin-bottom:10px"></div>
     <div id="dlEditDateRow" style="display:none;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap"><span style="font-size:13px;color:var(--gray);white-space:nowrap">이 기록의 날짜</span><input type="date" id="dlEditDate" style="height:34px;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;color:#111"></div>
