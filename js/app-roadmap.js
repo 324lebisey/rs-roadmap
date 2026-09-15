@@ -2279,41 +2279,46 @@ function projReadHtml(p){
   var mk=monthKey(todayStr()),y=parseInt(mk.slice(0,4),10),mi=parseInt(mk.slice(5,7),10)-1;
 
   var a=[];
-  if(i.start&&i.end)a.push('운용 '+_projDate2(i.start)+'~'+_projDate2(i.end));
-  else if(fp.period)a.push('운용 '+fp.period);
-  else if(fp.date)a.push('시작 '+fp.date);
-  var ts=projTermSummaryLine(p); if(ts)a.push(ts);
-  if(a.length)out.push(a.join(' · '));
+  if(i.start&&i.end)a.push("운용 <span class='proj-date'>"+_projDate2(i.start)+'~'+_projDate2(i.end)+'</span>');
+  else if(fp.period)a.push("운용 <span class='proj-date'>"+fp.period+'</span>');
+  else if(fp.date)a.push("시작 <span class='proj-date'>"+fp.date+'</span>');
+  var ts=projTermSummaryLine(p);
+  if(a.length)out.push("<span class='proj-desktop-only'>"+a.concat(ts?[ts]:[]).join(' · ')+"</span><span class='proj-mobile-only'>"+a.join(' · ')+(ts?"<br><span class='proj-mobile-sub'>• "+ts+'</span>':'')+'</span>');
 
   var b=[];
   var _stp=projRateStepOn[p.id]?(parseFloat(projRateStep[p.id])||0):0;
   var _effNow=isShort?null:projEffAt(p,y,mi,0,getEffectiveRate(p)||0);
   var _rateNow=isShort?(getEffectiveRate(p)||0):_effNow.rate; // 상환·연장·연 인상까지 반영된 최종 적용 수익률
-  b.push(isShort?shortSummaryText(fp):('수익률 <b>'+_rateNow+'%</b>'+((_stp>0&&_effNow&&!_effNow.fixed)?(' <span style="color:var(--ac)">(매년 +'+_stp+'%p)</span>'):'')));
+  var rate=isShort?shortSummaryText(fp):('수익률 <b>'+_rateNow+'%</b>'+((_stp>0&&_effNow&&!_effNow.fixed)?(' <span style="color:var(--ac)">(매년 +'+_stp+'%p)</span>'):''));
+  b.push(rate);
   var mo=Math.round(projMonthWon(p,y,mi)||0);
-  if(mo>0)b.push('월 수령 <span class=\'rv\'>'+mo.toLocaleString()+'원</span>');
+  var monthly=mo>0?('월 수령 <span class=\'rv\'>'+mo.toLocaleString()+'원</span>'):'';
+  if(monthly)b.push(monthly);
   var ci=projCumInfo(p);
-  if(ci&&!ci.unknown&&ci.won>0)b.push('누적 <span class=\'rv\'>'+ci.won.toLocaleString()+'원</span> ('
-    +(ci.months>0?(ci.months+(isShort?'회차':'개월')+' · '):'')+'원금 대비 '+(Math.round(ci.pct*10)/10)+'%)');
-  if(b.length>1||mo>0)out.push(b.join(' · '));
-  else if(ci&&ci.unknown&&!isShort)out.push("<span style='color:#c08a3e'>운용기간을 입력하면 누적 수익이 계산돼요</span>");
+  var cumulative=(ci&&!ci.unknown&&ci.won>0)?('누적 <span class=\'rv\'>'+ci.won.toLocaleString()+'원</span> ('+(ci.months>0?(ci.months+(isShort?'회차':'개월')+' · '):'')+'원금 대비 '+(Math.round(ci.pct*10)/10)+'%)'):'';
+  if(cumulative)b.push(cumulative);
+  if(b.length>1||mo>0)out.push("<span class='proj-desktop-only'>"+b.join(' · ')+"</span><span class='proj-mobile-only'>"+rate+(monthly?'<br><span class=\'proj-mobile-sub\'>• '+monthly+'</span>':'')+(cumulative?'<br><span class=\'proj-mobile-sub\'>• '+cumulative+'</span>':'')+'</span>');
+  else if(!isShort&&ci&&ci.unknown)out.push("<span style='color:#c08a3e'>운용기간을 입력하면 누적 수익이 계산돼요</span>");
+
+  var changes=[];
+  (projRepay[p.id]||[]).forEach(function(r){
+    var pw=parseFloat(r.principal)||0; if(!r.from||!(pw>0))return;
+    changes.push({date:r.from,desktop:'일부 상환 <b>'+r.from+'</b>부터 남은 원금 '+pw.toLocaleString()+'만원 · '+_projRateAtMk(p,r.from)+'%',mobile:'일부 상환<br><span class="proj-mobile-sub">• <b>'+r.from+'</b>부터 남은 원금 '+pw.toLocaleString()+'만원 · '+_projRateAtMk(p,r.from)+'%</span>'});
+  });
+  if(projExtRateOn[p.id]&&(parseFloat(projExtRate[p.id])||0)>0&&/^\d{4}-\d{2}$/.test(projExtFrom[p.id]||''))
+    changes.push({date:projExtFrom[p.id],desktop:'연장 <b>'+projExtFrom[p.id]+'</b>부터 수익률 '+projExtRate[p.id]+'% 최종',mobile:'연장<br><span class="proj-mobile-sub">• <b>'+projExtFrom[p.id]+'</b>부터 수익률 '+projExtRate[p.id]+'% 최종</span>'});
+  (projAddInv[p.id]||[]).forEach(function(r){
+    var aw=parseFloat(r.amount)||0; if(!r.from||!(aw>0))return;
+    changes.push({date:r.from,desktop:'추가 투자 <b>'+r.from+'</b>부터 원금 +'+aw.toLocaleString()+'만원',mobile:'추가 투자<br><span class="proj-mobile-sub">• <b>'+r.from+'</b>부터 원금 +'+aw.toLocaleString()+'만원</span>'});
+  });
+  if(projEarly[p.id]){var ei=projEarlyInfo(p);
+    changes.push({date:projEarly[p.id],desktop:'조기상환 <b>'+projEarly[p.id]+'</b>'+(ei?(' · '+ei.mk+'에 '+ei.amtWon.toLocaleString()+'원 입금 후 종료'):''),mobile:'조기상환<br><span class="proj-mobile-sub">• <b>'+projEarly[p.id]+'</b>'+ (ei?(' · '+ei.mk+'에 '+ei.amtWon.toLocaleString()+'원 입금 후 종료'):'')+'</span>'});}
+  changes.sort(function(a,b){return a.date<b.date?-1:(a.date>b.date?1:0);});
+  changes.forEach(function(change){out.push("<span class='proj-desktop-only'>"+change.desktop+"</span><span class='proj-mobile-only'>"+change.mobile+'</span>');});
 
   var fw=projFutureWon(p);
   if(fw.y1>0||fw.fut>0)out.push('앞으로 1년 <span class=\'rv\'>'+_projWonShort(fw.y1)+'</span> · 만기까지 '
     +(fw.unknown?'<span style="color:#c08a3e">만기 미정</span>':('<span class=\'rv\'>'+_projWonShort(fw.fut)+'</span>')));
-
-  (projRepay[p.id]||[]).forEach(function(r){
-    var pw=parseFloat(r.principal)||0; if(!r.from||!(pw>0))return;
-    out.push('일부 상환 <b>'+r.from+'</b>부터 남은 원금 '+pw.toLocaleString()+'만원 · '+_projRateAtMk(p,r.from)+'%');
-  });
-  if(projExtRateOn[p.id]&&(parseFloat(projExtRate[p.id])||0)>0&&/^\d{4}-\d{2}$/.test(projExtFrom[p.id]||''))
-    out.push('연장 <b>'+projExtFrom[p.id]+'</b>부터 수익률 '+projExtRate[p.id]+'% 최종');
-  (projAddInv[p.id]||[]).forEach(function(r){
-    var aw=parseFloat(r.amount)||0; if(!r.from||!(aw>0))return;
-    out.push('추가 투자 <b>'+r.from+'</b>부터 원금 +'+aw.toLocaleString()+'만원');
-  });
-  if(projEarly[p.id]){var ei=projEarlyInfo(p);
-    out.push('조기상환 <b>'+projEarly[p.id]+'</b>'+(ei?(' · '+ei.mk+'에 '+ei.amtWon.toLocaleString()+'원 입금 후 종료'):''));}
 
   var mm=(projMemo[p.id]||'').trim();
   if(mm)out.push('메모 · '+dlEsc(mm));
@@ -2502,21 +2507,29 @@ function projSplitSP(){var live=[],done=[];
 }
 function toggleProjDone(){projDoneOpen=!projDoneOpen;renderSP();}
 function toggleProjDoneCard(pid){var _on=!projDoneEdit[pid];projDoneEdit[pid]=_on;if(_on)projEditOpen[pid]=true;else delete projEditOpen[pid];projDoneOpen=true;renderSP();}
+function projDoneMobileMetricsHtml(p){
+  var principal=projPrincipalNow(p),ci=projCumInfo(p),out=[];
+  if(principal>0)out.push("<span class='proj-done-mobile-metric'>원금 <b>"+Math.round(principal/10000).toLocaleString()+"만</b></span>");
+  if(ci&&!ci.unknown&&ci.won>0){
+    out.push("<span class='proj-done-mobile-metric'>누적 수익 <b>"+Math.round(ci.won/10000).toLocaleString()+"만</b></span>");
+    out.push("<span class='proj-done-mobile-metric'><b>"+(Math.round(ci.pct*10)/10)+"%</b></span>");
+  }
+  return out.length?"<div class='proj-done-mobile-metrics'>"+out.join("<span class='proj-done-sep'>·</span>")+"</div>":'';
+}
 function projDoneCompactHtml(p,d){
-  var inv=parseFloat(projInvest[p.id])||0;var ci=projCumInfo(p);
+  var inv=parseFloat(projInvest[p.id])||0,ci=projCumInfo(p);
   var nm=dlEsc(p.name)+(p.nick?(" <span style='font-size:13px;color:var(--gray);font-weight:400'>/ "+dlEsc(p.nick)+"</span>"):'');
   var badge="<span class='proj-done-badge' style='flex:0 0 auto;white-space:nowrap;font-size:12px;font-weight:600;color:var(--ac);background:var(--ac-light);border-radius:10px;padding:2px 9px'>"+d.status+(d.when?(' '+d.when):'')+"</span>";
   var meta=[];
   if(inv>0)meta.push("투자 원금 <b style='white-space:nowrap'>"+inv.toLocaleString()+"만원</b>");
   if(ci&&!ci.unknown&&ci.won>0)meta.push("누적 수익 <b style='color:var(--ac);white-space:nowrap'>"+ci.won.toLocaleString()+"원</b> · 원금 대비 "+(Math.round(ci.pct*10)/10)+"%");
   return "<div class='proj-row' data-done-pid='"+p.id+"' style='opacity:.85'>"
-    +"<div class='proj-row-header'>"
-      +"<span class='proj-hd-mid' style='font-weight:600;font-size:13px;word-break:keep-all'>"+nm+"</span>"
-      +badge
+    +"<div class='proj-done-desktop'><div class='proj-row-header'>"
+      +"<span class='proj-hd-mid' style='font-weight:600;font-size:13px;word-break:keep-all'>"+nm+"</span>"+badge
       +"<span class='proj-hd-act'><button class='btn btn-ol' style='white-space:nowrap;padding:3px 10px;font-size:12px' onclick='toggleProjDoneCard("+p.id+")'>수정</button>"
       +"<button class='rm-btn' onclick='rmP("+p.id+")'>×</button></span>"
-    +"</div>"
-    +(meta.length?("<div style='font-size:13px;color:var(--gray);word-break:keep-all;line-height:1.5'>"+meta.join(' · ')+"</div>"):'')
+    +"</div>"+(meta.length?("<div style='font-size:13px;color:var(--gray);word-break:keep-all;line-height:1.5'>"+meta.join(' · ')+"</div>"):'')+"</div>"
+    +"<div class='proj-done-mobile'><div class='proj-done-mobile-head'><span class='proj-done-mobile-name'>"+nm+"</span><span class='proj-hd-act'><button class='btn btn-ol' style='white-space:nowrap;padding:3px 10px;font-size:12px' onclick='toggleProjDoneCard("+p.id+")'>수정</button><button class='rm-btn' onclick='rmP("+p.id+")'>×</button></span></div><div class='proj-done-mobile-status'>"+badge+"</div>"+projDoneMobileMetricsHtml(p)+"</div>"
   +"</div>";
 }
 function projDoneSection(doneArr){
@@ -2626,7 +2639,7 @@ function projTermSummaryLine(p){
   var fp=_freshP(p),i=projDayInfo(p),out=[];
   var mo=((fp.termMonths||0)>0)?fp.termMonths:((i.start&&i.end)?_projMonthSpan(i.start,i.end):null);
   if(mo>0)out.push(mo+'개월');
-  if(i.start)out.push('매월 '+parseInt(i.start.slice(8,10),10)+'일 수령');
+  if(i.start)out.push("매월 <b class='proj-term-day'>"+parseInt(i.start.slice(8,10),10)+'일</b> 수령');
   return out.join(' · ');
 }
 /* 앞으로 받을 돈 — 카드·표가 같은 값을 쓰도록 한 곳에서 센다(세션 58).
@@ -2963,19 +2976,16 @@ function projCardHtml(p,hdrBtn){
     const _open=!!projEditOpen[p.id];   /* 편집 구역 열림은 오직 projEditOpen — 완료 카드의 「수정」이 이 값을 켠다(「편집 닫기」와 「접기」는 서로 독립) */
     return `<div class='proj-row' data-pid='${p.id}' style='${accessible?"":"opacity:.5"}'>
       <div class='proj-row-header'>
-        <span class='proj-hd-no' style='color:${(p.user&&(!p.no||p.no==="★"))?"var(--ac)":"var(--gray)"}'>${(p.user&&(!p.no||p.no==="★"))?"직접":"No."+p.no}</span>
-        <span class='proj-hd-mid'>
-          <span style='font-weight:600;font-size:13px;word-break:keep-all'>${p.name}${p.nick?` <span style="font-size:13px;color:var(--gray);font-weight:400">· ${p.nick}</span>`:""}</span>
-          ${projOwnerOf(p.id)?`<span class='proj-own'>${dlEsc(projOwnerOf(p.id))}</span>`:""}
-          ${projIncluded(p.id)?"":`<span class='proj-excl segtip' tabindex='0' data-tip='로드맵·자산 합계에 넣지 않고 이 탭에서 관리만 해요'>관리만</span>`}
-          ${_dbadge}
-        </span>
+        <span class='proj-hd-no' style='color:${(p.user&&(!p.no||p.no==="★"))?"var(--ac)":"var(--gray)"}'><span>${(p.user&&(!p.no||p.no==="★"))?"직접":"No."+p.no}</span><span class='proj-mobile-dday'>${_dbadge}</span></span>
+        <div class='proj-card-main'>
+          <span class='proj-hd-mid'><span style='font-weight:600;font-size:13px;word-break:keep-all'>${p.name}${p.nick?` <span style="font-size:13px;color:var(--gray);font-weight:400">· ${p.nick}</span>`:""}</span>${projOwnerOf(p.id)?`<span class='proj-own'>${dlEsc(projOwnerOf(p.id))}</span>`:""}${projIncluded(p.id)?"":`<span class='proj-excl segtip' tabindex='0' data-tip='로드맵·자산 합계에 넣지 않고 이 탭에서 관리만 해요'>관리만</span>`}<span class='proj-desktop-dday'>${_dbadge}</span></span>
+          ${p.rateNote?`<div class='proj-read'>${p.rateNote}</div>`:""}
+          ${projReadHtml(p)}
+          <button type='button' class='proj-edit-t${_open?" on":""}' onclick='toggleProjEdit(${p.id})'>${_open?"편집 닫기 ∧":"편집 ∨"}</button>
+          ${_open?projEditBox(p):""}
+        </div>
         <span class='proj-hd-act'>${hdrBtn||""}<button class='rm-btn' onclick='rmP(${p.id})'>×</button></span>
       </div>
-      ${p.rateNote?`<div class='proj-read'>${p.rateNote}</div>`:""}
-      ${projReadHtml(p)}
-      <button type='button' class='proj-edit-t${_open?" on":""}' onclick='toggleProjEdit(${p.id})'>${_open?"편집 닫기 ∧":"편집 ∨"}</button>
-      ${_open?projEditBox(p):""}
     </div>`;
 }
 function rmP(id){SP=SP.filter(p=>p.id!==id);delete projInvest[id];delete projSchedule[id];delete projRepay[id];delete projEarly[id];delete projAssetHide[id];delete projMaturityBonus[id];delete projMaturityBonusOn[id];delete projRateStep[id];delete projRateStepOn[id];delete projAddInv[id];delete projExtRateOn[id];delete projExtRate[id];delete projExtFrom[id];delete projOwner[id];delete projInclude[id];delete projMemo[id];renderSP();save();}

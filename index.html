@@ -216,10 +216,10 @@
     </div>
   </div>
 
-  <div id="dlViewCal" style="display:none;zoom:1.25">
+  <div id="dlViewCal" style="display:none">
     <div id="dlCal"></div>
   </div>
-  <div id="dlViewDaily" style="zoom:1.25">
+  <div id="dlViewDaily">
   <div id="dlFocusDaily"></div>
   <div id="dlAsnapDaily"></div>
 
@@ -287,7 +287,7 @@
   <div id="dlRecent"></div>
   </div><!-- /dlViewDaily -->
 
-  <div id="dlViewWeek" style="display:none;zoom:1.25">
+  <div id="dlViewWeek" style="display:none">
     <div id="dlFocusWeek"></div>
     <div id="dlAsnapWeek"></div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -307,7 +307,7 @@
     <div id="dlWkReview"></div>
   </div>
 
-  <div id="dlViewMonth" style="display:none;zoom:1.25">
+  <div id="dlViewMonth" style="display:none">
     <div id="dlFocusMonth"></div>
     <div id="dlAsnapMonth"></div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -333,10 +333,10 @@
     <p class="rev-head" style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);font-weight:700;margin:32px 0 10px;cursor:pointer;user-select:none" onclick="toggleReview()">되돌아보기 <span class="rev-caret">▸</span></p>
     <div id="dlMoReview"></div>
   </div>
-  <div id="dlViewSpecial" style="display:none;zoom:1.25">
+  <div id="dlViewSpecial" style="display:none">
     <div id="dlSpecialBody"></div>
   </div>
-  <div id="dlViewAnalysis" style="display:none;zoom:1.25">
+  <div id="dlViewAnalysis" style="display:none">
     <div id="dlAnaPresets" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
     <div id="dlAnaRange" style="display:none;gap:6px;align-items:center;margin-bottom:14px;flex-wrap:wrap"><input type="date" id="dlAnaStart" onchange="onAnaRangeChange()" style="padding:6px 8px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:inherit;color:#111"><span style="color:var(--gray);font-size:13px">~</span><input type="date" id="dlAnaEnd" onchange="onAnaRangeChange()" style="padding:6px 8px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:inherit;color:#111"></div>
     <div id="dlAnaBody"></div>
@@ -973,7 +973,7 @@
   <script src="js/app-core.js?v=20260914-js-split"></script>
   <script src="js/app-roadmap.js?v=20260914-js-split"></script>
   <script src="js/app-storage.js?v=20260914-js-split"></script>
-  <script src="js/app-daily.js?v=20260914-month-week-sync"></script>
+  <script src="js/app-daily.js?v=20260914-consolidated"></script>
   <script src="js/app.js?v=20260914-mobile-planner"></script>
 </body>
 </html>
