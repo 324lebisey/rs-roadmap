@@ -1636,7 +1636,7 @@ var _certRsImg=new Image();_certRsImg.src='assets/rs_.png';
 var _certRsMaskImg=new Image();_certRsMaskImg.src='assets/rs-fill-mask.png?v=20260914-gap-cutout';
 function _certRsReady(){function w(img){if(img.complete&&img.naturalWidth>0)return Promise.resolve();return new Promise(function(res){img.onload=function(){res();};img.onerror=function(){res();};});}return Promise.all([w(_certRsImg),w(_certRsMaskImg)]);}
 function certGaugeCanvas(w,h,pct,fillColor,baseColor){
-  var R=3;
+  var R=6;
   function maskedFill(paint){
     var c=document.createElement('canvas');c.width=w*R;c.height=h*R;var cx=c.getContext('2d');cx.scale(R,R);
     cx.drawImage(_certRsMaskImg,0,0,w,h);cx.globalCompositeOperation='source-in';paint(cx);
@@ -1719,7 +1719,7 @@ function certCompareData(scope,dateStr){
 }
 function certBuildData(scope,dateStr,includeSettle){if(!dailyTree)loadDailyCats();var entries=(scope==='weekly')?weekEntries(dateStr):monthEntries(dateStr);var spent={};entries.forEach(function(e){var a=entrySpend(e);if(a===0)return;var c=e.cat||e.category||'미분류';spent[c]=(spent[c]||0)+a;});var totalSpent=Object.keys(spent).reduce(function(s,c){return s+spent[c];},0);var totalBudget=sumCatBudget(scope,dateStr);var overallPct=totalBudget>0?Math.round(totalSpent/totalBudget*100):null;var fixed=[],variable=[];dailyCats.forEach(function(c){var grp=catGroupOf(c);var d=certGroupData(scope,c,spent,dateStr);if(!d)return;if(grp==='고정')fixed.push(d);else if(grp==='변동')variable.push(d);});fixed.sort(function(a,b){return b.pct-a.pct;});variable.sort(function(a,b){return b.pct-a.pct;});var chart=certChartData(scope,dateStr);var donut=(scope==='monthly')?certCategoryDonutData(scope,dateStr):null;var settle=(scope==='monthly'&&includeSettle)?certIncomeData(dateStr):null;var compare=(scope==='monthly'&&includeSettle)?certCompareData(scope,dateStr):null;var review=certReviewData(scope,dateStr);return {overallPct:overallPct,overAll:(overallPct!==null&&overallPct>100),fixed:fixed,variable:variable,chart:chart,donut:donut,settle:settle,compare:compare,review:review};}
 function buildCertCanvas(scope,dateStr,data){var cs=getComputedStyle(document.body);var ac=(cs.getPropertyValue('--ac')||'').trim()||'#b3315a';var W=380,R=3;var scopeLabel=scope==='weekly'?'주간':'월간';var periodLabel='';if(scope==='weekly'){var st=weekStartMon(dateStr),en=new Date(st.getFullYear(),st.getMonth(),st.getDate()+6);periodLabel=(st.getMonth()+1)+'/'+st.getDate()+' – '+(en.getMonth()+1)+'/'+en.getDate();}else{var mk=monthKey(dateStr),mp=mk.split('-');periodLabel=mp[0]+'년 '+parseInt(mp[1],10)+'월';}
-  var headerH=88,topH=118,rowH=32,secHeadH=34,secGap=20,footH=14;
+  var headerH=88,topH=178,rowH=32,secHeadH=34,secGap=20,footH=14;
   var chartBarH=86,chartLabelH=18,chartH=secHeadH+chartBarH+chartLabelH+secGap;
   var gm='#3f9a68',rm='#d9534f';
   var chipRowH=22;
@@ -1870,17 +1870,17 @@ function buildCertCanvas(scope,dateStr,data){var cs=getComputedStyle(document.bo
     var gaugeColor=data.overAll?'#d9534f':ac;
     var bigPct=data.overallPct===null?'–':data.overallPct+'%';
     if(_certRsImg.naturalWidth>0&&_certRsMaskImg.naturalWidth>0){
-      var gw=54,gh=gw*(_certRsImg.naturalHeight/_certRsImg.naturalWidth),gap=16;
-      ctx.font="12px "+FF;var labelW=ctx.measureText('전체 예산 사용률').width;
-      ctx.font="700 30px "+FF;var pctW=ctx.measureText(bigPct).width;
+      var gw=132,gh=gw*(_certRsImg.naturalHeight/_certRsImg.naturalWidth),gap=20;
+      ctx.font="14px "+FF;var labelW=ctx.measureText('전체 예산 사용률').width;
+      ctx.font="700 46px "+FF;var pctW=ctx.measureText(bigPct).width;
       var textW=Math.max(labelW,pctW);
       var groupW=gw+gap+textW,groupX=(W-groupW)/2,textX=groupX+gw+gap;
       var gauge=certGaugeCanvas(gw,gh,data.overallPct,gaugeColor,'#e7ded0');
       ctx.drawImage(gauge,groupX,y+(topH-gh)/2,gw,gh);
       var textCY=y+topH/2;
       ctx.textAlign='left';
-      ctx.fillStyle='#888';ctx.font="12px "+FF;ctx.fillText('전체 예산 사용률',textX,textCY-10);
-      ctx.fillStyle=gaugeColor;ctx.font="700 30px "+FF;ctx.fillText(bigPct,textX,textCY+22);
+      ctx.fillStyle='#888';ctx.font="14px "+FF;ctx.fillText('전체 예산 사용률',textX,textCY-14);
+      ctx.fillStyle=gaugeColor;ctx.font="700 46px "+FF;ctx.fillText(bigPct,textX,textCY+32);
     }else{
       ctx.fillStyle='#888';ctx.font="13px "+FF;ctx.textAlign='left';ctx.fillText('전체 예산 사용률',24,y+18);
       ctx.fillStyle=gaugeColor;ctx.font="700 32px "+FF;ctx.textAlign='right';ctx.fillText(bigPct,W-24,y+38);
