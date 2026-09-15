@@ -154,19 +154,31 @@
       </div>
       <div class="theme-sw" style="margin-top:10px">
         <span>도움말</span>
-        <button class="fsz-btn" id="helpToggleBtn" onclick="toggleHelpHidden()" title="화면 도움말(ⓘ·안내) 표시/숨김">표시</button>
+        <button class="fsz-btn" id="helpToggleBtn2" onclick="toggleHelpHidden()" title="화면 도움말(ⓘ·안내) 표시/숨김">표시</button>
       </div>
       <div class="theme-sw" style="margin-top:10px">
         <span style="white-space:nowrap">쓸쓰안쓰</span>
-        <button class="fsz-btn" id="spendRulesToggleBtn" onclick="toggleSpendRulesOn()" title="일일 화면의 「나의 쓸쓰안쓰」 카드 표시/숨김">표시</button>
+        <button class="fsz-btn" id="spendRulesToggleBtn2" onclick="toggleSpendRulesOn()" title="일일 화면의 「나의 쓸쓰안쓰」 카드 표시/숨김">표시</button>
       </div>
       <div class="theme-sw" style="margin-top:10px">
         <span style="white-space:nowrap">식단표</span>
-        <button class="fsz-btn" id="mealToggleBtn" onclick="toggleMealOn()" title="주간 화면의 「🍚 이번 주 식단」 표시/숨김">숨김</button>
+        <button class="fsz-btn" id="mealToggleBtn2" onclick="toggleMealOn()" title="주간 화면의 「🍚 이번 주 식단」 표시/숨김">숨김</button>
+      </div>
+      <div class="theme-sw" style="margin-top:10px">
+        <span style="white-space:nowrap">시작 화면</span>
+        <select id="defaultTabSel2" onchange="setDefaultTab(this.value)" title="프로그램을 열었을 때 처음 보일 화면" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111;background:#fff">
+          <option value="daily">일일 기록</option>
+          <option value="dashboard">대시보드</option>
+          <option value="roadmap">로드맵</option>
+          <option value="monthly">월간 회고</option>
+          <option value="projects">프로젝트</option>
+          <option value="assets">자산</option>
+          <option value="scenario">시나리오 비교</option>
+        </select>
       </div>
       <div style="border-top:1px solid var(--tbl-border);margin:11px 0 9px"></div>
-      <div class="theme-sw"><span>주 시작</span><select id="weekStartSel" onchange="setWeekStartDay(this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111;background:#fff"><option value="1">월요일</option><option value="2">화요일</option><option value="3">수요일</option><option value="4">목요일</option><option value="5">금요일</option><option value="6">토요일</option><option value="0">일요일</option></select></div>
-      <div class="theme-sw" style="margin-top:10px"><span>월 시작</span><select id="settleStartSel" onchange="setSettleStart(this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111;background:#fff"></select></div>
+      <div class="theme-sw"><span>주 시작</span><select id="weekStartSel2" onchange="setWeekStartDay(this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111;background:#fff"><option value="1">월요일</option><option value="2">화요일</option><option value="3">수요일</option><option value="4">목요일</option><option value="5">금요일</option><option value="6">토요일</option><option value="0">일요일</option></select></div>
+      <div class="theme-sw" style="margin-top:10px"><span>월 시작</span><select id="settleStartSel2" onchange="setSettleStart(this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111;background:#fff"></select></div>
       <div class="theme-sw" style="margin-top:10px"><span style="white-space:nowrap">공휴일</span><button class="fsz-btn" style="white-space:nowrap" onclick="openHolidayMod();closeHeaderMenu()" title="공휴일 등록 관리">📅&nbsp;관리</button></div>
     </div>
   </div>
