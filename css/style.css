@@ -147,7 +147,7 @@ body{font-family:"DM Sans",sans-serif;background:#f7f7f7;min-height:100vh;color:
 }
 #navDim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:295}
 #navDim.open{display:block}
-#navDrawer{position:fixed;left:0;top:0;height:100dvh;width:220px;max-width:78vw;background:#fff;border-right:1px solid var(--border);box-shadow:2px 0 16px rgba(0,0,0,.1);z-index:300;display:flex;flex-direction:column;overflow-x:hidden;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;transform:translateX(-100%);transition:transform .18s ease;box-sizing:border-box;padding:10px 0 calc(10px + env(safe-area-inset-bottom))}
+#navDrawer{position:fixed;left:0;top:0;height:100dvh;width:220px;max-width:78vw;background:#fff;border-right:1px solid var(--border);box-shadow:2px 0 16px rgba(0,0,0,.1);z-index:300;display:flex;flex-direction:column;overflow:hidden;transform:translateX(-100%);transition:transform .18s ease;box-sizing:border-box;padding:10px 0 calc(10px + env(safe-area-inset-bottom))}
 #navDrawer.open{transform:translateX(0)}
 body.nav-pinned #navDrawer{transform:translateX(0)!important}
 @media (hover:hover){body.nav-pinned .wrap{margin-left:220px;transition:margin-left .18s ease}}
@@ -156,7 +156,7 @@ body.nav-pinned #navDrawer{transform:translateX(0)!important}
 .nav-pin-btn.on{color:var(--ac);border-color:var(--ac);background:var(--ac-light)}
 .nav-pin-hint{display:none;order:-1;font-size:12px;font-weight:600;color:var(--ac);background:var(--ac-light);border-radius:6px;padding:4px 7px;white-space:nowrap}
 @media (hover:hover){body:not(.nav-pinned):not(.help-off) .nav-pin-row:hover .nav-pin-hint{display:inline-flex;align-items:center}}
-.nav-items{display:flex;flex:0 0 auto;min-height:max-content;flex-direction:column;gap:2px;padding:0 8px 10px}
+.nav-items{display:flex;flex:1 1 auto;min-height:0;flex-direction:column;gap:2px;padding:0 8px 10px;overflow-y:scroll;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
 .nav-items .tab,.nav-menu-name{all:unset;box-sizing:border-box;display:block;width:100%;padding:10px 12px;font-size:14px;letter-spacing:.03em;color:var(--gray);cursor:pointer;border-radius:8px;white-space:nowrap;font-family:"DM Sans",sans-serif}
 .nav-items .tab.active{color:var(--ac);background:var(--ac-light);font-weight:600}
 .nav-items .tab:hover:not(.active),.nav-menu-name:hover{color:#111;background:rgba(0,0,0,.04)}
@@ -248,7 +248,7 @@ body.nav-pinned #navDrawer{transform:translateX(0)!important}
 
 /* ── 표 ── */
 .tbl-title{font-family:var(--serif);font-size:17px;font-weight:600;text-align:center;padding:9px;border:1px solid var(--tbl-border);border-bottom:none;background:#fff;letter-spacing:.04em}
-.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;margin-bottom:0;width:100%}
+.tbl-wrap{display:block;min-width:0;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-y;margin-bottom:0;width:100%}
 .meal-card{background:#fff;border:1px solid var(--tbl-border);border-radius:8px;padding:12px;margin-bottom:14px;max-width:100%;overflow:hidden;box-sizing:border-box}
 .meal-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:9px}
 .meal-ttl{font-size:13px;letter-spacing:.05em;color:var(--ac);font-weight:700;white-space:nowrap;word-break:keep-all}
