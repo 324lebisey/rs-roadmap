@@ -249,9 +249,10 @@ body.nav-pinned #navDrawer{transform:translateX(0)!important}
 /* ── 표 ── */
 .tbl-title{font-family:var(--serif);font-size:17px;font-weight:600;text-align:center;padding:9px;border:1px solid var(--tbl-border);border-bottom:none;background:#fff;letter-spacing:.04em}
 .tbl-wrap{display:block;min-width:0;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-y;margin-bottom:0;width:100%}
-.st-table-wrap{margin:0;touch-action:pan-y}
+.st-table-wrap{margin:0;overflow-x:scroll!important;overflow-y:hidden;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
 .st-table{width:100%;min-width:650px;table-layout:fixed;border-collapse:separate;border-spacing:0;white-space:nowrap}
 .st-table .st-col-cat{width:100px}
+.st-table .st-col-now{width:110px}.st-table .st-col-budget{width:130px}.st-table .st-col-previous{width:110px}.st-table .st-col-change{width:140px}
 .st-table .st-first{position:sticky;left:0;z-index:2;background:var(--tbl-rl-bg);border-right:2px solid var(--tbl-border)}
 .st-table thead .st-first{z-index:3;background:var(--st-head-bg)}
 .meal-card{background:#fff;border:1px solid var(--tbl-border);border-radius:8px;padding:12px;margin-bottom:14px;max-width:100%;overflow:hidden;box-sizing:border-box}
@@ -695,6 +696,7 @@ body.fiesta .xl th,body.fiesta .xl td{font-family:"Hi Melody",sans-serif}
 .week-due-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid var(--tbl-border)}
 .week-due-main{display:flex;flex:1 1 auto;flex-direction:column;gap:2px;min-width:0;font-size:13px;color:#111}.week-due-meta{display:flex;flex-wrap:wrap;gap:7px;color:var(--gray);font-size:13px}.week-due-meta>span{white-space:nowrap}.week-due-actions{display:flex;align-self:center;align-items:center;gap:4px;flex-shrink:0}.week-due-status{font-size:13px;white-space:nowrap}.week-due-status-icon{font-size:13px}.week-due-status.week-due-pending .week-due-status-icon{display:none}.week-due-status.week-due-pending:before{content:'납부 전';color:var(--gray)}.week-due-status.week-due-paid:after{content:' 납부 완료';color:var(--ac)}.week-due-remove{border:none;background:none;cursor:pointer;color:#ccc;font-size:15px;line-height:1;padding:2px 4px;font-family:inherit}
 .daily-sections{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}.daily-sections>div{min-width:0}
+#dlWkCat div:has(>button[onclick*="gotoSpecialPlan"]),#dlMoCat div:has(>button[onclick*="gotoSpecialPlan"]){flex-wrap:wrap!important;align-items:center!important}#dlWkCat div:has(>button[onclick*="gotoSpecialPlan"])>span:nth-child(2),#dlWkCat div:has(>button[onclick*="gotoSpecialPlan"])>span:nth-child(3),#dlMoCat div:has(>button[onclick*="gotoSpecialPlan"])>span:nth-child(2),#dlMoCat div:has(>button[onclick*="gotoSpecialPlan"])>span:nth-child(3){white-space:nowrap}
 body:not(.dl-plan-open) #dlWkCat .dlbgt{display:none!important}body:not(.dl-plan-open) #dlWkCat .dlbgt+span{display:none!important}body:not(.dl-plan-open) #dlWkCat .empty-guide,body:not(.dl-plan-open) #dlWkCat button[onclick^="toggleSubHidden("],body:not(.dl-plan-open) #dlWkCat button[onclick^="deleteDlSub("],body:not(.dl-plan-open) #dlWkCat button[onclick^="moveCat("],body:not(.dl-plan-open) #dlWkCat button[onclick^="toggleCatCollapse("],body:not(.dl-plan-open) #dlWkCat button[onclick^="addDlSub("]{display:none!important}
 #dlMoCat button[onclick^="addDlSub("]{display:none!important}
 .cat-budget-mobile,.weekly-budget-mobile,.daily-budget-mobile{display:none}
