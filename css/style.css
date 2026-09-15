@@ -249,6 +249,10 @@ body.nav-pinned #navDrawer{transform:translateX(0)!important}
 /* ── 표 ── */
 .tbl-title{font-family:var(--serif);font-size:17px;font-weight:600;text-align:center;padding:9px;border:1px solid var(--tbl-border);border-bottom:none;background:#fff;letter-spacing:.04em}
 .tbl-wrap{display:block;min-width:0;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-y;margin-bottom:0;width:100%}
+.st-table-wrap{margin:0;touch-action:pan-y}
+.st-table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;white-space:nowrap}
+.st-table .st-first{position:sticky;left:0;z-index:2;background:var(--tbl-rl-bg);border-right:2px solid var(--tbl-border)}
+.st-table thead .st-first{z-index:3;background:var(--st-head-bg)}
 .meal-card{background:#fff;border:1px solid var(--tbl-border);border-radius:8px;padding:12px;margin-bottom:14px;max-width:100%;overflow:hidden;box-sizing:border-box}
 .meal-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:9px}
 .meal-ttl{font-size:13px;letter-spacing:.05em;color:var(--ac);font-weight:700;white-space:nowrap;word-break:keep-all}
