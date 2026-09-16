@@ -539,7 +539,7 @@ function renderShHiddenSet(){
   var box=g("shHiddenSet");var list=g("shHiddenSetList");if(!box||!list)return;
   var ids=(shHiddenBase||[]).filter(function(id){return !!SH_BASE_INFO[id];});
   if(!ids.length){box.style.display="none";list.innerHTML="";return;}
-  box.style.display="block";
+  box.style.display="flex";
   list.innerHTML=ids.map(function(id){
     var lbl=rowLabels[SH_BASE_INFO[id].key]||SH_BASE_INFO[id].label;
     return "<button type='button' onclick='restoreBaseRowShort(\""+id+"\")' style='border:1px solid var(--border);background:#fff;border-radius:99px;padding:4px 12px;font-size:13px;color:var(--ac);cursor:pointer;white-space:nowrap'>+ "+dlEsc(lbl)+" 다시 표시</button>";

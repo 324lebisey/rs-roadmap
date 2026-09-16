@@ -14,7 +14,7 @@
 
 
 
-<link rel="stylesheet" href="css/style.css?v=20260915-daily-entry-v3">
+<link rel="stylesheet" href="css/style.css?v=20260917-monthly3">
 </head>
 <body class="crimson">
 <div id="navHandle" onclick="openNav()"></div>
@@ -415,16 +415,23 @@
 <!-- 자산 -->
 <div id="assets" class="section">
   <div id="assetMotto" style="font-size:14px;color:var(--ac);font-weight:600;margin-bottom:12px;line-height:1.5">부자되는 길의 첫걸음은 나의 자산 파악부터!</div>
-  <div class="empty-guide" id="gd-assets">💡 <b>프로젝트 탭에서 먼저</b> 참여 중인 프로젝트와 투자금을 입력하면 여기에 <b>자동 합산</b>돼요. 현금·예적금·주식 등 나머지는 아래 <b>+ 항목 추가</b>로 직접 넣으세요.</div>
-  <div class="hint">전체 자산을 유형별로 정리하세요. 금액은 <b>원 단위</b>로 정확히 입력해요(표시는 만원, 예: 5000000 = 500만원). 원하면 장기 로드맵 시작 자산에 반영할 수 있어요.</div>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-    <div style="font-size:14px">총 자산 <b id="assetTotal" style="color:var(--ac);font-size:18px">0만원</b></div>
-    <button type="button" class="btn btn-ol" onclick="addAsset()" style="font-size:13px;padding:6px 12px">+ 항목 추가</button>
+  <div class="empty-guide" id="gd-assets">💡 <b>프로젝트 탭에서 먼저</b> 참여 중인 프로젝트와 투자금을 입력하면 여기에 <b>자동 합산</b>돼요.<br>현금·예적금·주식 등 나머지는 <b>+ 항목 추가</b>로 직접 넣으세요. 금액은 <b>원 단위</b>로 넣고, 합계는 만원으로 보여줘요.</div>
+  <div class="as-top">
+    <div class="as-top-l">
+      <div class="as-top-k">총 자산</div>
+      <div id="assetTotal" class="as-top-v">0만원</div>
+      <div id="assetTotalSub" class="as-top-sub"></div>
+    </div>
+    <div class="as-top-r">
+      <button type="button" class="btn btn-ol" onclick="addAsset()" style="font-size:13px;padding:6px 12px">+ 항목 추가</button>
+      <button type="button" class="as-link" onclick="reflectAssetsToRoadmap()">장기 로드맵 시작 자산에 반영 ›</button>
+    </div>
   </div>
   <div>
-  <div style="overflow-x:auto;margin-bottom:18px"><table id="assetTable" style="width:100%;border-collapse:collapse"></table></div>
+  <div style="margin-bottom:18px"><div id="assetTable"></div></div>
   <div id="assetTrackSummary"></div>
-  <div style="background:#fff;border:1px solid var(--tbl-border);border-radius:8px;padding:14px;margin-bottom:16px;height:260px"><canvas id="assetChart"></canvas></div>
+  <div id="assetChartCap" class="as-chartcap"></div>
+  <div style="background:#fff;border:1px solid var(--tbl-border);border-radius:8px;padding:14px;margin-bottom:16px;height:230px;max-width:460px;margin-left:auto;margin-right:auto"><canvas id="assetChart"></canvas></div>
   </div>
   <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 10px;flex-wrap:wrap;gap:8px">
     <div id="assetHistHead" style="font-size:14px;font-weight:700">📈 자산 흐름</div>
@@ -432,7 +439,6 @@
   </div>
   <div id="assetHistBox"></div>
   <div style="background:#fff;border:1px solid var(--tbl-border);border-radius:8px;padding:14px;margin-bottom:16px;height:220px"><canvas id="assetTrendChart"></canvas></div>
-  <button type="button" class="btn btn-bk" onclick="reflectAssetsToRoadmap()" style="font-size:13px">📌 장기 로드맵 시작 자산에 반영</button>
   <div class="modal-bg" id="assetTypeModal" onclick="if(event.target===this)closeM('assetTypeModal')">
     <div class="modal" style="max-width:320px">
       <h3>새 유형 추가</h3>
@@ -478,12 +484,13 @@
     <button class="btn btn-ol" onclick="addCustomRow('short')">+ 항목 추가</button>
     <div style="position:relative">
       <button class="btn btn-ol" id="tblSetBtn-sh" onclick="toggleTblSet('sh')" title="표 설정">⚙ 표 설정</button>
-      <div id="tblSet-sh" class="tbl-set-panel" style="display:none;position:fixed;background:#fff;border:1px solid var(--tbl-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.14);padding:12px;z-index:40;min-width:188px">
-        <div style="display:flex;flex-direction:column;gap:11px;align-items:flex-start">
-          <div style="display:flex;align-items:center;gap:6px"><span style="color:#888;font-size:13px">표 단위</span><button id="shUnitWon" class="unit-btn" onclick="setShUnit(1)">원</button><button id="shUnitMan" class="unit-btn" onclick="setShUnit(10000)">만원</button></div>
-          <div class="blur-row"><input type="checkbox" id="shBlur" onchange="renderShort()"><label for="shBlur" style="cursor:pointer">금액 모자이크</label></div>
-          <button class="btn btn-bk" onclick="copyTbl('shCapture')">표 복사</button>
-          <div id="shHiddenSet" style="display:none;width:100%;border-top:1px solid var(--tbl-border);padding-top:10px"><div style="color:#888;font-size:13px;margin-bottom:7px">숨긴 항목</div><div id="shHiddenSetList" style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"></div></div>
+      <div id="tblSet-sh" class="tbl-set-panel" style="display:none;position:fixed;background:#fff;border:1px solid var(--tbl-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.14);padding:12px 16px;z-index:40;min-width:200px">
+        <div class="ln">
+          <div class="ln-rows">
+            <div class="ln-row"><span class="ln-k">표 단위</span><span class="ln-ctl"><span class="ln-seg"><button type="button" id="shUnitWon" onclick="setShUnit(1)">원</button><button type="button" id="shUnitMan" onclick="setShUnit(10000)">만원</button></span></span></div>
+            <div id="shHiddenSet" class="ln-row" style="display:none;flex-direction:column;align-items:flex-start;gap:7px"><div style="color:#888;font-size:13px">숨긴 항목</div><div id="shHiddenSetList" style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"></div></div>
+            <div class="ln-row"><label class="blur-row" style="padding-bottom:0"><input type="checkbox" id="shBlur" onchange="renderShort()">금액 모자이크</label><span class="ln-ctl"><button class="btn btn-bk" onclick="copyTbl('shCapture')" style="font-size:13px;padding:5px 12px">표 복사</button></span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -526,11 +533,12 @@
     <button class="btn btn-ol" onclick="openChildModal()">+ 자녀 나이 추가</button><div class="child-bar" id="childBarMid" style="margin-top:6px"></div>
     <div style="position:relative">
       <button class="btn btn-ol" id="tblSetBtn-md" onclick="toggleTblSet('md')" title="표 설정">⚙ 표 설정</button>
-      <div id="tblSet-md" class="tbl-set-panel" style="display:none;position:fixed;background:#fff;border:1px solid var(--tbl-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.14);padding:12px;z-index:40;min-width:188px">
-        <div style="display:flex;flex-direction:column;gap:11px;align-items:flex-start">
-          <div style="display:flex;align-items:center;gap:6px"><span style="color:#888;font-size:13px">표 단위</span><button id="mdUnitWon" class="unit-btn" onclick="setMdUnit(1)">원</button><button id="mdUnitMan" class="unit-btn" onclick="setMdUnit(10000)">만원</button></div>
-          <div class="blur-row"><input type="checkbox" id="mdBlur" onchange="renderMid()"><label for="mdBlur" style="cursor:pointer">금액 모자이크</label></div>
-          <button class="btn btn-bk" onclick="copyTbl('mdCapture')">표 복사</button>
+      <div id="tblSet-md" class="tbl-set-panel" style="display:none;position:fixed;background:#fff;border:1px solid var(--tbl-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.14);padding:12px 16px;z-index:40;min-width:200px">
+        <div class="ln">
+          <div class="ln-rows">
+            <div class="ln-row"><span class="ln-k">표 단위</span><span class="ln-ctl"><span class="ln-seg"><button type="button" id="mdUnitWon" onclick="setMdUnit(1)">원</button><button type="button" id="mdUnitMan" onclick="setMdUnit(10000)">만원</button></span></span></div>
+            <div class="ln-row"><label class="blur-row" style="padding-bottom:0"><input type="checkbox" id="mdBlur" onchange="renderMid()">금액 모자이크</label><span class="ln-ctl"><button class="btn btn-bk" onclick="copyTbl('mdCapture')" style="font-size:13px;padding:5px 12px">표 복사</button></span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -582,13 +590,14 @@
     <button class="btn btn-ol" onclick="openChildModal()">+ 자녀 나이 추가</button>
     <div style="position:relative">
       <button class="btn btn-ol" id="tblSetBtn-lg" onclick="toggleTblSet('lg')" title="표 설정">⚙ 표 설정</button>
-      <div id="tblSet-lg" class="tbl-set-panel" style="display:none;position:fixed;background:#fff;border:1px solid var(--tbl-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.14);padding:12px;z-index:40;min-width:188px">
-        <div style="display:flex;flex-direction:column;gap:11px;align-items:flex-start">
-          <div style="display:flex;align-items:center;gap:6px"><span style="color:#888;font-size:13px">표 단위</span><button id="lgUnitWon" class="unit-btn" onclick="setLgUnit(1)">원</button><button id="lgUnitMan" class="unit-btn" onclick="setLgUnit(10000)">만원</button></div>
-          <div class="blur-row"><input type="checkbox" id="blur" onchange="recalc()"><label for="blur" style="cursor:pointer">금액 모자이크</label></div>
-          <div class="blur-row" style="flex-wrap:wrap"><input type="checkbox" id="reOnChk" onchange="setReOn(this.checked)"><label for="reOnChk" style="cursor:pointer;white-space:nowrap">내 집 갈아타기</label><button id="reViewBtn" class="unit-btn" style="display:none;white-space:nowrap" onclick="toggleReView()">간단히</button></div>
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span style="color:#888;font-size:13px;white-space:nowrap">자산&nbsp;구역</span><select id="atPreset" style="font-size:13px;padding:3px 5px;border:1px solid var(--tbl-border);border-radius:4px;max-width:150px"></select><button class="btn btn-ol" style="white-space:nowrap;padding:3px 9px" onclick="abAddFromPicker()">추가</button></div>
-          <button class="btn btn-bk" onclick="copyTbl('longCapture')">표 복사</button>
+      <div id="tblSet-lg" class="tbl-set-panel" style="display:none;position:fixed;background:#fff;border:1px solid var(--tbl-border);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.14);padding:12px 16px;z-index:40;min-width:200px">
+        <div class="ln">
+          <div class="ln-rows">
+            <div class="ln-row"><span class="ln-k">표 단위</span><span class="ln-ctl"><span class="ln-seg"><button type="button" id="lgUnitWon" onclick="setLgUnit(1)">원</button><button type="button" id="lgUnitMan" onclick="setLgUnit(10000)">만원</button></span></span></div>
+            <div class="ln-row" style="flex-wrap:wrap"><label class="blur-row" style="padding-bottom:0"><input type="checkbox" id="reOnChk" onchange="setReOn(this.checked)">내 집 갈아타기</label><button id="reViewBtn" class="unit-btn" style="display:none;white-space:nowrap;margin-left:auto" onclick="toggleReView()">간단히</button></div>
+            <div class="ln-row" style="flex-wrap:wrap"><span class="ln-ctl" style="width:100%"><select id="atPreset" class="ln-in" style="flex:1"></select><button class="btn btn-ol" style="white-space:nowrap;padding:3px 9px" onclick="abAddFromPicker()">추가</button></span></div>
+            <div class="ln-row"><label class="blur-row" style="padding-bottom:0"><input type="checkbox" id="blur" onchange="recalc()">금액 모자이크</label><span class="ln-ctl"><button class="btn btn-bk" onclick="copyTbl('longCapture')" style="font-size:13px;padding:5px 12px">표 복사</button></span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -670,22 +679,22 @@
   <div class="month-nav">
     <span class="mt">월간 회고</span>
     <div class="month-selector">
-      <select id="monthYear" onchange="loadMonthlyData()"></select>
-      <select id="monthMonth" onchange="loadMonthlyData()"></select>
+      <span class="month-period"><select id="monthYear" onchange="loadMonthlyData()"></select><select id="monthMonth" onchange="loadMonthlyData()"></select></span>
+      <span class="month-status" id="monthStatus"></span>
       <div class="monthly-action-btns" style="display:contents">
-        <button class="btn btn-ac" onclick="copyAnswers()">전체 복사</button>
-        <button class="btn btn-bk" onclick="saveMonthly()">이달 저장</button>
-        <button class="btn btn-ol" onclick="clearMonthly()" style="color:var(--ac);border-color:var(--ac)">전체 비우기</button>
-        <button class="btn btn-ol" onclick="openYearRecap()" id="yearRecapBtn" style="white-space:nowrap"><span id="yearRecapIcon">📖</span> 올해 돌아보기</button>
+        <button class="btn btn-ac mr-copy" onclick="copyAnswers()">전체 복사</button>
+        <button class="btn btn-bk mr-save" onclick="saveMonthly()">이달 저장</button>
+        <button class="btn btn-ol mr-clear" onclick="clearMonthly()">전체 비우기</button>
+        <button class="btn btn-ol mr-recap" onclick="openYearRecap()" id="yearRecapBtn" style="white-space:nowrap"><span id="yearRecapIcon">📖</span>&nbsp;올해 돌아보기</button>
       </div>
-      <div style="position:relative;display:inline-block">
-        <button class="btn btn-ol monthly-action-btns" onclick="toggleMonthHistory()" id="historyToggleBtn">📂 불러오기</button>
+      <div class="mr-hist" style="position:relative;display:inline-block">
+        <button class="btn btn-ol monthly-action-btns" onclick="toggleMonthHistory()" id="historyToggleBtn">📂&nbsp;불러오기<span class="mr-chev"> ▾</span></button>
         <div id="monthHistoryDrop" style="display:none;position:absolute;right:0;top:110%;min-width:220px;background:#fff;border:1px solid var(--tbl-border);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200;max-height:280px;overflow-y:auto">
           <div style="padding:8px 12px;font-size:13px;font-weight:700;color:var(--gray);border-bottom:1px solid var(--tbl-border)">저장된 회고 기록</div>
           <div id="monthHistoryList"></div>
         </div>
       </div>
-      <div style="position:relative;display:inline-block">
+      <div class="monthly-mobile-menu-wrap" style="position:relative;display:inline-block">
         <button class="btn btn-ol monthly-mobile-menu-btn" onclick="toggleMonthlyMobileMenu()" id="monthlyMobileMenuBtn">☰ 메뉴</button>
         <div id="monthlyMobileMenu" style="display:none;position:absolute;right:0;top:110%;min-width:180px;background:#fff;border:1px solid var(--tbl-border);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:200">
           <div class="mm-row" onclick="handleMobileMonthlyAction('copy')" style="padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--tbl-border);white-space:nowrap">전체 복사</div>
@@ -697,42 +706,41 @@
       </div>
     </div>
   </div>
-  <div class="month-badge" id="monthBadge"></div>
 <div id="monthDdRef"></div>
-<p class="hint" style="margin:4px 0 14px;line-height:1.7;font-size:14px">💡 모든 질문에 답할 필요 없어요. <strong>마음이 가는 질문만 골라 작성</strong>하면 돼요. 「전체 복사」를 누르면 <strong>작성한 답변만</strong> 복사돼요.</p>
+<p class="hint mr-hint">💡 모든 질문에 답할 필요 없어요. <strong>마음이 가는 질문만 골라 작성</strong>하면 돼요. 「전체 복사」를 누르면 <strong>작성한 답변만</strong> 복사돼요.</p>
     <div class="qs"><p class="qst">자산 &amp; 실행</p>
-    <div class="qb"><div class="qt"><span class="qn">01</span>이번 달 저축/투자 목표를 얼마나 달성했나요?</div><textarea class="qa" data-q="저축/투자 목표 달성도" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">02</span>예상치 못한 지출이 있었다면 무엇이었나요?</div><textarea class="qa" data-q="예상치 못한 지출" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">03</span>로드맵 대비 현재 자산은 앞서 있나요, 뒤처져 있나요?</div><textarea class="qa" data-q="로드맵 대비 자산 현황" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">04</span>이번 달 가장 잘한 재무적 결정은 무엇인가요?</div><textarea class="qa" data-q="가장 잘한 재무 결정" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">05</span>돌아간다면 다르게 했을 결정이 있나요?</div><textarea class="qa" data-q="다시 한다면 바꿀 결정" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">01</span>이번 달 저축/투자 목표를 얼마나 달성했나요?</div><textarea class="qa" rows="1" data-q="저축/투자 목표 달성도" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">02</span>예상치 못한 지출이 있었다면 무엇이었나요?</div><textarea class="qa" rows="1" data-q="예상치 못한 지출" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">03</span>로드맵 대비 현재 자산은 앞서 있나요, 뒤처져 있나요?</div><textarea class="qa" rows="1" data-q="로드맵 대비 자산 현황" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">04</span>이번 달 가장 잘한 재무적 결정은 무엇인가요?</div><textarea class="qa" rows="1" data-q="가장 잘한 재무 결정" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">05</span>돌아간다면 다르게 했을 결정이 있나요?</div><textarea class="qa" rows="1" data-q="다시 한다면 바꿀 결정" placeholder="답변..." oninput="ar(this)"></textarea></div>
   </div>
   <div class="qs"><p class="qst">시장 &amp; 프로젝트</p>
-    <div class="qb"><div class="qt"><span class="qn">06</span>내 투자에 영향을 준 외부 변화가 있었나요? (금리, 환율, 부동산 등)</div><textarea class="qa" data-q="외부 시장 변화" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">07</span>참여 중인 프로젝트에서 주목할 만한 변화가 있었나요?</div><textarea class="qa" data-q="프로젝트 변화" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">08</span>요즘 눈여겨보고 있는 새로운 투자 기회가 있나요?</div><textarea class="qa" data-q="주목하는 투자 기회" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">09</span>이번 달 가장 인상 깊었던 경제/투자 뉴스는 무엇인가요?</div><textarea class="qa" data-q="인상 깊은 뉴스" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">06</span>내 투자에 영향을 준 외부 변화가 있었나요? (금리, 환율, 부동산 등)</div><textarea class="qa" rows="1" data-q="외부 시장 변화" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">07</span>참여 중인 프로젝트에서 주목할 만한 변화가 있었나요?</div><textarea class="qa" rows="1" data-q="프로젝트 변화" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">08</span>요즘 눈여겨보고 있는 새로운 투자 기회가 있나요?</div><textarea class="qa" rows="1" data-q="주목하는 투자 기회" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">09</span>이번 달 가장 인상 깊었던 경제/투자 뉴스는 무엇인가요?</div><textarea class="qa" rows="1" data-q="인상 깊은 뉴스" placeholder="답변..." oninput="ar(this)"></textarea></div>
   </div>
   <div class="qs"><p class="qst">심리 &amp; 태도</p>
-    <div class="qb"><div class="qt"><span class="qn">10</span>이번 달 가장 불안했던 순간과 어떻게 대응했나요?</div><textarea class="qa" data-q="불안했던 순간과 대응" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">11</span>반대로 가장 확신이 생긴 순간은요?</div><textarea class="qa" data-q="확신이 생긴 순간" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">12</span>투자에 대한 나의 감정 온도는 몇 도인가요? (0 냉정 ~ 100 과열)</div><textarea class="qa" data-q="감정 온도" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">13</span>흔들리지 않기 위해 스스로에게 되새긴 원칙이 있나요?</div><textarea class="qa" data-q="되새긴 원칙" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">14</span>커뮤니티 멤버의 사례 중 나에게 자극이 된 것이 있었나요?</div><textarea class="qa" data-q="커뮤니티 자극" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">10</span>이번 달 가장 불안했던 순간과 어떻게 대응했나요?</div><textarea class="qa" rows="1" data-q="불안했던 순간과 대응" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">11</span>반대로 가장 확신이 생긴 순간은요?</div><textarea class="qa" rows="1" data-q="확신이 생긴 순간" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">12</span>투자에 대한 나의 감정 온도는 몇 도인가요? (0 냉정 ~ 100 과열)</div><textarea class="qa" rows="1" data-q="감정 온도" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">13</span>흔들리지 않기 위해 스스로에게 되새긴 원칙이 있나요?</div><textarea class="qa" rows="1" data-q="되새긴 원칙" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">14</span>커뮤니티 멤버의 사례 중 나에게 자극이 된 것이 있었나요?</div><textarea class="qa" rows="1" data-q="커뮤니티 자극" placeholder="답변..." oninput="ar(this)"></textarea></div>
   </div>
   <div class="qs"><p class="qst">30년 로드맵</p>
-    <div class="qb"><div class="qt"><span class="qn">15</span>로드맵에서 수정하고 싶다고 느낀 부분이 있었나요?</div><textarea class="qa" data-q="로드맵 수정 사항" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">16</span>이번 달 나의 하루하루가 로드맵이 가리키는 방향으로 가고 있었나요?</div><textarea class="qa" data-q="로드맵 방향으로 가고 있나" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">17</span>다시 펼친 로드맵에서 가장 설레는 미래의 한 장면은 무엇인가요?</div><textarea class="qa" data-q="설레는 미래 장면" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">18</span>30년 로드맵의 이유를 다시 떠올렸을 때, 지금 나에게 하고 싶은 말은요?</div><textarea class="qa" data-q="나에게 하고 싶은 말" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">15</span>로드맵에서 수정하고 싶다고 느낀 부분이 있었나요?</div><textarea class="qa" rows="1" data-q="로드맵 수정 사항" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">16</span>이번 달 나의 하루하루가 로드맵이 가리키는 방향으로 가고 있었나요?</div><textarea class="qa" rows="1" data-q="로드맵 방향으로 가고 있나" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">17</span>다시 펼친 로드맵에서 가장 설레는 미래의 한 장면은 무엇인가요?</div><textarea class="qa" rows="1" data-q="설레는 미래 장면" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">18</span>30년 로드맵의 이유를 다시 떠올렸을 때, 지금 나에게 하고 싶은 말은요?</div><textarea class="qa" rows="1" data-q="나에게 하고 싶은 말" placeholder="답변..." oninput="ar(this)"></textarea></div>
   </div>
   <div class="qs" id="retroNextPlan"><p class="qst">다음 달 계획</p>
-    <div class="qb"><div class="qt"><span class="qn">19</span>다음 달 가장 집중할 한 가지 행동은 무엇인가요?</div><textarea class="qa" data-q="다음 달 핵심 행동" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">20</span>지금 당장은 어렵지만 계속 고민 중인 것이 있다면요?</div><textarea class="qa" data-q="계속 고민 중인 것" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">19</span>다음 달 가장 집중할 한 가지 행동은 무엇인가요?</div><textarea class="qa" rows="1" data-q="다음 달 핵심 행동" placeholder="답변..." oninput="ar(this)"></textarea></div>
+    <div class="qb"><div class="qt"><span class="qn">20</span>지금 당장은 어렵지만 계속 고민 중인 것이 있다면요?</div><textarea class="qa" rows="1" data-q="계속 고민 중인 것" placeholder="답변..." oninput="ar(this)"></textarea></div>
   </div>
   <div class="qs">
     <p class="qst" style="color:var(--ac)">세상에서 가장 사랑하는 나</p>
-        <div class="qb"><div class="qt"><span class="qn" style="color:var(--ac);border-color:var(--ac)">21</span><span style="color:var(--ac);font-weight:700">이번 달 나를 칭찬한다면?</span></div><textarea class="qa" data-q="이번 달 나를 칭찬한다면" placeholder="답변..." oninput="ar(this)"></textarea></div>
+        <div class="qb"><div class="qt"><span class="qn" style="color:var(--ac);border-color:var(--ac)">21</span><span style="color:var(--ac);font-weight:700">이번 달 나를 칭찬한다면?</span></div><textarea class="qa" rows="1" data-q="이번 달 나를 칭찬한다면" placeholder="답변..." oninput="ar(this)"></textarea></div>
   </div>
   <div class="history-list" id="historyList"></div>
 </div>
@@ -971,10 +979,10 @@
 </div></div>
 <div id="rsPromptMod" class="modal-bg" onclick="if(event.target===this)closeM('rsPromptMod')"><div class="modal" style="max-width:340px"><h3 id="rsPromptTitle" style="margin:0 0 10px;font-size:15px;word-break:keep-all"></h3><div id="rsPromptDesc" style="font-size:13px;color:var(--gray);line-height:1.55;margin-bottom:10px;word-break:keep-all;display:none"></div><div id="rsPromptBody" style="margin-bottom:16px"></div><div class="mf"><button class="btn btn-bk" onclick="rsPromptOk()" style="white-space:nowrap">확인</button><button class="btn btn-ol" onclick="closeM('rsPromptMod')" style="white-space:nowrap">취소</button></div></div></div>
 <div id="rsConfirmMod" class="modal-bg" onclick="if(event.target===this)closeM('rsConfirmMod')"><div class="modal" style="max-width:320px"><h3 style="margin:0 0 12px;font-size:15px">확인</h3><div id="rsConfirmMsg" style="font-size:13px;white-space:pre-line;line-height:1.6;margin-bottom:16px"></div><div class="mf"><button class="btn btn-bk" onclick="rsConfirmYes()">확인</button><button class="btn btn-ol" onclick="closeM('rsConfirmMod')">취소</button></div></div></div>
-  <script src="js/app-core.js?v=20260914-js-split"></script>
-  <script src="js/app-roadmap.js?v=20260914-js-split"></script>
-  <script src="js/app-storage.js?v=20260914-js-split"></script>
-  <script src="js/app-daily.js?v=20260914-consolidated"></script>
+  <script src="js/app-core.js?v=20260917-asset-ln12"></script>
+  <script src="js/app-roadmap.js?v=20260917-monthly3"></script>
+  <script src="js/app-storage.js?v=20260917-tblset1"></script>
+  <script src="js/app-daily.js?v=20260917-monthly1"></script>
   <script src="js/app.js?v=20260914-mobile-planner"></script>
 </body>
 </html>

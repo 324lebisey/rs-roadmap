@@ -215,7 +215,7 @@ function projMaturityStatus(p){
   else{var _tm=getProjTerm(p);if(_tm&&_tm.end&&ds>_tm.end)return '만기';}
   return '';
 }
-function dismissProjAsset(pid){if(!confirm('이 항목을 자산 목록에서 뺄까요?\n(프로젝트 기록과 지난 수익은 그대로 남아요)'))return;projAssetHide[pid]=true;renderAssets();save();}
+function dismissProjAsset(pid){rsConfirm('이 항목을 자산 목록에서 뺄까요?§§프로젝트 기록과 지난 수익은 그대로 남아요.',function(){projAssetHide[pid]=true;renderAssets();save();});}
 // 한 프로젝트의 (yr,mi) 정산월 수익(원) — getMonthlyProjectWon에서 동작 동일하게 추출(누적 replay 공용)
 function projMonthWon(p,yr,mi){
     const inv=(parseFloat(projInvest[p.id])||0)*10000;  // 투자금 만원→원
@@ -1921,8 +1921,7 @@ function loadMonthlyData(){
   const saved=monthlyArchive[key];
   const tas=document.querySelectorAll(".qa");
   tas.forEach((t,i)=>{t.value=saved?saved[i]||"":"";ar(t);});
-  const y=g("monthYear").value,m=g("monthMonth").value;
-  g("monthBadge").textContent="📅 "+y+"년 "+m+"월 회고"+(saved?" · 저장된 기록 있음":" · 미작성");
+  setMonthStatus(saved?"저장된 기록 있음":"미작성",!!saved);
   renderMonthDdRef();
   renderHistoryList();
   updateYearRecapButtonState();
@@ -1931,10 +1930,12 @@ function saveMonthly(){
   const key=getMonthKey();
   monthlyArchive[key]=[...document.querySelectorAll(".qa")].map(t=>t.value);
   save();showToast("✓ "+g("monthYear").value+"년 "+g("monthMonth").value+"월 저장됨");
-  g("monthBadge").textContent="📅 "+g("monthYear").value+"년 "+g("monthMonth").value+"월 회고 · 저장됨";
+  setMonthStatus("저장됨",true);
   renderHistoryList();
   updateYearRecapButtonState();
 }
+/* 월간 회고 헤더의 상태 글자 */
+function setMonthStatus(t,on){var s=g("monthStatus");if(!s)return;s.textContent=t;s.classList.toggle("on",on);}
 function renderHistoryList(){
   const keys=Object.keys(monthlyArchive).sort().reverse();
   const el=g("historyList");
@@ -2525,7 +2526,7 @@ function projDoneCompactHtml(p,d){
   if(ci&&!ci.unknown&&ci.won>0)meta.push("누적 수익 <b style='color:var(--ac);white-space:nowrap'>"+ci.won.toLocaleString()+"원</b> · 원금 대비 "+(Math.round(ci.pct*10)/10)+"%");
   return "<div class='proj-row' data-done-pid='"+p.id+"' style='opacity:.85'>"
     +"<div class='proj-done-desktop'><div class='proj-row-header'>"
-      +"<span class='proj-hd-mid' style='font-weight:600;font-size:13px;word-break:keep-all'>"+nm+"</span>"+badge
+      +"<span class='proj-hd-mid' style='font-weight:700;font-size:14.5px;word-break:keep-all'>"+nm+"</span>"+badge
       +"<span class='proj-hd-act'><button class='btn btn-ol' style='white-space:nowrap;padding:3px 10px;font-size:12px' onclick='toggleProjDoneCard("+p.id+")'>수정</button>"
       +"<button class='rm-btn' onclick='rmP("+p.id+")'>×</button></span>"
     +"</div>"+(meta.length?("<div style='font-size:13px;color:var(--gray);word-break:keep-all;line-height:1.5'>"+meta.join(' · ')+"</div>"):'')+"</div>"
@@ -2978,7 +2979,7 @@ function projCardHtml(p,hdrBtn){
       <div class='proj-row-header'>
         <span class='proj-hd-no' style='color:${(p.user&&(!p.no||p.no==="★"))?"var(--ac)":"var(--gray)"}'><span>${(p.user&&(!p.no||p.no==="★"))?"직접":"No."+p.no}</span><span class='proj-mobile-dday'>${_dbadge}</span></span>
         <div class='proj-card-main'>
-          <span class='proj-hd-mid'><span style='font-weight:600;font-size:13px;word-break:keep-all'>${p.name}${p.nick?` <span style="font-size:13px;color:var(--gray);font-weight:400">· ${p.nick}</span>`:""}</span>${projOwnerOf(p.id)?`<span class='proj-own'>${dlEsc(projOwnerOf(p.id))}</span>`:""}${projIncluded(p.id)?"":`<span class='proj-excl segtip' tabindex='0' data-tip='로드맵·자산 합계에 넣지 않고 이 탭에서 관리만 해요'>관리만</span>`}<span class='proj-desktop-dday'>${_dbadge}</span></span>
+          <span class='proj-hd-mid'><span style='font-weight:700;font-size:14.5px;word-break:keep-all'>${p.name}${p.nick?` <span style="font-size:13px;color:var(--gray);font-weight:400">· ${p.nick}</span>`:""}</span>${projOwnerOf(p.id)?`<span class='proj-own'>${dlEsc(projOwnerOf(p.id))}</span>`:""}${projIncluded(p.id)?"":`<span class='proj-excl segtip' tabindex='0' data-tip='로드맵·자산 합계에 넣지 않고 이 탭에서 관리만 해요'>관리만</span>`}<span class='proj-desktop-dday'>${_dbadge}</span></span>
           ${p.rateNote?`<div class='proj-read'>${p.rateNote}</div>`:""}
           ${projReadHtml(p)}
           <button type='button' class='proj-edit-t${_open?" on":""}' onclick='toggleProjEdit(${p.id})'>${_open?"편집 닫기 ∧":"편집 ∨"}</button>
@@ -3168,6 +3169,7 @@ function renderScenario(){
     const nc=document.createElement("canvas");nc.id="scenarioChart";nc.style="width:100%!important;height:260px!important";
     ctx.parentNode.replaceChild(nc,ctx);
     scenarioChart=new Chart(nc,{
+      platform:RsZoomPlatform||undefined,
       type:"line",
       data:{labels:chartLabels,datasets},
       options:{
