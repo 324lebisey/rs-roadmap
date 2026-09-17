@@ -153,6 +153,19 @@ function _projRateAtMk(p,mkStr){
   var m=mkStr&&mkStr.match(/^(\d{4})-(\d{2})$/); if(!m)return getEffectiveRate(p)||0;
   return projEffAt(p,parseInt(m[1],10),parseInt(m[2],10)-1,0,getEffectiveRate(p)||0).rate;
 }
+// 단기딜(월차별 수익률)까지 포함해 "지금" 적용 중인 수익률 하나를 뽑는다 — 자산 탭 표시용
+function projCurrentRatePct(p){
+  var fp=_freshP(p);
+  if((fp.termMonths||0)>0){
+    var r=shortRates(fp),n=fp.termMonths,sa=shortStartAbs(fp);
+    if(sa==null||!n)return 0;
+    var d=new Date();var k=(d.getFullYear()*12+d.getMonth())-sa+1; // 1-based 진행 회차
+    if(k<1)k=1; if(k>n)k=n;
+    return parseFloat(r[k-1])||0;
+  }
+  var ds=new Date();var mk=(typeof monthKey==='function')?monthKey(ds.getFullYear()+'-'+String(ds.getMonth()+1).padStart(2,'0')+'-'+String(ds.getDate()).padStart(2,'0')):'';
+  return _projRateAtMk(p,mk);
+}
 function _addInvSorted(pid){var a=projAddInv[pid];if(!a||!a.length)return [];
   return a.slice().filter(function(x){return x&&x.from;}).sort(function(a,b){return a.from<b.from?-1:(a.from>b.from?1:0);});}
 function projEffAt(p,yr,mi,basePrincipalWon,baseRate){
