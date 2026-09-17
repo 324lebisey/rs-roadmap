@@ -26,7 +26,7 @@ function downloadTemplate(kind){
   a.click();
   showToast(nm+" 양식을 받았어요. 값을 채워서 다시 불러오세요");
 }
-var RS_EXTRA_KEYS=["rs_shunit","rs_mdunit","rs_lgunit","rs_daily","rs_daily_cats","rs_daily_moods","rs_daily_budget","rs_daily_link","rs_daily_review","rs_daily_consume","rs_consume_empty","rs_assets","rs_asset_history","rs_cat_hidden","rs_fixed_due","rs_holidays","rs_help_hidden","rs_resist","rs_spend_rules","rs_spend_rules_on","rs_week_start","rs_month_start","rs_month_shortmode","rs_income","rs_income_cats","rs_income_map","rs_income_rm","rs_meal","rs_meal_on","rs_cal_layers","rs_special_plan","rs_nav_pin"];
+var RS_EXTRA_KEYS=["rs_shunit","rs_mdunit","rs_lgunit","rs_daily","rs_daily_cats","rs_daily_moods","rs_daily_budget","rs_daily_link","rs_daily_review","rs_daily_consume","rs_consume_empty","rs_assets","rs_asset_history","rs_cat_hidden","rs_fixed_due","rs_holidays","rs_help_hidden","rs_resist","rs_spend_rules","rs_spend_rules_on","rs_week_start","rs_month_start","rs_month_shortmode","rs_income","rs_income_cats","rs_income_map","rs_income_rm","rs_meal","rs_meal_on","rs_cal_layers","rs_special_plan","rs_nav_pin","rs_rmtab","rs_default_tab"];
 // ── 구글 드라이브 저장/불러오기 (2단계) — 클라이언트 ID는 주인장이 발급해 넣을 때까지 빈 문자열 = 기능 전체 비활성 ──
 var DRIVE_CLIENT_ID="617085954049-ierh9liphmhhn11r352gh9or74k60hj7.apps.googleusercontent.com";
 // ── 백업 리마인드 (마지막 백업 후 경과 알림) ─────────────
@@ -115,7 +115,9 @@ function importData(){
     r.onload=ev=>{
       try{
         var parsed=JSON.parse(ev.target.result); // 유효성 검사
-        _rsApplyPayload(parsed);
+        rsConfirm(f.name+" 파일로 되돌릴까요?\n지금 이 기기의 기록은 모두 이 파일 내용으로 바뀌어요.\n되돌릴 수 없어요.",function(){
+          _rsApplyPayload(parsed);
+        });
       }catch(err){alert("유효하지 않은 백업 파일입니다.");}
     };
     r.readAsText(f);
@@ -296,19 +298,19 @@ function showImportReview(){
   var log=lastImportLog,h="";
   if(log.std&&log.std.length){
     h+="<p style='font-size:13px;font-weight:700;color:var(--ac);margin:0 0 4px'>✅ 표준 행 ("+log.std.length+"개)</p>";
-    log.std.forEach(function(s){h+="<div style='font-size:13px;color:var(--gray);padding:1px 0 1px 10px'>"+s+"</div>";});
+    log.std.forEach(function(s){h+="<div style='font-size:13px;color:var(--gray);padding:1px 0 1px 10px'>"+dlEsc(s)+"</div>";});
   }
   if(log.removed&&log.removed.length){
     h+="<p style='font-size:13px;font-weight:700;color:#aaa;margin:8px 0 4px'>🗑 중복 제거됨 — 계산값과 일치 ("+log.removed.length+"개)</p>";
     log.removed.forEach(function(r,i){
-      h+="<div style='display:flex;align-items:center;gap:6px;padding:2px 0 2px 10px'><input type='checkbox' id='rv"+i+"' style='accent-color:var(--ac)'><label for='rv"+i+"' style='font-size:13px;cursor:pointer'>"+r.label+" <span style='color:#ccc;text-decoration:line-through'>계산 중복</span></label></div>";
+      h+="<div style='display:flex;align-items:center;gap:6px;padding:2px 0 2px 10px'><input type='checkbox' id='rv"+i+"' style='accent-color:var(--ac)'><label for='rv"+i+"' style='font-size:13px;cursor:pointer'>"+lblHtml(r.label)+" <span style='color:#ccc;text-decoration:line-through'>계산 중복</span></label></div>";
     });
     h+="<p style='font-size:13px;color:var(--gray);margin:6px 0 0 10px'>체크하면 커스텀 행으로 되살릴 수 있어요</p>";
   }
   var userKept=(log.kept||[]).filter(function(k){return k.id!=="et_default";});
   if(userKept.length){
     h+="<p style='font-size:13px;font-weight:700;color:var(--ac);margin:8px 0 4px'>📋 커스텀 행 유지 ("+userKept.length+"개)</p>";
-    userKept.forEach(function(k){h+="<div style='font-size:13px;padding:1px 0 1px 10px'>"+k.label+"</div>";});
+    userKept.forEach(function(k){h+="<div style='font-size:13px;padding:1px 0 1px 10px'>"+lblHtml(k.label)+"</div>";});
   }
   g("importRevBody").innerHTML=h||"<p style='color:var(--gray);font-size:13px'>가져온 데이터가 없습니다.</p>";
   g("importRevMod").classList.add("open");
@@ -1214,12 +1216,14 @@ function resetAll(){
   var _msg;if(tab==="daily"){var _dd2=dailyDate||todayStr();var _pp=_dd2.split("-");if(dailyView==="week"){var _st=weekStartMon(_dd2);var _en=new Date(_st.getFullYear(),_st.getMonth(),_st.getDate()+6);_msg=(_st.getMonth()+1)+"/"+_st.getDate()+"–"+(_en.getMonth()+1)+"/"+_en.getDate()+" 주 예산을 초기화할까요?";}else if(dailyView==="month"){_msg=parseInt(_pp[1])+"월 예산을 초기화할까요?";}else if(dailyView==="special"){var _spYr=renderSpecialView._year||parseInt(_pp[0],10);_msg=_spYr+"년 특별지출 계획(이벤트·예산)을 초기화할까요?\n실제 지출 기록은 지워지지 않아요.";}else{_msg=parseInt(_pp[1])+"월 "+parseInt(_pp[2])+"일 기록과 예산을 초기화할까요?";}}else{_msg=nm+" 탭의 기록을 초기화할까요?";}rsConfirm(_msg+"\n진행 전 백업해두세요(⚙ 메뉴 › 💾 저장하기).\n되돌릴 수 없어요.",function(){
     if(tab==="short"){shData={savings:{},income:{},target:{}};customRowsShort=[];shRowOrder=[];renderShort();}
     else if(tab==="mid"){mdYR={};customRowsMid=[];g("mdY").value=new Date().getFullYear();g("mdA").value="";g("mdV").value="";renderMid();}
-    else if(tab==="long"){YR={};ET={};CS={};EI={};customRows=[{id:"et_default",label:"이벤트/목표"}];Object.keys(customData).forEach(function(k){delete customData[k];});if(g("sA"))g("sA").value="";if(g("sV"))g("sV").value="";children=[];renderCBar();recalc();renderMid();}
+    else if(tab==="long"){YR={};ET={};CS={};EI={};var _lgIds=customRows.map(function(r){return r.id+"_";});Object.keys(customData).forEach(function(k){if(_lgIds.some(function(p){return k.indexOf(p)===0&&/^\d{4}$/.test(k.slice(p.length));}))delete customData[k];});customRows=[{id:"et_default",label:"이벤트/목표"}];if(g("sA"))g("sA").value="";if(g("sV"))g("sV").value="";renderCBar();recalc();renderMid();}
     else if(tab==="monthly"){clearMonthlyCore();}
     else if(tab==="daily"){var _dd=dailyDate||todayStr();if(dailyView==="week"){var _wk=weekKey(_dd);delete weeklyBudgetMap[_wk];delete catWeeklyPast[_wk];saveDailyBudget();}else if(dailyView==="month"){var _mk=monthKey(_dd);delete monthlyBudgetMap[_mk];if(_mk===monthKey(todayStr()))catMonthlyBudget={};else delete catMonthlyPast[_mk];saveDailyBudget();}else if(dailyView==="special"){var _spYr2=renderSpecialView._year||parseInt(_dd.slice(0,4),10);_doResetSpecialYear(_spYr2);}else{dailyData=dailyData.filter(function(e){return e.date!==_dd;});saveDaily();delete dailyBudgetMap[_dd];saveDailyBudget();}if(typeof renderDaily==="function")renderDaily();if(typeof renderActiveView==="function")renderActiveView();}
     else if(tab==="assets"){assets=[];saveAssets();if(typeof renderAssets==="function")renderAssets();}
     else if(tab==="projects"){SP=[];projInvest={};projRates={};document.querySelectorAll("#pOpts input[type=checkbox]").forEach(function(c){c.checked=false;});if(typeof renderSP==="function")renderSP();recalc();}
     save();showToast(nm+" 초기화 완료");
+    /* 자녀는 중기 표에도 쓰여서 장기 초기화에 묶지 않고 따로 묻는다(주인장 확정). 취소 = 그대로 */
+    if(tab==="long"&&children.length){rsConfirm("자녀 목록("+children.map(function(c){return c.name;}).join(", ")+")도 지울까요?\n중기 표에도 함께 쓰이는 정보예요.\n취소하면 그대로 남아요.",function(){children=[];renderCBar();renderMid();recalc();save();showToast("자녀 목록을 지웠어요");});}
   });
 }
 

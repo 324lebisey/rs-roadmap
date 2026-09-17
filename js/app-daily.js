@@ -3,7 +3,7 @@
 function todayStr(){var d=new Date();var m=String(d.getMonth()+1).padStart(2,'0');var dd=String(d.getDate()).padStart(2,'0');return d.getFullYear()+'-'+m+'-'+dd;}
 function loadDaily(){try{var v=JSON.parse(localStorage.getItem('rs_daily')||'null');dailyData=Array.isArray(v)?v:[];}catch(e){dailyData=[];}}
 function saveDaily(){try{lsSet('rs_daily',JSON.stringify(dailyData));}catch(e){}}
-function dlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function dlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function under10k(x){var u=[[1000,'천'],[100,'백'],[10,'십']];var s=[];for(var i=0;i<u.length;i++){var dd=Math.floor(x/u[i][0]);if(dd){s.push((dd===1?'':dd)+u[i][1]);x%=u[i][0];}}if(x)s.push(String(x));return s.join(' ');}
 function wonInWords(n){n=Math.floor(Math.abs(Number(n)||0));if(!n)return '';var eok=Math.floor(n/100000000);n%=100000000;var man=Math.floor(n/10000);var rest=n%10000;var p=[];if(eok)p.push(eok.toLocaleString()+'억');if(man)p.push((man===1&&eok===0?'':man.toLocaleString())+'만');if(rest)p.push(under10k(rest));return p.join(' ')+'원';}
 function updateAmountWords(){var el=g('dlAmount'),out=g('dlAmountWords');if(!el||!out)return;var raw=(el.value||'').replace(/,/g,'').trim();var n=raw===''?0:parseFloat(raw);out.textContent=(!n||isNaN(n))?'':((n<0?'환불 ':'')+wonInWords(n));}
@@ -19,7 +19,7 @@ function catGroupOf(cat){if(!dailyTree)loadDailyCats();if(dailyTree["고정"]&&d
 function loadDailyCats(){var v=null;try{v=JSON.parse(localStorage.getItem('rs_daily_cats')||'null');}catch(e){}dailyTree=dlMigrateCats(v);dailyCats=dlFlattenCats(dailyTree);}
 function saveDailyCats(){try{lsSet('rs_daily_cats',JSON.stringify(dailyTree));}catch(e){}}
 function dlSelLabel(){if(dlSelSub)return dlSelGroup+' › '+dlSelCat+' › '+dlSelSub;if(dlSelCat)return dlSelGroup+' › '+dlSelCat;return '분류 선택';}
-function updateCatBtn(){var s=g('dlCatPick');if(s)s.textContent=(dlSelCat?dlSelLabel():'');}
+function updateCatBtn(){var b=g('dlCatBtn');if(b)b.textContent=(dlSelCat?dlSelLabel():'분류 선택')+' ▾';}
 function renderCatOptions(){updateCatBtn();var m=g('catModal');if(m&&m.classList.contains('open'))renderCatTree();}
 function openCatModal(manage){dlCatManage=!!manage;var ttl=g('catModalTitle');if(ttl)ttl.textContent=dlCatManage?'분류 관리':'분류 선택';var m=g('catModal');if(!m)return;m.classList.add('open');renderCatTree();}
 function openCatManage(){openCatModal(true);}
@@ -195,8 +195,8 @@ function dismissFixedPlan(cat,sub){
     showToast('「'+nm+'」'+mealJosa(nm,'을','를')+' 예정에서 뺐어요.');
   });
 }
-function deleteDlCat(grp,cat){rsConfirm('대분류 "'+cat+'" 삭제할까요?\n기록은 남지만 합산에서 빠져요 — 월간 분류별 아래 "삭제된 분류"에서 영구 삭제할 수 있어요.',function(){if(!dailyTree)loadDailyCats();if(dailyTree[grp])delete dailyTree[grp][cat];delete catWeeklyBudget[cat];delete catMonthlyBudget[cat];[catMonthlyBudget,catWeeklyBudget].forEach(function(mm){Object.keys(mm).forEach(function(k){if(k.indexOf(cat+'::')===0)delete mm[k];});});[catWeeklyPast,catMonthlyPast].forEach(function(PM){Object.keys(PM).forEach(function(pk){var mm=PM[pk];if(!mm)return;delete mm[cat];Object.keys(mm).forEach(function(k){if(k.indexOf(cat+'::')===0)delete mm[k];});});});dailyCats=dlFlattenCats(dailyTree);saveDailyCats();saveDailyBudget();if(dlSelGroup===grp&&dlSelCat===cat){dlSelGroup=dlSelCat=dlSelSub='';updateCatBtn();}renderCatTree();renderActiveView();});}
-function deleteDlSub(grp,cat,sub){rsConfirm('세부 "'+sub+'" 삭제할까요?\n(기록은 보존돼요)',function(){if(!dailyTree)loadDailyCats();if(dailyTree[grp]&&dailyTree[grp][cat])dailyTree[grp][cat]=dailyTree[grp][cat].filter(function(s){return s!==sub;});delete catMonthlyBudget[subKey(cat,sub)];delete catWeeklyBudget[subKey(cat,sub)];[catWeeklyPast,catMonthlyPast].forEach(function(PM){Object.keys(PM).forEach(function(pk){if(PM[pk])delete PM[pk][subKey(cat,sub)];});});delete fixedDue[subKey(cat,sub)];saveFixedDue();saveDailyCats();saveDailyBudget();if(dlSelGroup===grp&&dlSelCat===cat&&dlSelSub===sub){dlSelSub='';updateCatBtn();}renderCatTree();renderActiveView();});}
+function deleteDlCat(grp,cat){rsConfirm('대분류 "'+cat+'" 삭제할까요?\n기록은 남지만 합산에서 빠져요 — 월간 분류별 아래 "삭제된 분류"에서 영구 삭제할 수 있어요.',function(){if(!dailyTree)loadDailyCats();if(dailyTree[grp])delete dailyTree[grp][cat];delete catWeeklyBudget[cat];delete catMonthlyBudget[cat];[catMonthlyBudget,catWeeklyBudget].forEach(function(mm){Object.keys(mm).forEach(function(k){if(k.indexOf(cat+'::')===0)delete mm[k];});});[[catWeeklyPast,curPKey('weekly')],[catMonthlyPast,curPKey('monthly')]].forEach(function(pr){var PM=pr[0];Object.keys(PM).forEach(function(pk){if(pk<pr[1])return;/* 지난 기간 예산은 보존(주인장 확정) */var mm=PM[pk];if(!mm)return;delete mm[cat];Object.keys(mm).forEach(function(k){if(k.indexOf(cat+'::')===0)delete mm[k];});});});dailyCats=dlFlattenCats(dailyTree);saveDailyCats();saveDailyBudget();if(dlSelGroup===grp&&dlSelCat===cat){dlSelGroup=dlSelCat=dlSelSub='';updateCatBtn();}renderCatTree();renderActiveView();});}
+function deleteDlSub(grp,cat,sub){rsConfirm('세부 "'+sub+'" 삭제할까요?\n(기록은 보존돼요)',function(){if(!dailyTree)loadDailyCats();if(dailyTree[grp]&&dailyTree[grp][cat])dailyTree[grp][cat]=dailyTree[grp][cat].filter(function(s){return s!==sub;});delete catMonthlyBudget[subKey(cat,sub)];delete catWeeklyBudget[subKey(cat,sub)];[[catWeeklyPast,curPKey('weekly')],[catMonthlyPast,curPKey('monthly')]].forEach(function(pr){var PM=pr[0];Object.keys(PM).forEach(function(pk){if(pk<pr[1])return;if(PM[pk])delete PM[pk][subKey(cat,sub)];});});delete fixedDue[subKey(cat,sub)];saveFixedDue();saveDailyCats();saveDailyBudget();if(dlSelGroup===grp&&dlSelCat===cat&&dlSelSub===sub){dlSelSub='';updateCatBtn();}renderCatTree();renderActiveView();});}
 function localDateStr(dt){var m=String(dt.getMonth()+1).padStart(2,'0');var dd=String(dt.getDate()).padStart(2,'0');return dt.getFullYear()+'-'+m+'-'+dd;}
 function weekStartMon(dateStr){var p=dateStr.split('-');var dt=new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2]));var off=(dt.getDay()-weekStartDay+7)%7;dt.setDate(dt.getDate()-off);return dt;}function weekDayNames(){var W=['일','월','화','수','목','금','토'];return W.slice(weekStartDay).concat(W.slice(0,weekStartDay));}function setWeekStartDay(v){var n=parseInt(v,10);if(isNaN(n)||n<0||n>6)n=1;weekStartDay=n;try{lsSet('rs_week_start',String(n));}catch(e){}if(typeof renderDaily==='function')renderDaily();if(typeof renderActiveView==='function')renderActiveView();}
 /* ── 월간 정산표에서 가져온 "월 요약" 기록(imp:'m', 그 달 1일에 배정) ──
@@ -356,7 +356,7 @@ function addDueHist(sk,mk){if(!fixedDue[sk])fixedDue[sk]={};if(!fixedDue[sk].day
 function setDueHist(sk,idx,field,val){if(!fixedDue[sk]||!fixedDue[sk].dayHist||!fixedDue[sk].dayHist[idx])return;if(field==='mk')fixedDue[sk].dayHist[idx].mk=val;else fixedDue[sk].dayHist[idx].prevDay=val?Math.min(31,Math.max(1,parseInt(val,10)||1)):'';saveFixedDue();_dueHistRerender();}
 function delDueHist(sk,idx){if(!fixedDue[sk]||!fixedDue[sk].dayHist)return;fixedDue[sk].dayHist.splice(idx,1);if(!fixedDue[sk].dayHist.length)delete fixedDue[sk].dayHist;saveFixedDue();_dueHistRerender();}
 function weekTotal(dateStr){var start=weekStartMon(dateStr);var s=0;for(var i=0;i<7;i++){var dt=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);s+=dayTotal(localDateStr(dt));}return s;}
-function commaInput(el){var v=(el.value||'').replace(/[^0-9]/g,'');el.value=v?Number(v).toLocaleString():'';}function loanMonthlyInterest(amt,rate,ds){ds=ds||todayStr();var y=parseInt(ds.slice(0,4),10),mo=parseInt(ds.slice(5,7),10);var dim=new Date(y,mo,0).getDate();return Math.floor((parseFloat(amt)||0)*(parseFloat(rate)||0)/100*dim/365);}
+function commaInput(el){var v=(el.value||'').replace(/[^0-9]/g,'');el.value=v?fmtComma(Number(v)):'';}function loanMonthlyInterest(amt,rate,ds){ds=ds||todayStr();var y=parseInt(ds.slice(0,4),10),mo=parseInt(ds.slice(5,7),10);var dim=new Date(y,mo,0).getDate();return Math.floor((parseFloat(amt)||0)*(parseFloat(rate)||0)/100*dim/365);}
 function addMonthsMk(mk,delta){var y=parseInt(mk.slice(0,4),10),m=parseInt(mk.slice(5,7),10)-1+delta;y+=Math.floor(m/12);m=((m%12)+12)%12;return y+'-'+String(m+1).padStart(2,'0');}
 function daysInMk(mk){var y=parseInt(mk.slice(0,4),10),m=parseInt(mk.slice(5,7),10);return new Date(y,m,0).getDate();}
 function prevMonthDays(mk){return daysInMk(addMonthsMk(mk,-1));}
@@ -668,7 +668,7 @@ function dlExtraColor(idx){var hue=Math.round((idx*137.508+47)%360);var light=(i
 function catColor(cat){if(cat==='미분류')return '#bbbbbb';if(!dailyCats)loadDailyCats();var i=dailyCats.indexOf(cat);if(i<0)return '#c8c8c8';var pal=dlPalette();if(i<pal.length)return pal[i];return dlExtraColor(i-pal.length);}
 function dlRgb(c){c=String(c).trim();if(c.charAt(0)==='#'){var h=c.slice(1);if(h.length===3)h=h.charAt(0)+h.charAt(0)+h.charAt(1)+h.charAt(1)+h.charAt(2)+h.charAt(2);return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}var m=c.match(/hsl\(\s*([\d.]+)[,\s]+([\d.]+)%[,\s]+([\d.]+)%/i);if(m){var H=(+m[1])/360,S=(+m[2])/100,L=(+m[3])/100;var q=L<0.5?L*(1+S):L+S-L*S;var p=2*L-q;var hue=function(t){if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};return [Math.round(hue(H+1/3)*255),Math.round(hue(H)*255),Math.round(hue(H-1/3)*255)];}var rm=c.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/i);if(rm)return [+rm[1],+rm[2],+rm[3]];return [140,140,140];}
 function dlCatChip(cat){var rgb=dlRgb(catColor(cat));var r=rgb[0],g=rgb[1],b=rgb[2];var bg='rgba('+r+','+g+','+b+',.14)';var tx='rgb('+Math.round(r*0.58)+','+Math.round(g*0.58)+','+Math.round(b*0.58)+')';return 'background:'+bg+';color:'+tx;}
-function recGroup(e){var grp=e.group;if(grp!=='고정'&&grp!=='변동'&&grp!=='특별')grp=catGroupOf(e.cat||e.category);if(grp!=='고정'&&grp!=='변동'&&grp!=='특별')grp='미분류';return grp;}
+function recGroup(e){var grp=e.group,c=e.cat||e.category;/* 저장된 그룹은 그 그룹에 분류가 아직 있을 때만 믿는다 — 분류를 옮기면 지난 기록도 새 그룹으로 */if(grp!=='고정'&&grp!=='변동'&&grp!=='특별'||!(dailyTree&&dailyTree[grp]&&dailyTree[grp][c]))grp=catGroupOf(c);if(grp!=='고정'&&grp!=='변동'&&grp!=='특별')grp='미분류';return grp;}
 function groupColor(grp){if(grp==='고정')return '#9AA7B8';if(grp==='변동')return ac();if(grp==='특별')return specialColor();return '#cfcfcf';}
 function stackedCatDatasets(dates){if(!dailyTree)loadDailyCats();var order=['고정','변동','특별','미분류'];var present={};dailyData.forEach(function(e){if(dates.indexOf(e.date)<0||dlIsMonthSum(e))return;var a=entrySpend(e);if(a>0)present[recGroup(e)]=true;});var groups=order.filter(function(gr){return present[gr];});return groups.map(function(gr){var data=dates.map(function(ds){return dailyData.reduce(function(s,e){if(e.date!==ds||dlIsMonthSum(e))return s;var a=entrySpend(e);if(a===0)return s;return s+(recGroup(e)===gr?a:0);},0);});return {label:(gr==='고정'?'고정':gr==='변동'?'변동':gr==='특별'?'특별':'미분류'),data:data,backgroundColor:groupColor(gr),borderRadius:3,stack:'spend'};});}
 function abbrWon(v){v=Number(v)||0;if(v>=10000){var m=v/10000;return (m>=10?Math.round(m):Math.round(m*10)/10)+'만';}return v.toLocaleString();}
@@ -780,7 +780,7 @@ function _prepHeaderless(rows){
   var maxc=0;rows.forEach(function(r){if(r&&r.length>maxc)maxc=r.length;});
   if(maxc<2){xlsErr='이 시트에서 항목·금액을 찾지 못했어요. 다른 시트를 골라보세요.';return false;}
   var txt=[],num=[];for(var c=0;c<maxc;c++){txt[c]=0;num[c]=0;}
-  rows.forEach(function(r){if(!r)return;for(var c=0;c<maxc;c++){var v=r[c];if(v==null||v==='')return;
+  rows.forEach(function(r){if(!r)return;for(var c=0;c<maxc;c++){var v=r[c];if(v==null||v==='')continue;
     if(_xamt(v)>0&&/^[\s0-9,.\-원₩]+$/.test(String(v)))num[c]++;
     else if(/[가-힣A-Za-z]/.test(String(v)))txt[c]++;
   }});
@@ -810,7 +810,7 @@ function _xlsUpdateCount(){var c=_xlsCounts();var nb=g('xlsNote');if(nb)nb.inner
 function toggleXlsRow(i){if(xlsRows[i])xlsRows[i].sel=!xlsRows[i].sel;_xlsUpdateCount();}
 function xlsToggleAll(){var c=_xlsCounts();var t=(c.sel<c.n);xlsRows.forEach(function(d){var won=_xamt(d.row[xlsSelCol]);if(won>0)d.sel=t;});renderExcelImport();}
 function setXlsCol(i){xlsSelCol=parseInt(i);renderExcelImport();}
-function _xlsMonLbl(){var dd=dailyDate||todayStr();var p=dd.split('-');return parseInt(p[0])+'년 '+parseInt(p[1])+'월';}
+function _xlsMonLbl(){var dd=dailyDate||todayStr();var p=monthKey(dd).split('-');return parseInt(p[0])+'년 '+parseInt(p[1])+'월';}
 function renderExcelImport(){
   if(!dailyTree)loadDailyCats();
   var monLbl=_xlsMonLbl();
@@ -1383,8 +1383,10 @@ function lgPlan(){
   yms.forEach(function(ym){
     var mm=asm.months[ym];var cen=lgExistCensus(ym);
     var row={ym:ym,mm:mm,cen:cen,sel:(lgMonSel[ym]!==false)};
-    row.recBlocked=(mm.srcM&&!mm.srcW&&(cen.iw>0||cen.man>0));
     row.wCnt=mm.wRecs.length+(lgOptSavings?mm.wSav.length:0);
+    /* 주간 표에서 실제로 넣을 기록이 있을 때만 「일별로 교체」 — 전부 건너뛴 달은 월간 요약을 지우지 않는다 */
+    row.useW=!!(mm.srcW&&row.wCnt>0);
+    row.recBlocked=(mm.srcM&&!row.useW&&(cen.iw>0||cen.man>0));
     var mExp=0,mSav=0,mBud=0;
     mm.mExp.forEach(function(it){if(it.amount>0)mExp++;if((it.budget||0)>0)mBud++;});
     mm.mSav.forEach(function(it){if(it.amount>0)mSav++;if(lgOptSavings&&(it.budget||0)>0)mBud++;});
@@ -1392,8 +1394,8 @@ function lgPlan(){
     mm.wRecs.forEach(function(rc){if(rc.ds>today)plan.future++;});
     mm.wSav.forEach(function(rc){if(rc.ds>today)plan.future++;});
     if(row.sel){
-      if(mm.srcW)plan.wN+=row.wCnt;
-      if(mm.srcM&&!mm.srcW&&!row.recBlocked){plan.mN+=mExp;if(lgOptSavings)plan.mN+=mSav;}
+      if(row.useW)plan.wN+=row.wCnt;
+      if(mm.srcM&&!row.useW&&!row.recBlocked){plan.mN+=mExp;if(lgOptSavings)plan.mN+=mSav;}
       if(lgOptIncome)plan.incN+=mm.inc.length;
       if(lgOptBudget)plan.budN+=mBud;
       plan.savN+=mSav+mm.wSav.length;
@@ -1442,7 +1444,7 @@ function renderLedgerPreview(){
     if(row.mm.srcM)src.push('월간 '+(row.mExp+(lgOptSavings?row.mSav:0))+'항목');
     if(row.mInc)src.push('수입 '+row.mInc+'건');
     var st=[];
-    if(row.mm.srcW){
+    if(row.useW){
       st.push('일별 기록으로 저장');
       if(row.cen.im+row.cen.iw>0)st.push('<span style="color:var(--ac)">이전에 가져온 기록 교체</span>');
       if(row.mm.srcM)st.push('<span style="color:var(--gray)">월간표 지출은 일별과 겹쳐 제외</span>');
@@ -1450,7 +1452,7 @@ function renderLedgerPreview(){
       if(row.recBlocked)st.push('<span style="color:#b5762e">지출 기록 건너뜀 — 이미 기록 '+(row.cen.iw+row.cen.man)+'건 있음</span>');
       else{st.push('매월 1일에 요약 저장');if(row.cen.im)st.push('<span style="color:var(--ac)">이전 가져오기 '+row.cen.im+'건 교체</span>');}
     }
-    if(row.cen.man&&row.mm.srcW)st.push('<span style="color:#b5762e">⚠ 직접 입력 '+row.cen.man+'건과 겹칠 수 있어요</span>');
+    if(row.cen.man&&row.useW)st.push('<span style="color:#b5762e">⚠ 직접 입력 '+row.cen.man+'건과 겹칠 수 있어요</span>');
     html+='<tr style="border-bottom:1px solid var(--tbl-border)"><td style="padding:7px 8px;vertical-align:top;width:30px"><input type="checkbox" '+(row.sel?'checked ':'')+'onchange="lgToggleMon(\''+row.ym+'\')" style="accent-color:var(--ac)"></td><td style="padding:7px 4px;vertical-align:top;white-space:nowrap;font-weight:700">'+lgMonLbl(row.ym)+'</td><td style="padding:7px 8px;vertical-align:top;word-break:keep-all"><div>'+src.join(' + ')+'</div><div style="color:var(--gray);margin-top:2px;line-height:1.45">'+st.join('<br>')+'</div></td></tr>';
   });
   html+='</table></div>';
@@ -1517,7 +1519,7 @@ function applyLedgerImport(){
   plan.rows.forEach(function(row){
     if(!row.sel)return;
     var ym=row.ym,mm=row.mm;
-    if(mm.srcW){
+    if(row.useW){
       var wAll=mm.wRecs.concat(lgOptSavings?mm.wSav:[]);
       /* 파괴 최소범위: 이 달의 imp:'m' 요약 + 이번에 덮는 "날짜"의 imp:'w' 기록만 제거.
          (같은 표를 다시 올리면 분류를 바꿔도 옛 기록이 남지 않도록 — 직접 입력 기록은 불변) */
@@ -1536,7 +1538,7 @@ function applyLedgerImport(){
       });
     }
     if(mm.srcM){
-      if(!mm.srcW&&!row.recBlocked){
+      if(!row.useW&&!row.recBlocked){
         if(row.cen.im){dailyData=dailyData.filter(function(e){return !(e.imp==='m'&&String(e.date).slice(0,7)===ym);});repl+=row.cen.im;}
         var ds1=ym+'-01';
         var mAll=mm.mExp.concat(lgOptSavings?mm.mSav:[]);
@@ -1546,7 +1548,7 @@ function applyLedgerImport(){
           var rec2=mkRec(ds1,it.amount,g2,it.cat,it.sub||'','','',0,true);
           rec2.imp='m';dailyData.push(rec2);addM++;
         });
-      } else if(!mm.srcW&&row.recBlocked)skipped.push(lgMonLbl(ym));
+      } else if(!row.useW&&row.recBlocked)skipped.push(lgMonLbl(ym));
       if(lgOptBudget){
         var map=null;
         var bAll=mm.mExp.concat(lgOptSavings?mm.mSav:[]);
@@ -2555,7 +2557,7 @@ function weekReviewOf(dateStr){if(!dailyReview)loadDailyReview();return dailyRev
 function monthReviewOf(dateStr){if(!dailyReview)loadDailyReview();return dailyReview.monthly[monthKey(dateStr)]||{};}
 function setWkRev(field,val){if(!dailyReview)loadDailyReview();var k=wkRevKey(dailyDate||todayStr());var o=dailyReview.weekly[k]||{};o[field]=val;dailyReview.weekly[k]=o;saveDailyReview();}
 function setMoRev(field,val){if(!dailyReview)loadDailyReview();var k=monthKey(dailyDate||todayStr());var o=dailyReview.monthly[k]||{};o[field]=val;dailyReview.monthly[k]=o;saveDailyReview();}
-function revBox(title,hint,field,val,scope){return '<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;margin-bottom:5px">'+title+'</div><textarea oninput="'+(scope==='wk'?'setWkRev':'setMoRev')+'('+jsArg(field)+',this.value)" placeholder="'+hint+'" style="width:100%;box-sizing:border-box;min-height:46px;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:inherit;color:#111;resize:vertical">'+dlEsc(val||'')+'</textarea></div>';}
+function revBox(title,hint,field,val,scope){return '<div style="margin-bottom:12px"><div style="font-size:13px;font-weight:600;margin-bottom:5px">'+title+'</div><textarea rows="1" class="ul-textarea" oninput="'+(scope==='wk'?'setWkRev':'setMoRev')+'('+jsArg(field)+',this.value)" placeholder="'+hint+'">'+dlEsc(val||'')+'</textarea></div>';}
 function monthConsumeTally(dateStr){var mk=monthKey(dateStr||todayStr());var _f=monthFirstDate(mk),_l=monthLastDate(mk);var t=todayStr();var c=0,w=0;var _c=new Date(_f+'T00:00:00'),_e=new Date(_l+'T00:00:00'),_g=0;while(_c<=_e&&_g<40){var ds=localDateStr(_c);if(ds<=t){var v=consumeOf(ds);if(v==='carrot')c++;else if(v==='whip')w++;}_c.setDate(_c.getDate()+1);_g++;}return {carrot:c,whip:w};}
 function dlFirstRecDate(){var m=null;dailyData.forEach(function(e){var d=String(e.date);if(m===null||d<m)m=d;});return m;}
 function noSpendStreak(){var t=todayStr();var first=dlFirstRecDate();if(!first)return 0;var cur=new Date(t+'T00:00:00');var n=0,guard=0;while(guard<800){var ds=localDateStr(cur);if(ds<first)break;if(!dayNoSpend(ds))break;n++;cur.setDate(cur.getDate()-1);guard++;}return n;}
@@ -2633,7 +2635,7 @@ var renderActiveViewBase=renderActiveView;renderActiveView=function(){renderActi
 /* Direct renderer: status copy belongs to CSS, so mobile never needs a text-removal pass. */
 function renderWeekDue(){var box=g('dlWeekDue');if(!box)return;var dd=dailyDate||todayStr(),items=fixedDueForWeek(),nodate=fixedNoDateForWeek(dd);if(!items.length&&!nodate.length){box.innerHTML='';return;}function row(nm,label,amt,paid,cat,sub,can){var remove=can?'<button type="button" class="segtip week-due-remove" data-tip="예정 목록에서 빼기§§(분류·지난 기록은 그대로)" onclick="dismissFixedPlan('+jsArg(cat)+','+jsArg(sub||'')+')">×</button>':'';return '<div class="week-due-row"><span class="week-due-main"><span class="week-due-name">'+dlEsc(nm)+'</span><span class="week-due-meta"><span>'+label+'</span>'+(amt>0?'<span>'+fmtComma(amt)+'원</span>':'')+'</span></span><span class="week-due-actions"><span class="week-due-status '+(paid?'week-due-paid':'week-due-pending')+'"><span class="week-due-status-icon">'+(paid?'✅':'□')+'</span></span>'+remove+'</span></div>';}var rows=items.map(function(it){var p=it.due.split('-'),label=parseInt(p[1],10)+'/'+parseInt(p[2],10)+'('+dlWeekdayKo(it.due)+')'+(it.kind==='settle'?' · 상환 정산':'');return row(it.sub?(it.cat+' › '+it.sub):it.cat,label,it.amt,it.paid,it.cat,it.sub,it.cat!=='대출이자'&&it.kind!=='settle');}).join('');rows+=nodate.map(function(it){return row(it.sub?(it.cat+' › '+it.sub):it.cat,'날짜 미정',it.amt,it.paid,it.cat,it.sub,it.cat!=='대출이자');}).join('');box.innerHTML='<div class="week-due-box"><div class="week-due-title">📅 이번 주 예정 고정지출</div>'+rows+'</div>';}
 function setMoRevTab(t){dlMoRevTab=t;renderMonthReview();}
-function monthReviewHtml(dateStr){var r=monthReviewOf(dateStr);var tabs=[['carrot','🥕 당근','이번 달 잘한 점, 칭찬할 점'],['whip','<img src="'+WHIP_IMG+'" alt="채찍" style="height:1.15em;vertical-align:-3px;margin-right:1px"> 채찍','이번 달 아쉬운 점, 고칠 점'],['best','🏆 베스트','이번 달 베스트 지출'],['worst','💸 워스트','이번 달 워스트 지출']];var cur=tabs.filter(function(t){return t[0]===dlMoRevTab;})[0]||tabs[0];var btns='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">';tabs.forEach(function(t){var on=(t[0]===dlMoRevTab);btns+='<button type="button" onclick="setMoRevTab('+jsArg(t[0])+')" style="flex:1;min-width:0;padding:7px 4px;white-space:nowrap;font-size:13px;border:1px solid '+(on?'var(--ac)':'var(--border)')+';border-radius:6px;background:'+(on?'var(--ac-light)':'#fff')+';color:'+(on?'var(--ac)':'#111')+';font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">'+t[1]+'</button>';});btns+='</div>';return '<div style="text-align:center;margin-bottom:12px"><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><div style="position:relative;display:inline-block"><span style="position:absolute;top:-8px;left:-8px;z-index:2">'+helpIcon('이번 달 당근·채찍·무지출·총지출을 그림 한 장으로 만들어 저장·공유할 수 있어요.')+'</span><button type="button" class="btn btn-ol" onclick="openMonthSummaryCard()" style="font-size:13px;padding:7px 14px;white-space:nowrap">📸 이번 달 결산 카드</button></div> <button type="button" class="btn btn-ol" onclick="openYearRollup()" style="font-size:13px;padding:7px 14px;white-space:nowrap">'+yearRollupIconHtml()+' 올해 모아보기</button></div></div><div style="background:#fff;border:1px solid var(--tbl-border);border-radius:8px;padding:14px">'+btns+'<textarea oninput="setMoRev('+jsArg(cur[0])+',this.value)" onchange="renderMonthReview()" placeholder="'+cur[2]+'" style="width:100%;box-sizing:border-box;min-height:46px;padding:8px;border:1px solid var(--border);border-radius:4px;font-size:13px;font-family:inherit;color:#111;resize:vertical">'+dlEsc(r[cur[0]]||'')+'</textarea></div>'+monthRollupHtml(dateStr);}
+function monthReviewHtml(dateStr){var r=monthReviewOf(dateStr);var tabs=[['carrot','🥕 당근','이번 달 잘한 점, 칭찬할 점'],['whip','<img src="'+WHIP_IMG+'" alt="채찍" style="height:1.15em;vertical-align:-3px;margin-right:1px"> 채찍','이번 달 아쉬운 점, 고칠 점'],['best','🏆 베스트','이번 달 베스트 지출'],['worst','💸 워스트','이번 달 워스트 지출']];var cur=tabs.filter(function(t){return t[0]===dlMoRevTab;})[0]||tabs[0];var tabColors={carrot:'var(--carrot-mk,#3f9a68)',whip:'var(--whip-mk,#d9534f)',best:'var(--dcal-pay,#3E7CB1)',worst:'var(--dcal-fix,#C97B3C)'};var btns='<div style="display:flex;gap:18px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:12px">';tabs.forEach(function(t){var on=(t[0]===dlMoRevTab),col=tabColors[t[0]];btns+='<button type="button" onclick="setMoRevTab('+jsArg(t[0])+')" style="border:none;background:none;padding:8px 2px;margin-bottom:-1px;white-space:nowrap;font-size:13px;border-bottom:2px solid '+(on?col:'transparent')+';color:'+(on?col:'var(--gray)')+';font-weight:'+(on?'700':'400')+';cursor:pointer;font-family:inherit">'+t[1]+'</button>';});btns+='</div>';return '<div style="text-align:center;margin-bottom:12px"><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><div style="position:relative;display:inline-block"><span style="position:absolute;top:-8px;left:-8px;z-index:2">'+helpIcon('이번 달 당근·채찍·무지출·총지출을 그림 한 장으로 만들어 저장·공유할 수 있어요.')+'</span><button type="button" class="btn btn-ol" onclick="openMonthSummaryCard()" style="font-size:13px;padding:7px 14px;white-space:nowrap">📸 이번 달 결산 카드</button></div> <button type="button" class="btn btn-ol" onclick="openYearRollup()" style="font-size:13px;padding:7px 14px;white-space:nowrap">'+yearRollupIconHtml()+' 올해 모아보기</button></div></div><div style="background:#fff;border:1px solid var(--tbl-border);border-radius:8px;padding:14px">'+btns+'<textarea rows="1" class="ul-textarea" oninput="setMoRev('+jsArg(cur[0])+',this.value)" onchange="renderMonthReview()" placeholder="'+cur[2]+'">'+dlEsc(r[cur[0]]||'')+'</textarea></div>'+monthRollupHtml(dateStr);}
 function withBudgetLine(dates){var ds=stackedCatDatasets(dates);var bdata=dates.map(function(d){var b=dailyBudgetOf(d);return b>0?b:0;});if(bdata.some(function(v){return v!=null;}))ds=ds.concat([{type:'line',label:'예산',data:bdata,borderColor:budgetLineColor(),backgroundColor:budgetLineColor(),borderDash:[6,4],borderWidth:2.5,pointRadius:2.8,pointBackgroundColor:budgetLineColor(),pointBorderWidth:0,pointHitRadius:6,fill:false,yAxisID:'yBudget',order:-1,spanGaps:false,tension:0}]);return ds;}
 function dlChartMax(datasets){var hasB=datasets.some(function(d){return d.label==='예산';});if(!hasB)return null;var n=0;datasets.forEach(function(d){if(d.data&&d.data.length>n)n=d.data.length;});var top=0;for(var i=0;i<n;i++){var s=0;datasets.forEach(function(d){if(d.stack==='spend')s+=(parseFloat(d.data[i])||0);});if(s>top)top=s;}datasets.forEach(function(d){if(d.label==='예산')d.data.forEach(function(v){if(v!=null&&v>top)top=v;});});return top>0?Math.ceil(top*1.1):null;}
 function renderWeekView(){if(!g('dlViewWeek'))return;['weekStartSel','weekStartSel2'].forEach(function(id){if(g(id))g(id).value=String(weekStartDay);});var dd=dailyDate||todayStr();var pastW=isPastPeriod('weekly',dd);var start=weekStartMon(dd);var endDt=new Date(start.getFullYear(),start.getMonth(),start.getDate()+6);var sLab=(start.getMonth()+1)+'/'+start.getDate();var eLab=(endDt.getMonth()+1)+'/'+endDt.getDate();var today=todayStr();var inWeek=(today>=localDateStr(start)&&today<=localDateStr(endDt));if(g('dlWkLabel'))g('dlWkLabel').textContent=(inWeek?'이번 주 ':'')+sLab+' – '+eLab;ensureFixedInWeekBudget(dd);renderWeekDue();renderMeal();if(g('dlWkBudget')){var _ws=sumCatBudget('weekly',dd);g('dlWkBudget').innerHTML=budgetCard('주간 예산',_ws>0?_ws:weeklyBudgetOf(dd),weekTotal(dd),'setWeeklyBudget',_ws>0);}if(g('dlWkCat'))g('dlWkCat').innerHTML=catBudgetHtml('weekly',dd,pastW);if(g('dlWkReview'))g('dlWkReview').innerHTML=weekReviewHtml(dd);applyReviewVis();var names=weekDayNames();var wdates=[];for(var i=0;i<7;i++){wdates.push(localDateStr(new Date(start.getFullYear(),start.getMonth(),start.getDate()+i)));}if(g('dlWeekChart')){var _wds=withBudgetLine(wdates);mkChart('dlWeekChart',{type:'bar',data:{labels:names,datasets:_wds},options:dlChartOpts(dlChartMax(_wds))});}}

@@ -14,7 +14,7 @@
 
 
 
-<link rel="stylesheet" href="css/style.css?v=20260917-monthly3">
+<link rel="stylesheet" href="css/style.css?v=20260917-pedate1">
 </head>
 <body class="crimson">
 <div id="navHandle" onclick="openNav()"></div>
@@ -259,7 +259,6 @@
           <span class="dl-amount-control"><input type="number" id="dlAmount" oninput="dlAmountInput(this)" placeholder="예) 12000" style="width:130px;height:34px;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111"><span id="dlAmountWords" class="dl-fcap" style="font-size:13px;color:var(--ac);font-weight:500;white-space:nowrap"></span></span>
           <button type="button" id="dlSignBtn" class="dl-sign" onclick="toggleAmountSign()" style="height:34px;box-sizing:border-box;padding:0 12px;border:1px solid var(--border);border-radius:6px;background:#fff;color:#111;font-size:13px;font-family:inherit;line-height:1;cursor:pointer;white-space:nowrap;align-items:center">±</button>
           <button type="button" id="dlCatBtn" onclick="openCatModal()" style="height:34px;box-sizing:border-box;padding:0 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111;background:#fff;cursor:pointer;white-space:nowrap">분류 선택 ▾</button>
-          <span id="dlCatPick" style="font-size:13px;color:var(--ac);font-weight:600"></span>
           <span class="dl-cash-control"><span class="dl-cash-label">캐시백</span><input type="number" id="dlCashback" placeholder="0" style="width:84px;height:34px;box-sizing:border-box;padding:0 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;color:#111"><label class="dl-cash-deduct" title="지출 차감" style="font-size:13px;color:var(--gray);display:inline-flex;align-items:center;gap:3px;cursor:pointer;white-space:nowrap"><input type="checkbox" id="dlCbDeduct" checked style="margin:0;vertical-align:middle;accent-color:var(--ac)"> 차감</label></span>
         </div>
       </div>
@@ -402,7 +401,7 @@
   <input type="file" id="xlsImportInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="onExcelImportFile(event)"><div class="modal-bg" id="xlsImportModal" onclick="if(event.target===this)closeM('xlsImportModal')"><div class="modal" style="max-width:480px"><h3>📥 엑셀·CSV로 월간 예산 채우기</h3><div id="xlsImportBox"></div></div></div><input type="file" id="lgFileInput" accept=".xlsx,.xls,.csv" multiple style="display:none" onchange="onLedgerFiles(event)"><div class="modal-bg" id="lgImportModal" onclick="if(event.target===this)closeM('lgImportModal')"><div class="modal" style="max-width:540px"><h3>🧾 가계부 가져오기</h3><div id="lgImportBox"></div></div></div><div class="modal-bg" id="budgetModal" onclick="if(event.target===this)closeM('budgetModal')">
     <div class="modal" style="max-width:320px">
       <h3 id="budgetModalTitle">예산 설정</h3>
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px"><input type="number" id="budgetModalInput" placeholder="예산 금액" onkeydown="if(event.key==='Enter')saveBudgetModal()" style="flex:1;padding:9px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;text-align:right;color:#111"><span style="font-size:13px;color:var(--gray)">원</span></div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px"><input type="number" id="budgetModalInput" placeholder="예산 금액" onkeydown="if(event.key==='Enter')saveBudgetModal()" style="flex:1;padding:9px 2px;border:none;border-bottom:1px solid var(--border);border-radius:0;background:transparent;font-size:14px;font-family:inherit;text-align:right;color:#111"><span style="font-size:13px;color:var(--gray)">원</span></div>
       <button type="button" id="budgetModalPullBtn" onclick="pullFromBudgetModal()" style="width:100%;border:1px solid var(--ac);background:#fff;border-radius:8px;padding:9px;font-size:13px;color:var(--ac);cursor:pointer;font-family:inherit;margin-bottom:10px">📥 주간에서 가져오기</button>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button type="button" class="btn btn-ol" onclick="closeM('budgetModal')" style="font-size:13px">취소</button>
@@ -442,7 +441,7 @@
   <div class="modal-bg" id="assetTypeModal" onclick="if(event.target===this)closeM('assetTypeModal')">
     <div class="modal" style="max-width:320px">
       <h3>새 유형 추가</h3>
-      <input id="assetTypeInput" placeholder="예) 가상자산" onkeydown="if(event.key==='Enter')confirmAssetType()" style="width:100%;padding:9px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;box-sizing:border-box;margin-bottom:12px;color:#111">
+      <input id="assetTypeInput" placeholder="예) 가상자산" onkeydown="if(event.key==='Enter')confirmAssetType()" style="width:100%;padding:9px 2px;border:none;border-bottom:1px solid var(--border);border-radius:0;background:transparent;font-size:14px;font-family:inherit;box-sizing:border-box;margin-bottom:12px;color:#111">
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button type="button" class="btn btn-ol" onclick="closeM('assetTypeModal');renderAssets()" style="font-size:13px">취소</button>
         <button type="button" class="btn btn-bk" onclick="confirmAssetType()" style="font-size:13px">추가</button>
@@ -466,7 +465,7 @@
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           <span style="font-size:13px;font-weight:700;color:var(--ac);white-space:nowrap">🔗 구글시트</span>
-          <input id="gsUrlShort" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." style="flex:1;min-width:180px;padding:5px 8px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px" onkeydown="if(event.key==='Enter')importFromSheet('gsUrlShort')">
+          <input id="gsUrlShort" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." style="flex:1;min-width:180px;padding:5px 8px;border:none;border-bottom:1px solid var(--ac);border-radius:0;background:transparent;font-size:13px" onkeydown="if(event.key==='Enter')importFromSheet('gsUrlShort')">
           <button onclick="importFromSheet('gsUrlShort')" style="padding:5px 12px;background:var(--ac);color:#fff;border:none;border-radius:3px;font-size:13px;cursor:pointer">불러오기</button>
         </div>
           <p style="font-size:13px;color:var(--gray);margin:6px 0 0;line-height:1.5">💡 구글시트 → 공유 → <strong>"링크 있는 모든 사용자 — 뷰어"</strong> 설정 후 URL 붙여넣기 (불러온 뒤 비공개로 바꿔도 유지돼요). <span style="color:#b45309">숫자만 불러와요 — 메모·텍스트는 안 되니 엑셀 또는 CSV 파일로 다운받아 올리기를 권해요.</span></p>
@@ -518,7 +517,7 @@
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           <span style="font-size:13px;font-weight:700;color:var(--ac);white-space:nowrap">🔗 구글시트</span>
-          <input id="gsUrlMid" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." style="flex:1;min-width:180px;padding:5px 8px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px" onkeydown="if(event.key==='Enter')importFromSheet('gsUrlMid')">
+          <input id="gsUrlMid" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." style="flex:1;min-width:180px;padding:5px 8px;border:none;border-bottom:1px solid var(--ac);border-radius:0;background:transparent;font-size:13px" onkeydown="if(event.key==='Enter')importFromSheet('gsUrlMid')">
           <button onclick="importFromSheet('gsUrlMid')" style="padding:5px 12px;background:var(--ac);color:#fff;border:none;border-radius:3px;font-size:13px;cursor:pointer">불러오기</button>
         </div>
           <p style="font-size:13px;color:var(--gray);margin:6px 0 0;line-height:1.5">💡 구글시트 → 공유 → <strong>"링크 있는 모든 사용자 — 뷰어"</strong> 설정 후 URL 붙여넣기 (불러온 뒤 비공개로 바꿔도 유지돼요). <span style="color:#b45309">숫자만 불러와요 — 메모·텍스트는 안 되니 엑셀 또는 CSV 파일로 다운받아 올리기를 권해요.</span></p>
@@ -544,10 +543,10 @@
     </div>
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--ac-light);padding:6px 10px;border-radius:4px;border:1px solid var(--tbl-border)">
       <span style="font-size:13px;font-weight:700;color:var(--ac);white-space:nowrap">📊 수익률 일괄 변경</span>
-      <input type="number" id="bulkMFrom" placeholder="시작연도" style="width:58px;padding:4px 6px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px" oninput="this.value=this.value.slice(0,4)">
+      <input type="number" id="bulkMFrom" placeholder="시작연도" style="width:58px;padding:4px 6px;border:none;border-bottom:1px solid var(--ac);border-radius:0;background:transparent;font-size:13px" oninput="this.value=this.value.slice(0,4)">
       <span style="font-size:13px;color:var(--gray)">~</span>
-      <input type="number" id="bulkMTo" placeholder="종료연도" style="width:58px;padding:4px 6px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px" oninput="this.value=this.value.slice(0,4)">
-      <input type="number" id="bulkMRate" placeholder="%" min="1" max="100" step="0.1" style="width:46px;padding:4px 6px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px">
+      <input type="number" id="bulkMTo" placeholder="종료연도" style="width:58px;padding:4px 6px;border:none;border-bottom:1px solid var(--ac);border-radius:0;background:transparent;font-size:13px" oninput="this.value=this.value.slice(0,4)">
+      <input type="number" id="bulkMRate" placeholder="%" min="1" max="100" step="0.1" style="width:46px;padding:4px 6px;border:none;border-bottom:1px solid var(--ac);border-radius:0;background:transparent;font-size:13px">
       <button onclick="bulkSetRate('mid')" style="padding:4px 12px;background:var(--ac);color:#fff;border:none;border-radius:3px;font-size:13px;cursor:pointer">적용</button>
     </div>
 
@@ -571,7 +570,7 @@
     <div style="margin-top:10px;padding:12px 14px;background:var(--ac-light);border-radius:4px;border:1px solid var(--tbl-border)">
       <div style="font-size:13px;font-weight:700;color:var(--ac);margin-bottom:8px;letter-spacing:.04em">🔗 구글시트로 불러오기</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <input id="gsUrl" type="text" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')fetchGoogleSheet()" placeholder="https://docs.google.com/spreadsheets/d/..." style="flex:1;min-width:220px;padding:7px 10px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px;background:#fff;color:var(--fg)">
+        <input id="gsUrl" type="text" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')fetchGoogleSheet()" placeholder="https://docs.google.com/spreadsheets/d/..." style="flex:1;min-width:220px;padding:7px 2px;border:none;border-bottom:1px solid var(--ac);border-radius:0;background:transparent;font-size:13px;color:var(--fg)">
         <button id="gsFetchBtn" onclick="fetchGoogleSheet()" style="padding:7px 16px;background:var(--ac);color:#fff;border:none;border-radius:3px;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0">불러오기</button>
       </div>
       <p id="gsEventHint" style="display:none;font-size:13px;color:#b45309;background:#fffbeb;padding:6px 10px;border-radius:3px;border-left:3px solid #f59e0b;margin:4px 0 0">✅ 숫자 데이터 로드 완료! <strong>이벤트도 가져오려면:</strong> 구글시트 → 파일 → 다운로드 → CSV(.csv) 저장 → 아래 업로드존에 끌어다 놓기 → 이벤트만 자동 병합 (숫자 유지)</p>
@@ -603,10 +602,10 @@
     </div>
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:var(--ac-light);padding:6px 10px;border-radius:4px;border:1px solid var(--tbl-border)">
       <span style="font-size:13px;font-weight:700;color:var(--ac);white-space:nowrap">📊 수익률 일괄 변경</span>
-      <input type="number" id="bulkFrom" placeholder="시작연도" style="width:58px;padding:4px 6px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px" oninput="this.value=this.value.slice(0,4)">
+      <input type="number" id="bulkFrom" placeholder="시작연도" style="width:58px;padding:4px 6px;border:none;border-bottom:1px solid var(--ac);border-radius:0;background:transparent;font-size:13px" oninput="this.value=this.value.slice(0,4)">
       <span style="font-size:13px;color:var(--gray)">~</span>
-      <input type="number" id="bulkTo" placeholder="종료연도" style="width:58px;padding:4px 6px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px" oninput="this.value=this.value.slice(0,4)">
-      <input type="number" id="bulkRate" placeholder="%" min="1" max="100" step="0.1" style="width:46px;padding:4px 6px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px">
+      <input type="number" id="bulkTo" placeholder="종료연도" style="width:58px;padding:4px 6px;border:none;border-bottom:1px solid var(--ac);border-radius:0;background:transparent;font-size:13px" oninput="this.value=this.value.slice(0,4)">
+      <input type="number" id="bulkRate" placeholder="%" min="1" max="100" step="0.1" style="width:46px;padding:4px 6px;border:none;border-bottom:1px solid var(--ac);border-radius:0;background:transparent;font-size:13px">
       <button onclick="bulkSetRate('long')" style="padding:4px 12px;background:var(--ac);color:#fff;border:none;border-radius:3px;font-size:13px;cursor:pointer">적용</button>
     </div>
 
@@ -909,7 +908,7 @@
 <div id="addRowMod" class="modal-bg" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal" style="max-width:320px">
     <h3 style="margin:0 0 12px;font-size:15px">항목 추가</h3>
-    <textarea id="addRowInput" placeholder="항목 이름 입력&#10;(줄바꿈 가능)" rows="3" style="width:100%;padding:8px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px;resize:vertical;font-family:inherit"></textarea>
+    <textarea id="addRowInput" placeholder="항목 이름 입력&#10;(줄바꿈 가능)" rows="2" class="ul-textarea"></textarea>
     <div id="addRowIncl" style="margin-top:12px">
       <div class="arq" style="font-size:13px;font-weight:700;margin-bottom:6px;word-break:keep-all">이 항목을 투자금에 넣을까요?</div>
       <label style="display:flex;align-items:flex-start;gap:6px;font-size:13px;cursor:pointer;margin-bottom:5px;word-break:keep-all">
@@ -932,7 +931,7 @@
 <div id="editLabelMod" class="modal-bg" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal" style="max-width:320px">
     <h3 style="margin:0 0 12px;font-size:15px">행 이름 수정</h3>
-    <textarea id="editLabelInput" rows="3" style="width:100%;padding:8px;border:1px solid var(--tbl-border);border-radius:3px;font-size:13px;resize:vertical;font-family:inherit"></textarea>
+    <textarea id="editLabelInput" rows="2" class="ul-textarea"></textarea>
     <div class="mf" style="margin-top:12px">
       <button class="btn btn-bk" onclick="confirmEditLabel()">확인</button>
       <button class="btn btn-ol" onclick="closeM('editLabelMod')">취소</button>
@@ -979,10 +978,10 @@
 </div></div>
 <div id="rsPromptMod" class="modal-bg" onclick="if(event.target===this)closeM('rsPromptMod')"><div class="modal" style="max-width:340px"><h3 id="rsPromptTitle" style="margin:0 0 10px;font-size:15px;word-break:keep-all"></h3><div id="rsPromptDesc" style="font-size:13px;color:var(--gray);line-height:1.55;margin-bottom:10px;word-break:keep-all;display:none"></div><div id="rsPromptBody" style="margin-bottom:16px"></div><div class="mf"><button class="btn btn-bk" onclick="rsPromptOk()" style="white-space:nowrap">확인</button><button class="btn btn-ol" onclick="closeM('rsPromptMod')" style="white-space:nowrap">취소</button></div></div></div>
 <div id="rsConfirmMod" class="modal-bg" onclick="if(event.target===this)closeM('rsConfirmMod')"><div class="modal" style="max-width:320px"><h3 style="margin:0 0 12px;font-size:15px">확인</h3><div id="rsConfirmMsg" style="font-size:13px;white-space:pre-line;line-height:1.6;margin-bottom:16px"></div><div class="mf"><button class="btn btn-bk" onclick="rsConfirmYes()">확인</button><button class="btn btn-ol" onclick="closeM('rsConfirmMod')">취소</button></div></div></div>
-  <script src="js/app-core.js?v=20260917-asset-ln12"></script>
-  <script src="js/app-roadmap.js?v=20260917-monthly3"></script>
-  <script src="js/app-storage.js?v=20260917-tblset1"></script>
-  <script src="js/app-daily.js?v=20260917-monthly1"></script>
+  <script src="js/app-core.js?v=20260917-bugfix1"></script>
+  <script src="js/app-roadmap.js?v=20260917-bugfix1"></script>
+  <script src="js/app-storage.js?v=20260917-bugfix2"></script>
+  <script src="js/app-daily.js?v=20260917-bugfix1"></script>
   <script src="js/app.js?v=20260914-mobile-planner"></script>
 </body>
 </html>

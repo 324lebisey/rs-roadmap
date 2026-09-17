@@ -553,7 +553,7 @@ function renderMid(){
   let h="<table class='xl"+(_mdFull?" has-grp":"")+"'><tbody><tr>"+(_mdFull?reGrpTd("기준",_mdHdrRows):"")+"<td class='rl col-hdr'>구분/년</td>";
   rs.forEach(r=>h+=yhCell(r.y,bl));h+="</tr>";
   if(sa){h+="<tr class='r-sub'><td class='rl'>나이</td>";for(var i=0;i<11;i++){var _ag=(sa+i)+"세";h+="<td style='text-align:center'>"+(bl?"<span class='blurred'>"+_ag+"</span>":_ag)+"</td>";}h+="</tr>";}
-  children.forEach(function(c){var cca=parseInt(c.age);h+="<tr class='r-sub'><td class='rl'>"+c.name+"</td>";for(var i=0;i<11;i++){var _cag=isNaN(cca)?"":((cca+i)+"세");h+="<td style='text-align:center'>"+(bl&&_cag?"<span class='blurred'>"+_cag+"</span>":_cag)+"</td>";}h+="</tr>";});
+  children.forEach(function(c){var cca=parseInt(c.age);h+="<tr class='r-sub'><td class='rl'>"+dlEsc(c.name)+"</td>";for(var i=0;i<11;i++){var _cag=isNaN(cca)?"":((cca+i)+"세");h+="<td style='text-align:center'>"+(bl&&_cag?"<span class='blurred'>"+_cag+"</span>":_cag)+"</td>";}h+="</tr>";});
   // ── 현금 자산 블록(기본행+커스텀행) — 그룹 열은 order 전체를 한 덩어리로 묶는다 ──
   var _mdFirst=true;
   order.forEach(function(rid){
@@ -1168,7 +1168,7 @@ function renderLong(rows,bl,sy){
     h+="<tr class='r-sub'><td class='rl'>나이</td>";
     chunk.forEach(function(r){var _ag=(r.age!=null?r.age+"세":"");h+="<td style='text-align:center'>"+(bl&&_ag?"<span class='blurred'>"+_ag+"</span>":_ag)+"</td>";});h+="</tr>";
     children.forEach(c=>{
-      h+="<tr class='r-sub'><td class='rl'>"+c.name+"</td>";
+      h+="<tr class='r-sub'><td class='rl'>"+dlEsc(c.name)+"</td>";
       chunk.forEach(function(r){var ca=parseInt(c.age);var _ag=(isNaN(ca)?"":(ca+(r.y-sy))+"세");h+="<td style='text-align:center'>"+(bl&&_ag?"<span class='blurred'>"+_ag+"</span>":_ag)+"</td>";});h+="</tr>";
     });
     // ── 현금 자산 블록 — 행 순서는 getLongOrder()가 정한다(커스텀 행을 투자금 위/아래로 옮길 수 있다)
@@ -1217,7 +1217,7 @@ function renderLong(rows,bl,sy){
       h+="</div></td>";
       chunk.forEach(function(r){
         var k=cr.id+"_"+r.y;var val=customData[k]||'';
-        h+="<td style='padding:2px 4px;min-width:70px;cursor:pointer;text-align:right;position:relative'><span contenteditable='true' data-ck='"+k+"' style='display:block' onfocus='this.textContent=this.textContent.replace(/,/g,\"\")' onblur='var t=(this.textContent||\"\").trim();var d=t.replace(/,/g,\"\");if(d!==\"\"&&/^-?\\d+(\\.\\d+)?$/.test(d)){customData[this.dataset.ck]=fmtComma(parseFloat(d));this.textContent=fmtComma(parseFloat(d));}else{customData[this.dataset.ck]=t;this.textContent=t;}recalc();save()'>"+(val||"")+"</span>"+cellNoteDot(k,'openCellNoteLong')+"</td>";
+        h+="<td style='padding:2px 4px;min-width:70px;cursor:pointer;text-align:right;position:relative'><span contenteditable='true' data-ck='"+k+"' style='display:block' onfocus='this.textContent=this.textContent.replace(/,/g,\"\")' onblur='var t=(this.textContent||\"\").trim();var d=t.replace(/,/g,\"\");if(d!==\"\"&&/^-?\\d+(\\.\\d+)?$/.test(d)){customData[this.dataset.ck]=fmtComma(parseFloat(d));this.textContent=fmtComma(parseFloat(d));}else{customData[this.dataset.ck]=t;this.textContent=t;}recalc();save()'>"+dlEsc(val||"")+"</span>"+cellNoteDot(k,'openCellNoteLong')+"</td>";
       });
       h+="</tr>";
     });
@@ -1338,10 +1338,10 @@ function renderLong(rows,bl,sy){
           imgHtml+='</div>';
         }
         if(cr.id==='et_default'){
-          h+="<td style='padding:4px;vertical-align:top'><textarea class='ev-in' rows='2' data-k='"+k+"' data-y='"+r.y+"' placeholder='입력...' oninput='crInput(this)' onfocus='pImg=parseInt(this.dataset.y);this.value=this.value.replace(/,/g,\"\")' onblur='crBlur(this)'>"+val+"</textarea>"+imgHtml+"</td>";
+          h+="<td style='padding:4px;vertical-align:top'><textarea class='ev-in' rows='2' data-k='"+k+"' data-y='"+r.y+"' placeholder='입력...' oninput='crInput(this)' onfocus='pImg=parseInt(this.dataset.y);this.value=this.value.replace(/,/g,\"\")' onblur='crBlur(this)'>"+dlEsc(val)+"</textarea>"+imgHtml+"</td>";
         } else {
           // 새로 추가한 항목: 중기처럼 셀 직접 입력(숫자면 쉼표, 문자도 가능)
-          h+="<td style='padding:2px 4px;min-width:70px;cursor:pointer;text-align:right' contenteditable='true' data-ck='"+k+"' onfocus='this.textContent=this.textContent.replace(/,/g,\"\")' onblur='var t=(this.textContent||\"\").trim();var d=t.replace(/,/g,\"\");if(d!==\"\"&&/^-?\\d+(\\.\\d+)?$/.test(d)){customData[this.dataset.ck]=fmtComma(parseFloat(d));this.textContent=fmtComma(parseFloat(d));}else{customData[this.dataset.ck]=t;this.textContent=t;}recalc();save()'>"+(val||"")+"</td>";
+          h+="<td style='padding:2px 4px;min-width:70px;cursor:pointer;text-align:right' contenteditable='true' data-ck='"+k+"' onfocus='this.textContent=this.textContent.replace(/,/g,\"\")' onblur='var t=(this.textContent||\"\").trim();var d=t.replace(/,/g,\"\");if(d!==\"\"&&/^-?\\d+(\\.\\d+)?$/.test(d)){customData[this.dataset.ck]=fmtComma(parseFloat(d));this.textContent=fmtComma(parseFloat(d));}else{customData[this.dataset.ck]=t;this.textContent=t;}recalc();save()'>"+dlEsc(val||"")+"</td>";
         }
       });
       h+="</tr>";
@@ -1470,7 +1470,7 @@ function applyNewYear(newSvMan){
   try{showToast((oy+1)+'년을 열었어요. 지난 기록은 그대로 있어요.');}catch(e){}
 }
 function renderCBar(){
-  var html=children.map((c,i)=>"<span class='child-tag'>"+c.name+" (현재 "+c.age+"세)<button onclick='deleteChild("+i+")'>×</button></span>").join("");
+  var html=children.map((c,i)=>"<span class='child-tag'>"+dlEsc(c.name)+" (현재 "+c.age+"세)<button onclick='deleteChild("+i+")'>×</button></span>").join("");
   var b1=g("childBar"); if(b1)b1.innerHTML=html;
   var b2=g("childBarMid"); if(b2)b2.innerHTML=html;
 }
@@ -1562,6 +1562,8 @@ function parseStandardRows(blocks,rows){
       else if(isSvRow(rawLbl))dt="sv";
       else if(isRateRow(rawLbl))dt="rate";
       if(!dt)continue;
+      // 단위·비율 판정은 칸마다가 아니라 행 전체로 한다 (50만 원 한 칸이 만원으로, 0.5% 한 칸이 50%로 바뀌던 문제)
+      var rowMax=0;blk.years.forEach(function(o){if(o.col<=lblCol)return;var v=parseFloat(String(row[o.col]==null?"":row[o.col]).replace(/,/g,""));if(!isNaN(v))rowMax=Math.max(rowMax,Math.abs(v));});
       blk.years.forEach(function(o){
         if(o.col<=lblCol)return;
         var val=row[o.col];if(val===""||val==null)return;
@@ -1572,14 +1574,14 @@ function parseStandardRows(blocks,rows){
           if(!found.includes("나이"))found.push("나이");
         }else if(dt==="asset"&&firstBlock&&o.year===minYIB){
           // sV 입력칸은 "만원" 단위 (recalc에서 ×10000). 큰 값(원)이면 만원으로 환산, 이미 만원이면 그대로
-          var manwon=num>=1000000?Math.round(num/10000):Math.round(num);
+          var manwon=rowMax>=1000000?Math.round(num/10000):Math.round(num);  // 첫해 한 칸이 아니라 행 전체로 원/만원 판정
           g("sV").value=manwon;
           if(!found.includes("자산"))found.push("자산("+manwon.toLocaleString()+"만원)");
         }else if(dt==="sv"){
-          CS[o.year]=num>=1000000?num:num*10000;  // CSV: 100만 이상=원, 미만=만원입력으로 간주
+          CS[o.year]=rowMax>=100000?num:num*10000;  // 행에 10만 이상 값이 하나라도 있으면 원, 아니면 만원입력으로 간주
           if(!found.includes("저축액"))found.push("저축액");
         }else if(dt==="rate"){
-          YR[o.year]=num>1?num:num*100;
+          YR[o.year]=rowMax>1?num:num*100;  // 행 전체가 1 이하일 때만 소수(0.05=5%)로 간주
           if(!found.includes("수익률"))found.push("수익률");
         }
       });
@@ -2055,13 +2057,13 @@ function renderPOpts(){
   function mkRow(p,dim){
     const chk=SP.find(s=>s.id===p.id)?"checked":"";
     const style=dim?"style='opacity:.5'":"";
-    const nick=p.nick?` <span style="color:var(--gray);font-size:13px">/ ${p.nick}</span>`:"";
-    const rn=p.rateNote?`<span style="font-size:13px;color:var(--ac);margin:0 4px">${p.rateNote}</span>`:"";
-    const pd=p.period?`<span style="font-size:13px;color:var(--gray);flex-shrink:0">${p.period}</span>`:"";
+    const nick=p.nick?` <span style="color:var(--gray);font-size:13px">/ ${dlEsc(p.nick)}</span>`:"";
+    const rn=p.rateNote?`<span style="font-size:13px;color:var(--ac);margin:0 4px">${dlEsc(p.rateNote)}</span>`:"";
+    const pd=p.period?`<span style="font-size:13px;color:var(--gray);flex-shrink:0">${dlEsc(p.period)}</span>`:"";
     const _uNoEmpty=p.user&&(!p.no||p.no==='★');
-    const noLbl=_uNoEmpty?`<span class='segtip' style='font-size:13px;color:var(--ac);margin-right:6px;white-space:nowrap' data-tip='내가 직접 추가한 프로젝트'>직접</span>`:`<span style='font-size:13px;color:var(--gray);margin-right:6px'>No.${p.no}</span>`;
+    const noLbl=_uNoEmpty?`<span class='segtip' style='font-size:13px;color:var(--ac);margin-right:6px;white-space:nowrap' data-tip='내가 직접 추가한 프로젝트'>직접</span>`:`<span style='font-size:13px;color:var(--gray);margin-right:6px'>No.${dlEsc(p.no)}</span>`;
     const ub=p.user?`<span style='display:inline-flex;gap:4px;flex-shrink:0'><button type='button' class='segtip' data-tip='수정' onclick='event.preventDefault();event.stopPropagation();editUserProj(${p.id})' style='border:1px solid var(--border);background:#fff;border-radius:6px;padding:2px 7px;font-size:13px;cursor:pointer;white-space:nowrap'>✏️</button><button type='button' class='segtip' data-tip='완전 삭제' onclick='event.preventDefault();event.stopPropagation();deleteUserProj(${p.id})' style='border:1px solid var(--border);background:#fff;border-radius:6px;padding:2px 7px;font-size:13px;cursor:pointer;white-space:nowrap'>🗑️</button></span>`:"";
-    return `<label class='popt' ${style}><input type='checkbox' ${chk} value='${p.id}' style='accent-color:var(--ac)'><span style='flex:1'>${noLbl}<strong>${p.name}</strong>${nick}</span>${rn}${pd}${ub}</label>`;
+    return `<label class='popt' ${style}><input type='checkbox' ${chk} value='${p.id}' style='accent-color:var(--ac)'><span style='flex:1'>${noLbl}<strong>${dlEsc(p.name)}</strong>${nick}</span>${rn}${pd}${ub}</label>`;
   }
   let html="";
   if(userGrade&&inaccessible.length){
@@ -2384,8 +2386,9 @@ function setProjTypeInline(pid,t){
   }
   _projAfterStruct(pid);
 }
+function projHasCustom(pid){return !!projOverride[pid]||(parseFloat(projRates[pid])||0)>0||!!projRateStepOn[pid]||!!projExtRateOn[pid]||!!projMaturityBonusOn[pid];}
 function resetProjOverrideInline(pid){
-  if(!projOverride[pid])return;
+  if(!projHasCustom(pid))return;
   rsConfirm('이 프로젝트를 원래 공지 내용으로 되돌릴까요?\n(투자 금액·수익률 입력칸·상환 기록은 그대로 남아요)',function(){
     delete projOverride[pid];_projAfterStruct(pid);showToast('원래대로 되돌렸어요');
   });
@@ -2399,7 +2402,7 @@ function extInputs(p){
   return "<div class='pe-row'>"
     +"<span class='pe-f pe-date'><span class='lb'>연장 적용 시작</span>"
     +"<input type='month' value='"+fr+"' class='invest-input segtip' data-tip='이 달부터 연장 수익률이 최종으로 적용돼요' onchange='setExtFrom("+id+",this.value)'></span>"
-    +"<span class='pe-f pe-num'><span class='lb'>연장 수익률</span>"
+    +"<span class='pe-f pe-pct'><span class='lb'>연장 수익률</span>"
     +"<input type='number' min='0' max='50' step='0.5' placeholder='0' value='"+(okRt?rt:'')+"' class='invest-input segtip' data-tip='연장하면서 확정된 수익률(%)§§등급에 따라 올려받은 값을 그대로 적으면 돼요§§이 값이 최종 — 연 인상은 더 붙지 않아요' oninput='setExtRate("+id+",this.value)'>"
     +"<span class='lb' style='color:var(--ac)'>%</span></span>"
     +((okRt&&okFr)?"<span class='monthly-return'>→ "+fr+"부터 "+rt+"% 최종 적용</span>"
@@ -2413,7 +2416,7 @@ function projEditBox(p){
   var isCat=!fp.user, txt=function(v){return dlEsc(v||'');};
   var h="<div class='proj-edit-box'>";
   h+="<div class='pe-grp'><div class='pe-row'>"
-    +"<span class='pe-f pe-long'><span class='lb'>이름</span><input type='text' class='invest-input' value='"+txt(fp.name)+"' onchange='setProjBase("+id+",&#34;name&#34;,this.value)'></span>"
+    +"<span class='pe-f pe-name'><span class='lb'>이름</span><input type='text' class='invest-input' value='"+txt(fp.name)+"' onchange='setProjBase("+id+",&#34;name&#34;,this.value)'></span>"
     +"<span class='pe-f pe-mid'><span class='lb'>별칭</span><input type='text' class='invest-input' value='"+txt(fp.nick)+"' onchange='setProjBase("+id+",&#34;nick&#34;,this.value)'></span>"
     +"<span class='pe-f pe-num'><span class='lb'>번호</span><input type='text' class='invest-input' value='"+txt((fp.no&&fp.no!=='★')?fp.no:'')+"' onchange='setProjBase("+id+",&#34;no&#34;,this.value)'></span>"
     +"</div>"
@@ -2436,9 +2439,9 @@ function projEditBox(p){
   var _pre=isShort?'':calcMonthly(inv,_preRate);
   h+="<div class='pe-row'>"
     +"<span class='pe-f pe-num'><span class='lb'>투자 금액</span><input type='number' class='invest-input' value='"+inv+"' placeholder='만원' oninput='updateInvest("+id+",this.value)'><span class='lb'>만원</span></span>"
-    +(isShort?"":("<span class='pe-f pe-num'><span class='lb'>수익률</span><input type='number' min='0' max='50' step='0.5' placeholder='15' value='"+(projRates[id]||'')+"' data-tip='현재 적용 수익률 직접 입력§§(이 값이 최종 적용)' class='invest-input segtip' oninput='setCustomRate("+id+",parseFloat(this.value)||0)'><span class='lb' style='color:var(--ac)'>%</span></span>"))
-    +((!isShort&&projRateStepOn[id])?("<span class='pe-f pe-num'><span class='lb' style='color:var(--ac)'>연 인상</span><input type='number' min='0' max='20' step='0.5' placeholder='0' value='"+(projRateStep[id]||'')+"' data-tip='운용 1년이 지날 때마다§§수익률에 더해지는 폭(%p)§§예) 12%에 +1 → 13% → 14%' class='invest-input segtip' oninput='setRateStep("+id+",this.value)'><span class='lb' style='color:var(--ac)'>%p</span></span>"):"")
-    +(projMaturityBonusOn[id]?("<span class='pe-f pe-num'><span class='lb' style='color:#c08a3e'>만기 보너스</span><input type='number' min='0' max='50' step='0.5' placeholder='0' value='"+(projMaturityBonus[id]||'')+"' data-tip='만기까지 유지(조기상환 없이) 시§§만기 정산월에 잔여원금 기준§§1회만 추가되는 보너스 수익률(%)' class='invest-input segtip' oninput='setMaturityBonus("+id+",this.value)'><span class='lb' style='color:#c08a3e'>%</span></span>"):"")
+    +(isShort?"":("<span class='pe-f pe-pct'><span class='lb'>수익률</span><input type='number' min='0' max='50' step='0.5' placeholder='15' value='"+(projRates[id]||'')+"' data-tip='현재 적용 수익률 직접 입력§§(이 값이 최종 적용)' class='invest-input segtip' oninput='setCustomRate("+id+",parseFloat(this.value)||0)'><span class='lb' style='color:var(--ac)'>%</span></span>"))
+    +((!isShort&&projRateStepOn[id])?("<span class='pe-f pe-pct'><span class='lb' style='color:var(--ac)'>연 인상</span><input type='number' min='0' max='20' step='0.5' placeholder='0' value='"+(projRateStep[id]||'')+"' data-tip='운용 1년이 지날 때마다§§수익률에 더해지는 폭(%p)§§예) 12%에 +1 → 13% → 14%' class='invest-input segtip' oninput='setRateStep("+id+",this.value)'><span class='lb' style='color:var(--ac)'>%p</span></span>"):"")
+    +(projMaturityBonusOn[id]?("<span class='pe-f pe-pct'><span class='lb' style='color:#c08a3e'>만기 보너스</span><input type='number' min='0' max='50' step='0.5' placeholder='0' value='"+(projMaturityBonus[id]||'')+"' data-tip='만기까지 유지(조기상환 없이) 시§§만기 정산월에 잔여원금 기준§§1회만 추가되는 보너스 수익률(%)' class='invest-input segtip' oninput='setMaturityBonus("+id+",this.value)'><span class='lb' style='color:#c08a3e'>%</span></span>"):"")
     +(_pre?("<span class='pe-note'>상환 전 월 수익 "+_pre+"</span>"):"")
     +"</div>";
   h+=(isShort?shortInputs(fp):(projTermInputs(p)+extInputs(p)))+"</div>";
@@ -2447,9 +2450,9 @@ function projEditBox(p){
     +(isShort?"":("<label class='proj-ck segtip' data-tip='켜면 연 인상 입력칸이 나타나요§§1년마다 수익률이 오르는 계약에 써요' style='margin-right:14px'><input type='checkbox' style='accent-color:var(--ac)' "+(projRateStepOn[id]?'checked':'')+" onchange='setRateStepOn("+id+",this.checked)'>연 수익률 인상</label>"))
     +(isShort?"":("<label class='proj-ck segtip' data-tip='연장하면서 수익률이 바뀔 때 써요§§적은 값이 최종이라 연 인상은 더 붙지 않아요' style='margin-right:14px'><input type='checkbox' style='accent-color:var(--ac)' "+(projExtRateOn[id]?'checked':'')+" onchange='setExtRateOn("+id+",this.checked)'>연장 수익률</label>"))
     +"<label class='proj-ck segtip' data-tip='켜면 만기+% 입력칸이 나타나요'><input type='checkbox' style='accent-color:#c08a3e' "+(projMaturityBonusOn[id]?'checked':'')+" onchange='setMatBonusOn("+id+",this.checked)'>만기 보너스</label></div>";
-  h+=(isShort?("<div class='pe-grp'>"+earlyInputs(p)+"</div>"):repayInputs(p));
+  var resetBtn=(isCat&&projHasCustom(id))?("<span class='ln-delx' style='margin-left:auto' onclick='resetProjOverrideInline("+id+")'>수정 내용 원래대로</span>"):'';
+  h+=(isShort?("<div class='pe-grp'>"+earlyInputs(p,resetBtn)+"</div>"):repayInputs(p,resetBtn));
   if(!isCat)h+="<div class='proj-ef'><button type='button' class='proj-del' onclick='deleteUserProj("+id+")'>이 프로젝트 완전 삭제</button></div>";
-  else if(projOverride[id])h+="<div class='proj-ef'><button type='button' class='proj-del' style='border-color:var(--border);color:var(--gray)' onclick='resetProjOverrideInline("+id+")'>수정 내용 원래대로</button></div>";
   return h+"</div>";
 }
 function projTermInputs(p){var t=getProjTerm(p);
@@ -2977,9 +2980,9 @@ function projCardHtml(p,hdrBtn){
     const _open=!!projEditOpen[p.id];   /* 편집 구역 열림은 오직 projEditOpen — 완료 카드의 「수정」이 이 값을 켠다(「편집 닫기」와 「접기」는 서로 독립) */
     return `<div class='proj-row' data-pid='${p.id}' style='${accessible?"":"opacity:.5"}'>
       <div class='proj-row-header'>
-        <span class='proj-hd-no' style='color:${(p.user&&(!p.no||p.no==="★"))?"var(--ac)":"var(--gray)"}'><span>${(p.user&&(!p.no||p.no==="★"))?"직접":"No."+p.no}</span><span class='proj-mobile-dday'>${_dbadge}</span></span>
+        <span class='proj-hd-no' style='color:${(p.user&&(!p.no||p.no==="★"))?"var(--ac)":"var(--gray)"}'><span>${(p.user&&(!p.no||p.no==="★"))?"직접":"No."+dlEsc(p.no)}</span><span class='proj-mobile-dday'>${_dbadge}</span></span>
         <div class='proj-card-main'>
-          <span class='proj-hd-mid'><span style='font-weight:700;font-size:14.5px;word-break:keep-all'>${p.name}${p.nick?` <span style="font-size:13px;color:var(--gray);font-weight:400">· ${p.nick}</span>`:""}</span>${projOwnerOf(p.id)?`<span class='proj-own'>${dlEsc(projOwnerOf(p.id))}</span>`:""}${projIncluded(p.id)?"":`<span class='proj-excl segtip' tabindex='0' data-tip='로드맵·자산 합계에 넣지 않고 이 탭에서 관리만 해요'>관리만</span>`}<span class='proj-desktop-dday'>${_dbadge}</span></span>
+          <span class='proj-hd-mid'><span style='font-weight:700;font-size:14.5px;word-break:keep-all'>${dlEsc(p.name)}${p.nick?` <span style="font-size:13px;color:var(--gray);font-weight:400">· ${dlEsc(p.nick)}</span>`:""}</span>${projOwnerOf(p.id)?`<span class='proj-own'>${dlEsc(projOwnerOf(p.id))}</span>`:""}${projIncluded(p.id)?"":`<span class='proj-excl segtip' tabindex='0' data-tip='로드맵·자산 합계에 넣지 않고 이 탭에서 관리만 해요'>관리만</span>`}<span class='proj-desktop-dday'>${_dbadge}</span></span>
           ${p.rateNote?`<div class='proj-read'>${p.rateNote}</div>`:""}
           ${projReadHtml(p)}
           <button type='button' class='proj-edit-t${_open?" on":""}' onclick='toggleProjEdit(${p.id})'>${_open?"편집 닫기 ∧":"편집 ∨"}</button>
@@ -3014,8 +3017,8 @@ function _earlyChunk(p){return (projEarly[p.id]
         +"<button class='rm-btn segtip' data-tip='조기상환 해제' onclick='clearEarly("+p.id+")'>×</button>"
         +(function(){var _i=projEarlyInfo(p);return _i?"<div class='pe-note' style='flex-basis:100%'>→ "+_i.mk+"에 "+_i.amtWon.toLocaleString()+"원 입금 ("+(_i.detail||_i.days+"일치")+"), 이후 수익 0 · 자산 탭에서 「정리」로 확정</div>":"";})())
       :"<button type='button' onclick='startEarly("+p.id+")' class='pe-btn'>조기상환</button>");}
-function earlyInputs(p){return "<div class='proj-ef'>"+_earlyChunk(p)+"</div>";}
-function repayInputs(p){
+function earlyInputs(p,resetBtn){return "<div class='proj-ef'>"+_earlyChunk(p)+(resetBtn||'')+"</div>";}
+function repayInputs(p,resetBtn){
   var arr=projRepay[p.id]||[];var effRate=getEffectiveRate(p);var _tmE=getProjTerm(p);var _endMk=(_tmE&&_tmE.end)?monthKey(_tmE.end):'';
   var rows=arr.map(function(r,idx){
     var rr=r.from?_projRateAtMk(p,r.from):((r.rate!=null&&r.rate!==''&&parseFloat(r.rate)>0)?parseFloat(r.rate):effRate);
@@ -3026,7 +3029,7 @@ function repayInputs(p){
       +"<span class='pe-f pe-num'><span class='lb'>남은 원금</span>"
       +"<input type='number' value='"+(r.principal!=null?r.principal:'')+"' placeholder='만원' class='invest-input segtip' data-tip='상환 후 남은 투자원금(만원)' oninput='setRepayPrincipal("+p.id+","+idx+",this.value)'>"
       +"<span class='lb'>만원</span></span>"
-      +"<span class='pe-f pe-num'><span class='lb'>수익률</span>"
+      +"<span class='pe-f pe-pct'><span class='lb'>수익률</span>"
       +"<input type='number' min='0' max='50' step='0.5' value='"+(r.rate!=null?r.rate:'')+"' placeholder='"+effRate+"' class='invest-input segtip' data-tip='수익률(비우면 기존 "+effRate+"% 유지)' oninput='setRepayRate("+p.id+","+idx+",this.value)'>"
       +"<span class='lb' style='color:var(--ac)'>%</span>"
       +"<button class='rm-btn segtip' data-tip='이 상환 삭제' onclick='delRepay("+p.id+","+idx+")'>×</button></span>"
@@ -3053,6 +3056,7 @@ function repayInputs(p){
     +"<button type='button' onclick='addAddInv("+p.id+")' class='pe-btn'>＋ 추가 투자</button>"
     +"<span class='hlp' style='text-transform:none;letter-spacing:0;margin-left:5px' onclick='event.stopPropagation();this.classList.toggle(&#39;on&#39;)'><span style='font-size:14px'>ⓘ</span><span class='hlp-pop'><b style='display:block;margin-bottom:8px;font-size:13px;color:#ffd2da;border-bottom:1px solid rgba(255,255,255,.18);padding-bottom:6px'>일부 상환</b><span style='display:block;color:#e8e8e8'>일부만 돌려받고 계속 투자할 때 써요. <b style=\'color:#fff\'>적용 시작 달</b>부터 줄어든 원금·수익률로 계산되고, 상환을 또 받으면 줄을 추가하면 그 달부터 다시 덮어써요.<br><br><b style=\'color:#fff\'>운용기간은 그대로</b> 두고, 상환된 달부터 <b style=\'color:#fff\'>남은 원금</b>만 적으면 돼요.<br><br><b style=\'color:#fff\'>＋ 추가 투자</b>는 반대로 돈을 더 넣을 때 써요. <b style=\'color:#fff\'>더 넣은 금액</b>만 적으면 그 달부터 원금에 더해져요.</span></span></span>"
     +_earlyChunk(p)
+    +(resetBtn||'')
     +"</div>"
     +rows
     +aRows
@@ -3192,7 +3196,7 @@ function renderScenario(){
     milestones.forEach(m=>{
       let asset=sv;
       for(let i=0;i<=m;i++){
-        const y=sy+i,savings=getSv(i,y),inv=asset+savings,r=sc.rate/100;
+        const y=sy+i,savings=getSv(i,y),inv=asset+savings,r=isCrisis(y)?crisisRate:sc.rate/100;
         asset=inv*(1+r);
       }
       vals[m]=asset;
