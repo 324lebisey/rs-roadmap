@@ -130,8 +130,8 @@ function weeklyRsDirection(weekDate){
 }
 
 (function(){
-  var weeklyRsImage='assets/rs_.png';
-  var weeklyRsMaskImage='assets/rs-fill-mask.png?v=20260914-gap-cutout';
+  var weeklyRsImage='assets/rs_.webp';
+  var weeklyRsMaskImage='assets/rs-fill-mask.webp?v=20260918-webp';
 
   function weeklyRsBudgetCard(title,budget,spent,onch,locked){
     var pct=budget>0?Math.round(spent/budget*100):0;

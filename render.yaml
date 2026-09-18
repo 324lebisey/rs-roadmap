@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: rs-roadmap
+    env: static
+    staticPublishPath: .
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: max-age=86400
