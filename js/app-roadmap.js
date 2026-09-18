@@ -151,6 +151,13 @@ function _repaySorted(pid){var a=projRepay[pid];if(!a||!a.length)return [];
   return a.slice().filter(function(x){return x&&x.from;}).sort(function(a,b){return a.from<b.from?-1:(a.from>b.from?1:0);});}
 function _projRateAtMk(p,mkStr){
   var m=mkStr&&mkStr.match(/^(\d{4})-(\d{2})$/); if(!m)return getEffectiveRate(p)||0;
+  var fp=_freshP(p);
+  if((fp.termMonths||0)>0){ // 단기딜: 회차별 배열에서 그 달의 값을 그대로(연 수익률 개념 없음)
+    var sa=shortStartAbs(fp); if(sa==null)return 0;
+    var k=(parseInt(m[1],10)*12+(parseInt(m[2],10)-1))-sa;
+    var r=shortRates(fp);
+    return parseFloat(r[Math.max(0,Math.min(k,fp.termMonths)-1)])||0;
+  }
   return projEffAt(p,parseInt(m[1],10),parseInt(m[2],10)-1,0,getEffectiveRate(p)||0).rate;
 }
 // 단기딜(월차별 수익률)까지 포함해 "지금" 적용 중인 수익률 하나를 뽑는다 — 자산 탭 표시용
@@ -254,9 +261,10 @@ function projMonthWon(p,yr,mi){
         if(_cu2>_eb2)return 0; // 조기상환 이후 → 0
         if(_cu2===_eb2){var _i2=projEarlyInfo(p);return _i2?_i2.amtWon:0;} } // 그 달만 일할
       if(_k<1||_k>_n)return 0;
-      var _out1=inv*((parseFloat(_r[_k-1])||0)/100);
+      var _effS=projEffAt(p,yr,mi,inv,0); // 일부 상환·추가 투자 반영(정산월 경계, 일할 X) — rate는 월차별 배열을 쓰므로 무시
+      var _out1=_effS.principalWon*((parseFloat(_r[_k-1])||0)/100);
       var _bp1=projBonusPctSum(p.id,(_k===_n&&!_ed2),_k); // 만기(마지막 회차, 조기상환 없을 때만) 또는 지정 개월차
-      if(_bp1>0)_out1+=inv*(_bp1/100);
+      if(_bp1>0)_out1+=_effS.principalWon*(_bp1/100);
       return _out1;
     }
     const monthly=inv*(getEffectiveRate(p)/100)/12;
@@ -2492,7 +2500,7 @@ function projEditBox(p){
     +(isShort?"":("<label class='proj-ck segtip' data-tip='연장하면서 수익률이 바뀔 때 써요§§적은 값이 최종이라 연 인상은 더 붙지 않아요' style='margin-right:14px'><input type='checkbox' style='accent-color:var(--ac)' "+(projExtRateOn[id]?'checked':'')+" onchange='setExtRateOn("+id+",this.checked)'>연장 수익률</label>"))
     +"<label class='proj-ck segtip' data-tip='켜면 만기 또는 지정 개월차에 보너스 수익률을 추가할 수 있어요'><input type='checkbox' style='accent-color:#c08a3e' "+(projBonusOn[id]?'checked':'')+" onchange='setBonusOn("+id+",this.checked)'>추가 수익률</label></div>";
   var resetBtn=(isCat&&projHasCustom(id))?("<span class='ln-delx' style='margin-left:auto' onclick='resetProjOverrideInline("+id+")'>수정 내용 원래대로</span>"):'';
-  h+=(isShort?("<div class='pe-grp'>"+earlyInputs(p,resetBtn)+"</div>"):repayInputs(p,resetBtn));
+  h+=repayInputs(p,resetBtn);
   return h+"</div>";
 }
 function projTermInputs(p){var t=getProjTerm(p);
@@ -3057,22 +3065,23 @@ function _earlyChunk(p){return (projEarly[p.id]
         +"<button class='rm-btn segtip' data-tip='조기상환 해제' onclick='clearEarly("+p.id+")'>×</button>"
         +(function(){var _i=projEarlyInfo(p);return _i?"<div class='pe-note' style='flex-basis:100%'>→ "+_i.mk+"에 "+_i.amtWon.toLocaleString()+"원 입금 ("+(_i.detail||_i.days+"일치")+"), 이후 수익 0 · 자산 탭에서 「정리」로 확정</div>":"";})())
       :"<button type='button' onclick='startEarly("+p.id+")' class='pe-btn'>조기상환</button>");}
-function earlyInputs(p,resetBtn){return "<div class='proj-ef'>"+_earlyChunk(p)+(resetBtn||'')+"</div>";}
 function repayInputs(p,resetBtn){
-  var arr=projRepay[p.id]||[];var effRate=getEffectiveRate(p);var _tmE=getProjTerm(p);var _endMk=(_tmE&&_tmE.end)?monthKey(_tmE.end):'';
+  var fp=_freshP(p);var isShort=(fp.termMonths||0)>0;
+  var arr=projRepay[p.id]||[];var effRate=isShort?0:getEffectiveRate(p);var _tmE=getProjTerm(p);var _endMk=(_tmE&&_tmE.end)?monthKey(_tmE.end):'';
   var rows=arr.map(function(r,idx){
-    var rr=r.from?_projRateAtMk(p,r.from):((r.rate!=null&&r.rate!==''&&parseFloat(r.rate)>0)?parseFloat(r.rate):effRate);
-    var prev=(r.from&&(parseFloat(r.principal)||0)>0)?calcMonthly(r.principal,rr):'';
+    var rr=isShort?0:(r.from?_projRateAtMk(p,r.from):((r.rate!=null&&r.rate!==''&&parseFloat(r.rate)>0)?parseFloat(r.rate):effRate));
+    var prev=(!isShort&&r.from&&(parseFloat(r.principal)||0)>0)?calcMonthly(r.principal,rr):'';
     return "<div class='pe-row'>"
       +"<span class='pe-f pe-date'><span class='lb'>적용 시작</span>"
       +"<input type='month' value='"+(r.from||'')+"' class='invest-input segtip' data-tip='이 달부터 줄어든 금액이 적용돼요' onchange='setRepayFrom("+p.id+","+idx+",this.value)'></span>"
       +"<span class='pe-f pe-num'><span class='lb'>남은 원금</span>"
       +"<input type='number' value='"+(r.principal!=null?r.principal:'')+"' placeholder='만원' class='invest-input segtip' data-tip='상환 후 남은 투자원금(만원)' oninput='setRepayPrincipal("+p.id+","+idx+",this.value)'>"
-      +"<span class='lb'>만원</span></span>"
-      +"<span class='pe-f pe-pct'><span class='lb'>수익률</span>"
-      +"<input type='number' min='0' max='50' step='0.5' value='"+(r.rate!=null?r.rate:'')+"' placeholder='"+effRate+"' class='invest-input segtip' data-tip='수익률(비우면 기존 "+effRate+"% 유지)' oninput='setRepayRate("+p.id+","+idx+",this.value)'>"
-      +"<span class='lb' style='color:var(--ac)'>%</span>"
-      +"<button class='rm-btn segtip' data-tip='이 상환 삭제' onclick='delRepay("+p.id+","+idx+")'>×</button></span>"
+      +"<span class='lb'>만원</span>"
+      +(isShort?"<button class='rm-btn segtip' data-tip='이 상환 삭제' onclick='delRepay("+p.id+","+idx+")'>×</button>":"")+"</span>"
+      +(isShort?"":("<span class='pe-f pe-pct'><span class='lb'>수익률</span>"
+        +"<input type='number' min='0' max='50' step='0.5' value='"+(r.rate!=null?r.rate:'')+"' placeholder='"+effRate+"' class='invest-input segtip' data-tip='수익률(비우면 기존 "+effRate+"% 유지)' oninput='setRepayRate("+p.id+","+idx+",this.value)'>"
+        +"<span class='lb' style='color:var(--ac)'>%</span>"
+        +"<button class='rm-btn segtip' data-tip='이 상환 삭제' onclick='delRepay("+p.id+","+idx+")'>×</button></span>"))
       +(prev?"<span class='monthly-return'>→ "+(r.from||'')+"부터 월 "+prev+"</span>":(((parseFloat(r.principal)||0)>0&&!r.from)?"<span style='color:#c0392b;white-space:nowrap'>⚠ 적용 시작월을 선택해야 반영돼요</span>":((!( (parseFloat(r.principal)||0)>0))?"<span style='color:#c0392b;white-space:nowrap'>⚠ 남은 원금을 입력해야 반영돼요</span>":"")))
       +((r.from&&_endMk&&r.from>_endMk)?"<span style='flex-basis:100%;color:#c0392b;word-break:keep-all'>⚠ 적용 시작이 운용기간 밖이에요 — 운용기간은 계약 종료일 그대로 두세요</span>":"")
       +"</div>";
