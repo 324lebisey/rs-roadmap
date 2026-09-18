@@ -147,7 +147,7 @@ body{font-family:"DM Sans",sans-serif;background:#f7f7f7;min-height:100vh;color:
 }
 #navDim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:295}
 #navDim.open{display:block}
-#navDrawer{position:fixed;left:0;top:0;height:100dvh;width:220px;max-width:78vw;background:#fff;border-right:1px solid var(--border);box-shadow:2px 0 16px rgba(0,0,0,.1);z-index:300;display:flex;flex-direction:column;overflow:hidden;transform:translateX(-100%);transition:transform .18s ease;box-sizing:border-box;padding:10px 0 calc(10px + env(safe-area-inset-bottom))}
+#navDrawer{position:fixed;left:0;top:0;height:calc(100dvh / var(--fsz-scale,1));width:220px;max-width:78vw;background:#fff;border-right:1px solid var(--border);box-shadow:2px 0 16px rgba(0,0,0,.1);z-index:300;display:flex;flex-direction:column;overflow:hidden;transform:translateX(-100%);transition:transform .18s ease;box-sizing:border-box;padding:10px 0 calc(10px + env(safe-area-inset-bottom))}
 #navDrawer.open{transform:translateX(0)}
 body.nav-pinned #navDrawer{transform:translateX(0)!important}
 @media (hover:hover){body.nav-pinned .wrap{margin-left:220px;transition:margin-left .18s ease}}

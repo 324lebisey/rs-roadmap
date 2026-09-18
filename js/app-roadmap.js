@@ -343,6 +343,8 @@ function applyFontSize(){
   // zoom으로 모든 글자(안내문·표·입력칸 포함) 비율 조정
   var scale=dlFontScale();
   document.body.style.zoom=scale;
+  // zoom이 position:fixed 요소(내비 드로어 등)의 100dvh 높이까지 키워 화면 밖으로 밀어내므로 역보정
+  document.documentElement.style.setProperty('--fsz-scale',scale);
   // zoom 미지원 브라우저(firefox) 대비 transform fallback 없이 zoom 우선
   try{lsSet("rs_fontstep",String(_fontStep));}catch(e){}
   // 차트(막대 그래프 등)는 캔버스에 폰트 크기를 직접 그려서 zoom만으로는 툴팁·호버 글씨가 같이 줄지 않으므로 강제로 다시 그린다
