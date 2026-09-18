@@ -685,7 +685,7 @@ function save(){
     localStorage.setItem("rs7",JSON.stringify({
     sY:_gv("sY"),sA:_gv("sA"),sV:_gv("sV"),
     mdY:_gv("mdY"),mdA:_gv("mdA"),mdV:_gv("mdV"),
-    shYear:_gv("shYear"),period:_gv("period"),YR,ET,EI,CS,children,SP,shData,mdYR,monthlyArchive,userGrade,projInvest,projRates,projSchedule,projTerm,projRepay,projEarly,projAssetHide,projOverride,projMaturityBonus,projMaturityBonusOn,projRateStep,projRateStepOn,projAddInv,projExtRateOn,projExtRate,projExtFrom,projOwner,projInclude,projMemo,projSummaryPick,projSummaryFamily,userProjects,milestones,customRows,customRowsMid,customRowsShort,shRowOrder,shHiddenBase,shExclIds,mdRowOrder,shCustomOnly,customData,customNotes,nyHide,customSectionName,rowLabels,CRISIS,longUnit,reOn,reP,reL,reR,aptTargets,reView,assetBlocks,abV,lgRowOrder
+    shYear:_gv("shYear"),period:_gv("period"),YR,ET,EI,CS,children,SP,shData,mdYR,monthlyArchive,userGrade,projInvest,projRates,projSchedule,projTerm,projRepay,projEarly,projAssetHide,projOverride,projBonus,projBonusOn,projRateStep,projRateStepOn,projAddInv,projExtRateOn,projExtRate,projExtFrom,projOwner,projInclude,projMemo,projSummaryPick,projSummaryFamily,userProjects,milestones,customRows,customRowsMid,customRowsShort,shRowOrder,shHiddenBase,shExclIds,mdRowOrder,shCustomOnly,customData,customNotes,nyHide,customSectionName,rowLabels,CRISIS,longUnit,reOn,reP,reL,reR,aptTargets,reView,assetBlocks,abV,lgRowOrder
     }));
     showToast("자동 저장됨");
     _saveOk=true;

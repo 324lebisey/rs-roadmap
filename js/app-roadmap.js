@@ -229,11 +229,21 @@ function projMaturityStatus(p){
   return '';
 }
 function dismissProjAsset(pid){rsConfirm('이 항목을 자산 목록에서 뺄까요?§§프로젝트 기록과 지난 수익은 그대로 남아요.',function(){projAssetHide[pid]=true;renderAssets();save();});}
+// 추가 수익률 구간 합산(%): atMat=자연 만기 정산월인가, monthIdx=이 달의 운용월차(1부터) — 일치하는 구간들의 pct 합
+function projBonusPctSum(pid,atMat,monthIdx){
+  if(!projBonusOn[pid])return 0;
+  var arr=projBonus[pid]||[];var s=0;
+  arr.forEach(function(r){
+    var n=parseFloat(r&&r.pct)||0;if(!(n>0))return;
+    if(r.at==='mat'){if(atMat)s+=n;}
+    else{var m=parseInt(r.at,10);if(m>0&&monthIdx!=null&&m===monthIdx)s+=n;}
+  });
+  return s;
+}
 // 한 프로젝트의 (yr,mi) 정산월 수익(원) — getMonthlyProjectWon에서 동작 동일하게 추출(누적 replay 공용)
 function projMonthWon(p,yr,mi){
     const inv=(parseFloat(projInvest[p.id])||0)*10000;  // 투자금 만원→원
     var _fp=allP().find(function(x){return x.id===p.id;})||p;
-    var _mb=projMaturityBonusOn[p.id]?(parseFloat(projMaturityBonus[p.id])||0):0; // 만기 보너스율(%) — 옵션이 켜져 있을 때만, 조기상환 없이 자연 만기 도달 시 그 정산월에만 1회
     if((_fp.termMonths||0)>0){ // 단기딜: 월차별 수익률, 운용 N개월만 적용(연환산·영구 적용 안 함)
       var _r=shortRates(_fp), _n=_fp.termMonths;
       if(yr==null||mi==null){var _avg=_r.reduce(function(a,b){return a+(parseFloat(b)||0);},0)/(_n||1);return inv*_avg/100;}
@@ -245,7 +255,8 @@ function projMonthWon(p,yr,mi){
         if(_cu2===_eb2){var _i2=projEarlyInfo(p);return _i2?_i2.amtWon:0;} } // 그 달만 일할
       if(_k<1||_k>_n)return 0;
       var _out1=inv*((parseFloat(_r[_k-1])||0)/100);
-      if(_k===_n&&!_ed2&&_mb>0)_out1+=inv*(_mb/100); // 만기월(마지막 회차) 1회 보너스, 조기상환 없을 때만
+      var _bp1=projBonusPctSum(p.id,(_k===_n&&!_ed2),_k); // 만기(마지막 회차, 조기상환 없을 때만) 또는 지정 개월차
+      if(_bp1>0)_out1+=inv*(_bp1/100);
       return _out1;
     }
     const monthly=inv*(getEffectiveRate(p)/100)/12;
@@ -264,7 +275,9 @@ function projMonthWon(p,yr,mi){
       if(cur===_eab){var _ii=projEarlyInfo(p);return _ii?_ii.amtWon:0;} } // 그 달만 일할
     var _eff=projEffAt(p,yr,mi,inv,getEffectiveRate(p)); // 일부 상환 반영(정산월 경계, 일할 X)
     var _out2=_eff.principalWon*(_eff.rate/100)/12; // 매달 월 수익 전액(일할 X)
-    if(_ea!=null&&cur===_ea&&!_ed&&_mb>0)_out2+=_eff.principalWon*(_mb/100); // 만기 정산월 1회 보너스(잔여원금 기준), 조기상환 없을 때만
+    var _k2=cur-_sa; // 운용월차(1부터, 시작 다음 달=1)
+    var _bp2=projBonusPctSum(p.id,(_ea!=null&&cur===_ea&&!_ed),_k2);
+    if(_bp2>0)_out2+=_eff.principalWon*(_bp2/100);
     return _out2;
 }
 function getMonthlyProjectWon(yr,mi){return SP.reduce(function(s,p){return s+(projIncluded(p)?projMonthWon(p,yr,mi):0);},0);}
@@ -2119,7 +2132,7 @@ function openUserProjModal(pid){
   g('upStart').value=isShort?shortStartDate(p):'';
   var _cn=g('upCatNote');if(_cn)_cn.style.display=isCat?'':'none';
   var _rb=g('upResetBtn');if(_rb)_rb.style.display=(isCat&&projOverride[pid])?'':'none';
-  var _mb=g('upMatBonus');if(_mb)_mb.checked=!!projMaturityBonusOn[pid];
+  var _mb=g('upMatBonus');if(_mb)_mb.checked=!!projBonusOn[pid];
   var _ow=g('upOwner');if(_ow)_ow.value=(pid?projOwnerOf(pid):'');
   var _mm=g('upMemo');if(_mm)_mm.value=(pid?(projMemo[pid]||''):'');
   var _ic=g('upInclude');if(_ic)_ic.checked=(pid?projIncluded(pid):true);
@@ -2165,7 +2178,7 @@ function confirmUserProj(){
       projSchedule[upEditId].start=start;projSchedule[upEditId].rates=[]; /* 월차 수익률의 기준값은 방금 입력한 값 하나로 */
     }else{ov.termMonths=0;ov.monthlyRates=[];ov.fixedRate=(rate>0);ov.rate=rate;}
     projOverride[upEditId]=ov;
-    if(g('upMatBonus')&&g('upMatBonus').checked)projMaturityBonusOn[upEditId]=true;else delete projMaturityBonusOn[upEditId];
+    if(g('upMatBonus')&&g('upMatBonus').checked)projBonusOn[upEditId]=true;else delete projBonusOn[upEditId];
     if(_own)projOwner[upEditId]=_own;else delete projOwner[upEditId];
     if(_memo)projMemo[upEditId]=_memo;else delete projMemo[upEditId];
     if(g('upInclude')&&!g('upInclude').checked)projInclude[upEditId]=false;else delete projInclude[upEditId];
@@ -2189,7 +2202,7 @@ function confirmUserProj(){
   }else{
     p.fixedRate=true;p.rate=rate;delete p.termMonths;delete p.monthlyRates;delete projSchedule[p.id];
   }
-  if(g('upMatBonus')&&g('upMatBonus').checked)projMaturityBonusOn[p.id]=true;else delete projMaturityBonusOn[p.id];
+  if(g('upMatBonus')&&g('upMatBonus').checked)projBonusOn[p.id]=true;else delete projBonusOn[p.id];
   if(_own)projOwner[p.id]=_own;else delete projOwner[p.id];
   if(_memo)projMemo[p.id]=_memo;else delete projMemo[p.id];
   if(g('upInclude')&&!g('upInclude').checked)projInclude[p.id]=false;else delete projInclude[p.id];
@@ -2206,7 +2219,7 @@ function deleteUserProj(pid){
   if(!confirm('「'+p.name+'」 프로젝트를 완전히 삭제할까요?\n(투자금·수익률·상환 기록도 함께 지워져요)'))return;
   userProjects=userProjects.filter(function(x){return x.id!==pid;});
   SP=SP.filter(function(x){return x.id!==pid;});
-  delete projInvest[pid];delete projRates[pid];delete projSchedule[pid];delete projTerm[pid];delete projRepay[pid];delete projEarly[pid];delete projAssetHide[pid];delete projOverride[pid];delete projMaturityBonus[pid];delete projMaturityBonusOn[pid];delete projRateStep[pid];delete projRateStepOn[pid];delete projAddInv[pid];delete projExtRateOn[pid];delete projExtRate[pid];delete projExtFrom[pid];delete projOwner[pid];delete projInclude[pid];delete projMemo[pid];
+  delete projInvest[pid];delete projRates[pid];delete projSchedule[pid];delete projTerm[pid];delete projRepay[pid];delete projEarly[pid];delete projAssetHide[pid];delete projOverride[pid];delete projBonus[pid];delete projBonusOn[pid];delete projRateStep[pid];delete projRateStepOn[pid];delete projAddInv[pid];delete projExtRateOn[pid];delete projExtRate[pid];delete projExtFrom[pid];delete projOwner[pid];delete projInclude[pid];delete projMemo[pid];
   renderSP();renderPOpts();renderShort();
   if(typeof renderMoIncome==='function')try{renderMoIncome(dailyDate||todayStr());}catch(_){}
   save();
@@ -2221,14 +2234,14 @@ let projRepay={}; /* 일부 상환: {id:[{from:'YYYY-MM',principal:만원,rate:%
 let projEarly={}; /* 조기상환: {id:'YYYY-MM-DD'} — 그 정산월만 일할 계산(초일·상환일 포함), 이후 수익 0 */
 let projAssetHide={}; /* 만기·조기상환 자산 정리: {id:true} — 사용자가 「정리」로 확정한 항목만 자산에서 제외 */
 let projOverride={}; /* 공식 카탈로그 프로젝트 덮어쓰기: {id:{no,name,nick,rate,fixedRate,termMonths,monthlyRates}} — 원본 APS는 불변, allP()에서만 입힌다 */
-let projMaturityBonus={}; /* 만기 보너스율(%, 고정값): {id:숫자} — 자연 만기(조기상환 없이 종료월 도달) 시 그 정산월 잔여원금에 1회만 추가, 일할 금지(§2.5 동일 원칙) */
+let projBonus={}; /* 추가 수익률 구간들: {id:[{at:'mat'|N(개월차),pct:%}]} — 자연 만기(조기상환 없이) 또는 지정 운용월차에 그 정산월 원금 기준 1회만 추가, 일할 금지(§2.5 동일 원칙) */
 let projExtRateOn={};    /* 연장 수익률 옵션 사용 여부: {id:true} (세션 60) */
 let projExtRate={};      /* 연장 수익률(%): 적용 시작 정산월부터 이 값이 최종 — 연 인상을 더 얹지 않는다 */
 let projExtFrom={};      /* 연장 수익률 적용 시작 'YYYY-MM' — 비어 있으면 미적용 */
 let projRateStep={};     /* 연 수익률 인상폭(%p/년): {id:1} — 시작 정산월 기준 12개월마다 누적 가산(세션 59) */
 let projRateStepOn={};   /* 연 수익률 인상 옵션 사용 여부: {id:true} — 켜야 카드에 입력칸이 보인다(만기 보너스와 같은 방식) */
 let projAddInv={};       /* 추가 투자 기록: {id:[{from:'YYYY-MM',amount:만원}]} — 그 정산월부터 원금에 더한다(일할 없음) */
-let projMaturityBonusOn={}; /* 만기 보너스 옵션 사용 여부: {id:true} — 생성/수정 모달에서 켜야 카드에 입력칸이 보임(세션 57) */
+let projBonusOn={}; /* 추가 수익률 옵션 사용 여부: {id:true} — 생성/수정 모달에서 켜야 카드에 구간 목록이 보임(세션 57, 세션 75서 다중구간으로 확장) */
 let projOwner={}; /* 명의: {id:'배우자'} — 빈 값/없음 = 내 명의. 표시·필터 전용이며 수익·자산·로드맵 계산엔 일절 참여하지 않는다(세션 57) */
 let projMemo={}; /* 프로젝트 메모: {id:'세후 12%…'} — 계약 조건 등 자유 메모. 표시 전용이며 수익·자산·로드맵 계산엔 일절 참여하지 않는다(세션 58) */
 let projInclude={}; /* 로드맵·자산 반영 여부: {id:false}만 저장(없으면 반영). 차단은 getMonthlyProjectWon·projCurrentPrincipalWon 두 관문뿐 — 프로젝트 탭(카드·누적·수령 달력·타임라인·요약)은 직접 호출이라 불변(세션 57 2차) */
@@ -2275,11 +2288,26 @@ function setCustomRate(pid,val){
   projRates[pid]=val>0?val:null;
   saveSoon();  // 렌더링은 change(칸 이탈)에서, 저장은 입력 즉시
 }
-function setMaturityBonus(pid,val){
-  var n=parseFloat(val);
-  projMaturityBonus[pid]=(n>0)?n:null;
-  saveSoon();
+function bonusRowsHtml(id){
+  var arr=(projBonus[id]&&projBonus[id].length)?projBonus[id]:[{at:'',pct:''}];
+  return arr.map(function(r,idx){
+    var isMat=(r.at==='mat');
+    return "<span class='pe-f pe-pct' style='flex-wrap:wrap'>"
+      +(idx===0?"<span class='lb' style='color:#c08a3e'>추가 수익률</span>":"")
+      +"<label class='proj-ck' style='margin:0 2px 0 0'><input type='checkbox' style='accent-color:#c08a3e' "+(isMat?'checked':'')+" onchange='setBonusMat("+id+","+idx+",this.checked)'>만기</label>"
+      +"<input type='number' min='1' max='360' step='1' style='width:14px' placeholder='1' value='"+(isMat?'':(r.at||''))+"' "+(isMat?'disabled':'')+" data-tip='이 운용월차(1부터)에 1회 추가' class='invest-input segtip' oninput='setBonusMonth("+id+","+idx+",this.value)'><span class='lb' style='color:#c08a3e'>개월차</span>"
+      +"<input type='number' min='0' max='50' step='0.5' style='width:23px' placeholder='0' value='"+(r.pct||'')+"' class='invest-input segtip' data-tip='그 정산월 원금 기준 1회 추가되는 보너스 수익률(%)' oninput='setBonusPct("+id+","+idx+",this.value)'><span class='lb' style='color:#c08a3e'>%</span>"
+      +"<button type='button' class='rm-btn segtip' data-tip='이 구간 삭제' onclick='delBonusRow("+id+","+idx+")'>×</button>"
+      +(idx===arr.length-1?"<span class='segtip' data-tip='구간 추가' style='cursor:pointer;color:#c08a3e;font-weight:700;padding:0 4px' onclick='addBonusRow("+id+")'>+</span>":"")
+      +"</span>";
+  }).join('');
 }
+function _ensureBonus(pid){if(!projBonus[pid])projBonus[pid]=[];return projBonus[pid];}
+function addBonusRow(pid){_ensureBonus(pid).push({at:'',pct:''});renderSP();save();}
+function delBonusRow(pid,idx){var a=_ensureBonus(pid);a.splice(idx,1);renderSP();save();}
+function setBonusMat(pid,idx,checked){var a=_ensureBonus(pid);if(a[idx])a[idx].at=checked?'mat':1;renderSP();save();}
+function setBonusMonth(pid,idx,val){var a=_ensureBonus(pid);if(!a[idx])return;var n=parseInt(val,10);a[idx].at=(n>0)?n:1;saveSoon();}
+function setBonusPct(pid,idx,val){var a=_ensureBonus(pid);if(!a[idx])return;var n=parseFloat(val);a[idx].pct=(n>0)?n:null;saveSoon();}
 function projTermDefault(p){var fp=_freshP(p);var start='',end='';var ds=String(fp.date||'');var md=ds.match(/^(\d{2})\.(\d{2})\.(\d{2})/);if(md)start='20'+md[1]+'-'+md[2]+'-'+md[3];var pd=String(fp.period||'');if(!start){var ps=pd.match(/^(\d{2})\.(\d{2})\.(\d{2})/);if(ps)start='20'+ps[1]+'-'+ps[2]+'-'+ps[3];}var pe=pd.match(/~(\d{2})\.(\d{2})\.(\d{2})/);if(pe)end='20'+pe[1]+'-'+pe[2]+'-'+pe[3];return {start:start,end:end};}
 function _termToDate(v,isEnd){if(!v)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;if(/^\d{4}-\d{2}$/.test(v)){if(isEnd){var y=parseInt(v.slice(0,4),10),m=parseInt(v.slice(5,7),10);return v+'-'+String(new Date(y,m,0).getDate()).padStart(2,'0');}return v+'-01';}return '';}
 function getProjTerm(p){var fp=_freshP(p);var d=projTermDefault(fp);var o=projTerm[fp.id]||{};var s=('start' in o)?o.start:d.start,e=('end' in o)?o.end:d.end;return {start:_termToDate(s,false),end:_termToDate(e,true)};}
@@ -2376,7 +2404,7 @@ function setRateStep(pid,val){
   projRateStep[pid]=(n>0)?n:null;
   saveSoon();
 }
-function setMatBonusOn(pid,on){if(on)projMaturityBonusOn[pid]=true;else{delete projMaturityBonusOn[pid];delete projMaturityBonus[pid];}_projAfterStruct(pid);}
+function setBonusOn(pid,on){if(on){projBonusOn[pid]=true;if(!projBonus[pid]||!projBonus[pid].length)projBonus[pid]=[{at:'',pct:''}];}else{delete projBonusOn[pid];delete projBonus[pid];}_projAfterStruct(pid);}
 function setProjMonthsInline(pid,v){
   var n=parseInt(v,10)||0; if(n<1)n=1; if(n>24)n=24;
   var up=userProjects.find(function(x){return x.id===pid;});
@@ -2399,7 +2427,7 @@ function setProjTypeInline(pid,t){
   }
   _projAfterStruct(pid);
 }
-function projHasCustom(pid){return !!projOverride[pid]||(parseFloat(projRates[pid])||0)>0||!!projRateStepOn[pid]||!!projExtRateOn[pid]||!!projMaturityBonusOn[pid];}
+function projHasCustom(pid){return !!projOverride[pid]||(parseFloat(projRates[pid])||0)>0||!!projRateStepOn[pid]||!!projExtRateOn[pid]||!!projBonusOn[pid];}
 function resetProjOverrideInline(pid){
   if(!projHasCustom(pid))return;
   rsConfirm('이 프로젝트를 원래 공지 내용으로 되돌릴까요?\n(투자 금액·수익률 입력칸·상환 기록은 그대로 남아요)',function(){
@@ -2451,10 +2479,10 @@ function projEditBox(p){
   var _preRate=(_preAbs==null)?(getEffectiveRate(p)||0):projEffAt(p,Math.floor(_preAbs/12),_preAbs%12,0,getEffectiveRate(p)||0).rate;
   var _pre=isShort?'':calcMonthly(inv,_preRate);
   h+="<div class='pe-row'>"
-    +"<span class='pe-f pe-num'><span class='lb'>투자 금액</span><input type='number' class='invest-input' value='"+inv+"' placeholder='만원' oninput='updateInvest("+id+",this.value)'><span class='lb'>만원</span></span>"
-    +(isShort?"":("<span class='pe-f pe-pct'><span class='lb'>수익률</span><input type='number' min='0' max='50' step='0.5' placeholder='15' value='"+(projRates[id]||'')+"' data-tip='현재 적용 수익률 직접 입력§§(이 값이 최종 적용)' class='invest-input segtip' oninput='setCustomRate("+id+",parseFloat(this.value)||0)'><span class='lb' style='color:var(--ac)'>%</span></span>"))
-    +((!isShort&&projRateStepOn[id])?("<span class='pe-f pe-pct'><span class='lb' style='color:var(--ac)'>연 인상</span><input type='number' min='0' max='20' step='0.5' placeholder='0' value='"+(projRateStep[id]||'')+"' data-tip='운용 1년이 지날 때마다§§수익률에 더해지는 폭(%p)§§예) 12%에 +1 → 13% → 14%' class='invest-input segtip' oninput='setRateStep("+id+",this.value)'><span class='lb' style='color:var(--ac)'>%p</span></span>"):"")
-    +(projMaturityBonusOn[id]?("<span class='pe-f pe-pct'><span class='lb' style='color:#c08a3e'>만기 보너스</span><input type='number' min='0' max='50' step='0.5' placeholder='0' value='"+(projMaturityBonus[id]||'')+"' data-tip='만기까지 유지(조기상환 없이) 시§§만기 정산월에 잔여원금 기준§§1회만 추가되는 보너스 수익률(%)' class='invest-input segtip' oninput='setMaturityBonus("+id+",this.value)'><span class='lb' style='color:#c08a3e'>%</span></span>"):"")
+    +"<span class='pe-f pe-num'><span class='lb'>투자 금액</span><input type='number' style='width:48px' class='invest-input' value='"+inv+"' placeholder='만원' oninput='updateInvest("+id+",this.value)'><span class='lb'>만원</span></span>"
+    +(isShort?"":("<span class='pe-f pe-pct'><span class='lb'>수익률</span><input type='number' min='0' max='50' step='0.5' style='width:23px' placeholder='15' value='"+(projRates[id]||getEffectiveRate(p)||'')+"' data-tip='현재 적용 수익률 직접 입력§§(이 값이 최종 적용)' class='invest-input segtip' oninput='setCustomRate("+id+",parseFloat(this.value)||0)'><span class='lb' style='color:var(--ac)'>%</span></span>"))
+    +((!isShort&&projRateStepOn[id])?("<span class='pe-f pe-pct'><span class='lb' style='color:var(--ac)'>연 인상</span><input type='number' min='0' max='20' step='0.5' style='width:23px' placeholder='0' value='"+(projRateStep[id]||'')+"' data-tip='운용 1년이 지날 때마다§§수익률에 더해지는 폭(%p)§§예) 12%에 +1 → 13% → 14%' class='invest-input segtip' oninput='setRateStep("+id+",this.value)'><span class='lb' style='color:var(--ac)'>%p</span></span>"):"")
+    +(projBonusOn[id]?bonusRowsHtml(id):"")
     +(_pre?("<span class='pe-note'>상환 전 월 수익 "+_pre+"</span>"):"")
     +"</div>";
   h+=(isShort?shortInputs(fp):(projTermInputs(p)+extInputs(p)))+"</div>";
@@ -2462,10 +2490,9 @@ function projEditBox(p){
     +"<label class='proj-ck segtip' data-tip='끄면 이 탭에서 관리만 하고§§로드맵·자산 합계엔 넣지 않아요' style='margin-right:14px'><input type='checkbox' style='accent-color:var(--ac)' "+(projIncluded(id)?'checked':'')+" onchange='setProjIncludeOn("+id+",this.checked)'>로드맵·자산에 반영</label>"
     +(isShort?"":("<label class='proj-ck segtip' data-tip='켜면 연 인상 입력칸이 나타나요§§1년마다 수익률이 오르는 계약에 써요' style='margin-right:14px'><input type='checkbox' style='accent-color:var(--ac)' "+(projRateStepOn[id]?'checked':'')+" onchange='setRateStepOn("+id+",this.checked)'>연 수익률 인상</label>"))
     +(isShort?"":("<label class='proj-ck segtip' data-tip='연장하면서 수익률이 바뀔 때 써요§§적은 값이 최종이라 연 인상은 더 붙지 않아요' style='margin-right:14px'><input type='checkbox' style='accent-color:var(--ac)' "+(projExtRateOn[id]?'checked':'')+" onchange='setExtRateOn("+id+",this.checked)'>연장 수익률</label>"))
-    +"<label class='proj-ck segtip' data-tip='켜면 만기+% 입력칸이 나타나요'><input type='checkbox' style='accent-color:#c08a3e' "+(projMaturityBonusOn[id]?'checked':'')+" onchange='setMatBonusOn("+id+",this.checked)'>만기 보너스</label></div>";
+    +"<label class='proj-ck segtip' data-tip='켜면 만기 또는 지정 개월차에 보너스 수익률을 추가할 수 있어요'><input type='checkbox' style='accent-color:#c08a3e' "+(projBonusOn[id]?'checked':'')+" onchange='setBonusOn("+id+",this.checked)'>추가 수익률</label></div>";
   var resetBtn=(isCat&&projHasCustom(id))?("<span class='ln-delx' style='margin-left:auto' onclick='resetProjOverrideInline("+id+")'>수정 내용 원래대로</span>"):'';
   h+=(isShort?("<div class='pe-grp'>"+earlyInputs(p,resetBtn)+"</div>"):repayInputs(p,resetBtn));
-  if(!isCat)h+="<div class='proj-ef'><button type='button' class='proj-del' onclick='deleteUserProj("+id+")'>이 프로젝트 완전 삭제</button></div>";
   return h+"</div>";
 }
 function projTermInputs(p){var t=getProjTerm(p);
@@ -3005,7 +3032,7 @@ function projCardHtml(p,hdrBtn){
       </div>
     </div>`;
 }
-function rmP(id){SP=SP.filter(p=>p.id!==id);delete projInvest[id];delete projSchedule[id];delete projRepay[id];delete projEarly[id];delete projAssetHide[id];delete projMaturityBonus[id];delete projMaturityBonusOn[id];delete projRateStep[id];delete projRateStepOn[id];delete projAddInv[id];delete projExtRateOn[id];delete projExtRate[id];delete projExtFrom[id];delete projOwner[id];delete projInclude[id];delete projMemo[id];renderSP();save();}
+function rmP(id){var _p=_freshP({id:id});if(_p&&!confirm('「'+(_p.name||'')+'」을 로드맵에서 삭제할까요?\n(다시 추가하면 이전 투자금·설정으로 복원돼요)'))return;SP=SP.filter(p=>p.id!==id);delete projInvest[id];delete projSchedule[id];delete projRepay[id];delete projEarly[id];delete projAssetHide[id];delete projBonus[id];delete projBonusOn[id];delete projRateStep[id];delete projRateStepOn[id];delete projAddInv[id];delete projExtRateOn[id];delete projExtRate[id];delete projExtFrom[id];delete projOwner[id];delete projInclude[id];delete projMemo[id];renderSP();save();}
 function _ensureAddInv(pid){if(!projAddInv[pid])projAddInv[pid]=[];return projAddInv[pid];}
 function addAddInv(pid){var _mk=(typeof monthKey==='function')?monthKey(todayStr()):todayStr().slice(0,7);_ensureAddInv(pid).push({from:_mk,amount:''});renderSP();save();}
 function setAddInvFrom(pid,idx,val){var a=_ensureAddInv(pid);if(a[idx])a[idx].from=val||'';saveSoon();}

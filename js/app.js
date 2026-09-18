@@ -29,7 +29,15 @@ function initApp(){
       if(d.userGrade)userGrade=d.userGrade;   /* 내 프로젝트 등급 — 복원 (세션 44) */
     if(d.projRates)projRates=d.projRates;
     if(d.projSchedule)projSchedule=d.projSchedule;
-    if(d.projTerm)projTerm=d.projTerm;if(d.projRepay)projRepay=d.projRepay;if(d.projEarly)projEarly=d.projEarly;if(d.projAssetHide)projAssetHide=d.projAssetHide;if(d.projOverride)projOverride=d.projOverride;if(d.projMaturityBonus)projMaturityBonus=d.projMaturityBonus;if(d.projMaturityBonusOn)projMaturityBonusOn=d.projMaturityBonusOn;if(d.projRateStep)projRateStep=d.projRateStep;if(d.projRateStepOn)projRateStepOn=d.projRateStepOn;if(d.projAddInv)projAddInv=d.projAddInv;if(d.projExtRateOn)projExtRateOn=d.projExtRateOn;if(d.projExtRate)projExtRate=d.projExtRate;if(d.projExtFrom)projExtFrom=d.projExtFrom;if(d.projOwner)projOwner=d.projOwner;if(d.projInclude)projInclude=d.projInclude;if(d.projMemo)projMemo=d.projMemo;if(Array.isArray(d.projSummaryPick)&&d.projSummaryPick.length)projSummaryPick=d.projSummaryPick;if(typeof d.projSummaryFamily==='boolean')projSummaryFamily=d.projSummaryFamily;if(d.userProjects)userProjects=d.userProjects;
+    if(d.projTerm)projTerm=d.projTerm;if(d.projRepay)projRepay=d.projRepay;if(d.projEarly)projEarly=d.projEarly;if(d.projAssetHide)projAssetHide=d.projAssetHide;if(d.projOverride)projOverride=d.projOverride;
+    if(d.projBonus)projBonus=d.projBonus;if(d.projBonusOn)projBonusOn=d.projBonusOn;
+    if(!d.projBonus&&d.projMaturityBonusOn){ /* 구버전 만기 보너스(단일값) → 새 다중구간 배열로 1회 이관 */
+      Object.keys(d.projMaturityBonusOn).forEach(function(pid){
+        var n=parseFloat(d.projMaturityBonus&&d.projMaturityBonus[pid]);
+        if(n>0){projBonus[pid]=[{at:'mat',pct:n}];projBonusOn[pid]=true;}
+      });
+    }
+    if(d.projRateStep)projRateStep=d.projRateStep;if(d.projRateStepOn)projRateStepOn=d.projRateStepOn;if(d.projAddInv)projAddInv=d.projAddInv;if(d.projExtRateOn)projExtRateOn=d.projExtRateOn;if(d.projExtRate)projExtRate=d.projExtRate;if(d.projExtFrom)projExtFrom=d.projExtFrom;if(d.projOwner)projOwner=d.projOwner;if(d.projInclude)projInclude=d.projInclude;if(d.projMemo)projMemo=d.projMemo;if(Array.isArray(d.projSummaryPick)&&d.projSummaryPick.length)projSummaryPick=d.projSummaryPick;if(typeof d.projSummaryFamily==='boolean')projSummaryFamily=d.projSummaryFamily;if(d.userProjects)userProjects=d.userProjects;
       if(d.projInvest){
         projInvest=d.projInvest;
         Object.keys(projInvest).forEach(function(k){
