@@ -2326,6 +2326,9 @@ function openCertCapture(scope,kind){
         }).catch(doFallback);
       }else{doFallback();}
     },'image/png');
+  }).catch(function(){
+    if(btn){btn.innerHTML=origLabel;btn.disabled=false;}
+    showToast('캡처에 실패했어요. 다시 시도해 주세요.');
   });
 }
 
