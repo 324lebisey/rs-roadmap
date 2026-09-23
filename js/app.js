@@ -191,3 +191,94 @@ function weeklyRsDirection(weekDate){
 
   if(g('dlViewWeek')&&g('dlViewWeek').style.display!=='none')renderWeekView();
 })();
+
+/* ── 표 칸 너비 조절: 헤더 줄 칸 경계를 잡고 드래그하면 그 표의 "모든" 칸이 한 번에 같은 너비로 늘거나 줄어든다(칸 하나씩 아님).
+   더블클릭하면 그 표만 기본 너비로 되돌아간다. 표마다(부모 id 기준) 너비를 기억해서 다음에 열어도 유지된다.
+   기존 .xl 표 렌더 함수들은 전혀 손대지 않는다 — 새로 생기는 .xl 표를 MutationObserver로 잡아서 씌운다. */
+(function(){
+  var STORE_KEY='rs_xlw',MIN_W=40,MAX_W=400,EDGE=6;
+  function loadMap(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||'{}');}catch(e){return {};}}
+  function saveMap(m){try{lsSet(STORE_KEY,JSON.stringify(m));}catch(e){}}
+  function xlKey(table){
+    var el=table.parentElement;
+    while(el&&!el.id)el=el.parentElement;
+    if(el&&el.id)return el.id;
+    var hdr=table.querySelector('tr');
+    return hdr?('h_'+hdr.textContent.trim().slice(0,20)):'default';
+  }
+  function applyStored(table){
+    if(table.dataset.xlwInit)return;
+    table.dataset.xlwInit='1';
+    var key=xlKey(table);
+    table.dataset.xlkey=key;
+    var w=loadMap()[key];
+    if(w){table.dataset.xlr='1';table.style.setProperty('--xlw',w+'px');}
+  }
+  function scan(root){
+    if(!root||root.nodeType!==1)return;
+    if(root.matches&&root.matches('table.xl'))applyStored(root);
+    if(root.querySelectorAll)Array.prototype.forEach.call(root.querySelectorAll('table.xl'),applyStored);
+  }
+  new MutationObserver(function(muts){muts.forEach(function(m){Array.prototype.forEach.call(m.addedNodes,scan);});}).observe(document.body,{childList:true,subtree:true});
+  scan(document.body);
+
+  function headerCellAt(table,clientX){
+    var row=table.querySelector('tr');if(!row)return null;
+    var cells=row.children;
+    for(var i=0;i<cells.length;i++){
+      var c=cells[i];
+      if(c.classList.contains('rl'))continue;
+      var r=c.getBoundingClientRect();
+      if(Math.abs(clientX-r.right)<=EDGE)return c;
+    }
+    return null;
+  }
+  var drag=null;
+  function startDrag(table,clientX){
+    var cell=headerCellAt(table,clientX);
+    if(!cell)return false;
+    drag={table:table,startX:clientX,startW:cell.getBoundingClientRect().width,w:0};
+    document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    return true;
+  }
+  function moveDrag(clientX){
+    if(!drag)return;
+    var w=Math.max(MIN_W,Math.min(MAX_W,Math.round(drag.startW+(clientX-drag.startX))));
+    drag.table.dataset.xlr='1';drag.table.style.setProperty('--xlw',w+'px');drag.w=w;
+  }
+  function endDrag(){
+    if(!drag)return;
+    if(drag.w){var m=loadMap();m[drag.table.dataset.xlkey||xlKey(drag.table)]=drag.w;saveMap(m);}
+    document.body.style.cursor='';document.body.style.userSelect='';
+    drag=null;
+  }
+  function resetTable(table){
+    var key=table.dataset.xlkey||xlKey(table);
+    var m=loadMap();delete m[key];saveMap(m);
+    delete table.dataset.xlr;table.style.removeProperty('--xlw');
+  }
+  document.addEventListener('mousedown',function(e){
+    var table=e.target.closest&&e.target.closest('table.xl');
+    if(table&&startDrag(table,e.clientX))e.preventDefault();
+  });
+  var hoverTable=null;
+  document.addEventListener('mousemove',function(e){
+    if(drag){moveDrag(e.clientX);return;}
+    var table=e.target.closest&&e.target.closest('table.xl');
+    var onBorder=table&&headerCellAt(table,e.clientX);
+    if(hoverTable&&hoverTable!==(onBorder?table:null))hoverTable.style.cursor='';
+    hoverTable=onBorder?table:null;
+    if(hoverTable)hoverTable.style.cursor='col-resize';
+  });
+  document.addEventListener('mouseup',endDrag);
+  document.addEventListener('dblclick',function(e){
+    var table=e.target.closest&&e.target.closest('table.xl');
+    if(table&&headerCellAt(table,e.clientX))resetTable(table);
+  });
+  document.addEventListener('touchstart',function(e){
+    var table=e.target.closest&&e.target.closest('table.xl');
+    if(table&&e.touches[0]&&startDrag(table,e.touches[0].clientX))e.preventDefault();
+  },{passive:false});
+  document.addEventListener('touchmove',function(e){if(drag&&e.touches[0]){moveDrag(e.touches[0].clientX);e.preventDefault();}},{passive:false});
+  document.addEventListener('touchend',endDrag);
+})();
