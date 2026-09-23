@@ -300,6 +300,13 @@ body.nav-pinned #navDrawer{transform:translateX(0)!important}
 .ri{width:36px;border:none;background:transparent;font-size:13px;font-weight:700;color:#3d3000;font-family:inherit;padding:0 1px;outline:none;caret-color:#3d3000;-moz-appearance:textfield;text-align:right;cursor:text}
 .ri::-webkit-inner-spin-button,.ri::-webkit-outer-spin-button{-webkit-appearance:none}
 .si{width:68px;border:none;background:transparent;font-size:11.5px;color:#111;font-family:inherit;text-align:right;padding:0;outline:none;-moz-appearance:textfield}
+#short .xl .si{font-size:13px}
+#dlSpecialBody .xl{table-layout:fixed;width:0;min-width:0}
+#dlSpecialBody .xl:not([data-xlr]) td:not(.rl),#dlSpecialBody .xl:not([data-xlr]) th:not(.rl){width:100px}
+#dlSpecialBody .xl td.rl,#dlSpecialBody .xl th.rl,#dlSpecialBody .xl .rl{width:108px}
+/* 표 칸 너비 사용자 조절(js/app.js xl-resize): 한 번이라도 드래그/복원한 표는 data-xlr가 붙고, 그 표의 모든 칸이 --xlw 하나로 한 번에 맞춰진다(칸별 개별 조절 아님) */
+.xl[data-xlr]{table-layout:fixed}
+.xl[data-xlr] td:not(.rl),.xl[data-xlr] th:not(.rl){width:var(--xlw)}
 .si::-webkit-inner-spin-button,.si::-webkit-outer-spin-button{-webkit-appearance:none}
 input.asrt{-moz-appearance:textfield;appearance:textfield}
 input.asrt::-webkit-inner-spin-button,input.asrt::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
@@ -580,11 +587,14 @@ body.fiesta .xl th,body.fiesta .xl td{font-family:"Hi Melody",sans-serif}
   .proj-desktop-only{display:none}.proj-mobile-only{display:inline}
 }
 @media (max-width:640px){
-  body .xl{table-layout:fixed !important;width:max-content !important;min-width:100% !important}
-  body .xl td:not(.rl),body .xl th:not(.rl){width:90px !important;min-width:90px !important;max-width:90px !important;padding:5px 5px !important}
+  body .xl:not([data-xlr]){table-layout:fixed !important;width:max-content !important;min-width:100% !important}
+  body .xl:not([data-xlr]) td:not(.rl),body .xl:not([data-xlr]) th:not(.rl){width:90px !important;min-width:90px !important;max-width:90px !important;padding:5px 5px !important}
+  body .xl[data-xlr]{width:max-content !important;min-width:0 !important}
+  body .xl[data-xlr] td:not(.rl),body .xl[data-xlr] th:not(.rl){width:var(--xlw) !important;min-width:0 !important;max-width:none !important;padding:5px 5px !important}
   body .xl td:not(.rl) input,body .xl td:not(.rl) textarea{width:100% !important;min-width:0 !important;box-sizing:border-box;padding:2px 2px !important;text-align:right}
   body.fiesta .xl td:not(.rl){font-size:17px !important}
   body.fiesta .xl td:not(.rl) input{font-size:17px !important}
+  #dlSpecialBody .xl:not([data-xlr]) td:not(.rl),#dlSpecialBody .xl:not([data-xlr]) th:not(.rl){width:59px !important;min-width:59px !important;max-width:59px !important}
 }
 
 
