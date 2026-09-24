@@ -4,7 +4,7 @@ function initApp(){
   try{loadDailyCats();renderCatOptions();}catch(e){}
   try{var _wsd=parseInt(localStorage.getItem('rs_week_start'),10);if(_wsd>=0&&_wsd<=6)weekStartDay=_wsd;}catch(e){}
   try{var _msd=parseInt(localStorage.getItem('rs_month_start'),10);if(_msd>=1&&_msd<=31)settleStartDay=_msd;var _msm=localStorage.getItem('rs_month_shortmode');if(_msm==='next'||_msm==='last')settleShortMode=_msm;}catch(e){}
-  try{loadDailyMoods();loadDailyBudget();migrateWeekly();loadFixedDue();loadHolidays();loadDailyConsume();loadConsumeEmpty();loadCalLayers();loadIncome();loadIncomeCats();loadIncomeMap();}catch(e){}
+  try{loadDailyMoods();loadDailyBudget();migrateWeekly();loadFixedDue();loadHolidays();loadDailyConsume();loadConsumeEmpty();loadCalLayers();loadIncome();loadIncomeCats();loadIncomeMap();loadIncomeFixed();}catch(e){}
   // 테마 로딩 (데이터 로딩과 분리)
   try{var th=localStorage.getItem("rs_theme");if(th)setTheme(th);}catch(e){}
   try{applyHelpHidden();}catch(e){}
@@ -78,6 +78,8 @@ function initApp(){
   try{initDragDrop();}catch(e){}
   try{initPaste();}catch(e){}
   window.addEventListener('beforeunload',function(){if(!_preventSave)save();});
+  window.addEventListener('beforeunload',rsUnloadWarn);   // 위 save() 뒤에 등록 — 저장이 끝난 상태로 비교
+  document.addEventListener('visibilitychange',function(){if(!document.hidden){try{checkBackupReminder();}catch(e){}}});
   // ri(수익률)/si(저축) 입력: blur 시에만 재계산
   document.addEventListener('change',function(e){
     var t=e.target;
@@ -110,7 +112,9 @@ function initApp(){
   try{renderShort();}catch(e){console.error("renderShort 오류:",e);}
   try{renderMid();}catch(e){console.error("renderMid 오류:",e);}
   try{syncImportToggle();}catch(e){console.error("토글 오류:",e);}  // 데이터 유무에 따라 가져오기 영역 열기/닫기
+  try{if(ensureIncomeSeed(monthKey(todayStr())))renderActiveView();}catch(e){}   // 고정수입 이어받기 — 복원·렌더가 끝난 뒤에 (§2.23)
   try{checkBackupReminder();}catch(e){}
+  try{rsMarkSigBaseline();}catch(e){}   // 창 닫기 경고의 「이번 접속에서 바뀜」 기준값
   try{if(_driveAvailable()){var _dsb=g('driveSaveBtn'),_dlb=g('driveLoadBtn');if(_dsb)_dsb.style.display='inline-flex';if(_dlb)_dlb.style.display='inline-flex';}}catch(e){}
   /* 첫 사용자는 일일 뷰(스타터 안내문)로, 기록이 있는 사람(백업 불러오기 포함)은 달력부터.
      판정은 백업 리마인드와 같은 _rsHasRealData() 하나를 재사용한다(새 기준 만들지 않음). */

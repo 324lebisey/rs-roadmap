@@ -468,9 +468,9 @@ function renderShort(){
       if(dailyLinkOn(yr,mi)){
         var w=dailyMonthTotal(yr,mi);tot+=(-w);
         var disp=shBl?"<span class='blurred' style='display:inline-block;filter:blur(2.5px)'>"+fmtSh(-w)+"</span>":fmtSh(-w);
-        r+="<td onclick='toggleDailyLink("+yr+","+mi+")' title='클릭: 이 달 일일기록 연동 해제' style='color:var(--ac);text-align:right;padding:2px 4px;cursor:pointer;background:var(--ac-light);font-size:14px'>"+disp+"<br><span style='font-size:13px;color:var(--ac)'>일일기록</span></td>";
+        r+="<td class='segtip' onclick='toggleDailyLink("+yr+","+mi+")' data-tip='클릭: 이 달§§일일기록 연동 해제' style='color:var(--ac);text-align:right;padding:2px 4px;cursor:pointer;background:var(--ac-light);font-size:14px'>"+disp+"<br><span style='font-size:13px;color:var(--ac)'>일일기록</span></td>";
       }else{
-        r+="<td onclick='toggleDailyLink("+yr+","+mi+")' title='클릭: 이 달을 일일기록 합계로 채우기' style='text-align:center;padding:2px 4px;cursor:pointer;color:#ccc;font-size:18px'>+</td>";
+        r+="<td class='segtip' onclick='toggleDailyLink("+yr+","+mi+")' data-tip='클릭: 이 달을 일일기록§§합계로 채우기' style='text-align:center;padding:2px 4px;cursor:pointer;color:#ccc;font-size:18px'>+</td>";
       }
     });
     return r+"<td class='sum-cell' style='color:var(--ac)'>"+cell(tot)+"</td></tr>";
@@ -485,7 +485,7 @@ function renderShort(){
       var cr=customRowsShort.find(function(x){return x.id===id;});
       if(!cr)return;
       var tot=0;
-      var row="<tr class='r-sub'><td class='rl' style='padding:4px 6px;vertical-align:middle;cursor:pointer' ondblclick='editRowLabel(\""+cr.id+"\",\""+String(cr.label).replace(/\n/g," ")+"\")' title='더블클릭: 이름 수정'>"+
+      var row="<tr class='r-sub'><td class='rl segtip' style='padding:4px 6px;vertical-align:middle;cursor:pointer' ondblclick='editRowLabel(\""+cr.id+"\",\""+String(cr.label).replace(/\n/g," ")+"\")' data-tip='더블클릭: 이름 수정'>"+
         "<div style='display:flex;align-items:center;gap:2px'>"+
         "<div style='display:flex;flex-direction:column;gap:1px'>"+
         "<button onclick='moveShortRow(\""+cr.id+"\", -1)' class='no-copy' style='background:none;border:none;cursor:pointer;color:var(--ac);font-size:13px;padding:0;line-height:1'>▲</button>"+
@@ -526,7 +526,7 @@ function yhCell(y,bl){
   // 클릭하면 위기연도 지정/해제 (셀 색 짙어지고 ⚠ 위기 표시)
   var _gt=_msYearCache&&_msYearCache[y];
   var _gtD=_gt?(bl?"<span class='blurred'>"+_gt+"</span>":_gt):"";
-  return "<td onclick='toggleCrisis("+y+")' title='클릭해서 위기연도 지정/해제"+(_gt&&!bl?" · 🎯 "+_gt+" 도달":(_gt?" · 🎯 목표 도달":""))+"' style='background:"+bg+";color:"+co+";font-weight:700;font-size:13px;text-align:center;cursor:pointer'>"+y+"년"+(cr?"<br><span style='font-size:13px;opacity:.85'>⚠ 위기</span>":"")+(_gt?"<br><span style='font-size:12px;white-space:nowrap'>🎯"+_gtD+"</span>":"")+"</td>";
+  return "<td class='segtip' onclick='toggleCrisis("+y+")' data-tip='클릭해서§§위기연도 지정/해제"+(_gt&&!bl?" · 🎯 "+_gt+" 도달":(_gt?" · 🎯 목표 도달":""))+"' style='background:"+bg+";color:"+co+";font-weight:700;font-size:13px;text-align:center;cursor:pointer'>"+y+"년"+(cr?"<br><span style='font-size:13px;opacity:.85'>⚠ 위기</span>":"")+(_gt?"<br><span style='font-size:12px;white-space:nowrap'>🎯"+_gtD+"</span>":"")+"</td>";
 }
 function renderMid(){
   var mdY2=parseInt(g("mdY").value)||2026,mdA2=parseInt(g("mdA").value)||0,mdV2=(parseFloat(g("mdV").value)||0)*10000;  // 만원 입력 → 원 변환
@@ -679,7 +679,7 @@ function renderMilestones(){var el=g('msList');if(!el)return;var bl=g('blur')&&g
   if(!milestones.length){el.innerHTML="<span style='font-size:13px;color:#bbb;word-break:keep-all'>목표 금액을 추가하면 도달 시점을 알려줘요 (만원 단위, 예: 10000 = 1억)</span>";return;}
   el.innerHTML=milestones.map(function(t,i){var w=t*10000;var hit=null;for(var k=0;k<lastCalcRows.length;k++){if(lastCalcRows[k].tot>=w){hit=lastCalcRows[k];break;}}
     var right=hit?("<b style='color:var(--ac);white-space:nowrap'>"+hit.y+"년</b>"+(hit.age!=null?" <span style='color:var(--gray);white-space:nowrap'>("+hit.age+"세)</span>":"")):"<span style='color:#c0392b;white-space:nowrap'>기간 내 미도달</span>";
-    return "<div style='display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px'><span style='white-space:nowrap'>🎯 "+B(fmtEok(w))+"</span><span style='color:var(--gray)'>→</span>"+right+"<button type='button' title='삭제' onclick='rmMilestone("+i+")' style='border:none;background:none;color:#bbb;cursor:pointer;font-size:14px;padding:0 4px;font-family:inherit'>✕</button></div>";}).join('');}
+    return "<div style='display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px'><span style='white-space:nowrap'>🎯 "+B(fmtEok(w))+"</span><span style='color:var(--gray)'>→</span>"+right+"<button class='segtip' type='button' data-tip='삭제' onclick='rmMilestone("+i+")' style='border:none;background:none;color:#bbb;cursor:pointer;font-size:14px;padding:0 4px;font-family:inherit'>✕</button></div>";}).join('');}
 function setSensDelta(d){sensDelta=d;renderSens();}
 function renderSens(){var bEl=g('sensBtns'),lEl=g('sensLine');if(!bEl||!lEl)return;
   bEl.innerHTML=[0.5,1,2,3].map(function(d){var on=(d===sensDelta);return "<button type='button' onclick='setSensDelta("+d+")' style='border:1px solid "+(on?"var(--ac)":"var(--border)")+";background:"+(on?"var(--ac-light)":"#fff")+";color:"+(on?"var(--ac)":"#555")+";border-radius:99px;padding:3px 10px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;margin:0 4px 4px 0'>±"+d+"%p</button>";}).join('');
@@ -1346,7 +1346,7 @@ function renderLong(rows,bl,sy){
     _btm.forEach(function(cr,crIdx){
       h+="<tr class='r-event'>"+((_full&&crIdx===0)?reGrpTd("목표 및<br>보상",_btm.length):"");
       // 행 레이블 + 순서변경 + 이름변경 + 삭제 버튼
-      h+="<td class='rl' style='padding:4px 6px;vertical-align:top;cursor:pointer' ondblclick='editRowLabel(\""+cr.id+"\",\""+String(cr.label).replace(/\n/g," ")+"\")' title='더블클릭: 이름 수정'>";
+      h+="<td class='rl segtip' style='padding:4px 6px;vertical-align:top;cursor:pointer' ondblclick='editRowLabel(\""+cr.id+"\",\""+String(cr.label).replace(/\n/g," ")+"\")' data-tip='더블클릭: 이름 수정'>";
       h+="<div style='display:flex;align-items:center;gap:2px'>";
       h+="<div style='display:flex;flex-direction:column;gap:1px'>";
       h+="<button style='background:none;border:none;cursor:pointer;color:var(--ac);font-size:13px;padding:0;line-height:1' data-rid='"+cr.id+"' data-d='-1' onclick='moveRow(this.dataset.rid,parseInt(this.dataset.d))'>▲</button>";
@@ -1370,7 +1370,7 @@ function renderLong(rows,bl,sy){
               "<div class='img-handle' onmousedown='rsStart(event,"+r.y+","+ii+")'></div>"+
               "<div class='img-del' onclick='rmImgAt("+r.y+","+ii+")'>&#10005;</div></div>";
           });
-          imgHtml+="<button class='ib' onclick='pickImg("+r.y+")' title='클릭해서 사진 파일 선택'>+</button>";
+          imgHtml+="<button class='ib segtip' onclick='pickImg("+r.y+")' data-tip='클릭해서 사진 파일 선택'>+</button>";
           imgHtml+='</div>';
         }
         if(cr.id==='et_default'){
@@ -2226,13 +2226,14 @@ function confirmUserProj(){
 function editUserProj(pid){openUserProjModal(pid);}
 function deleteUserProj(pid){
   var p=userProjects.find(function(x){return x.id===pid;});if(!p)return;
-  if(!confirm('「'+p.name+'」 프로젝트를 완전히 삭제할까요?\n(투자금·수익률·상환 기록도 함께 지워져요)'))return;
-  userProjects=userProjects.filter(function(x){return x.id!==pid;});
-  SP=SP.filter(function(x){return x.id!==pid;});
-  delete projInvest[pid];delete projRates[pid];delete projSchedule[pid];delete projTerm[pid];delete projRepay[pid];delete projEarly[pid];delete projAssetHide[pid];delete projOverride[pid];delete projBonus[pid];delete projBonusOn[pid];delete projRateStep[pid];delete projRateStepOn[pid];delete projAddInv[pid];delete projExtRateOn[pid];delete projExtRate[pid];delete projExtFrom[pid];delete projOwner[pid];delete projInclude[pid];delete projMemo[pid];
-  renderSP();renderPOpts();renderShort();
-  if(typeof renderMoIncome==='function')try{renderMoIncome(dailyDate||todayStr());}catch(_){}
-  save();
+  rsConfirm('「'+p.name+'」 프로젝트를 완전히 삭제할까요?§§투자금·수익률·상환 기록도 함께 지워져요',function(){
+    userProjects=userProjects.filter(function(x){return x.id!==pid;});
+    SP=SP.filter(function(x){return x.id!==pid;});
+    delete projInvest[pid];delete projRates[pid];delete projSchedule[pid];delete projTerm[pid];delete projRepay[pid];delete projEarly[pid];delete projAssetHide[pid];delete projOverride[pid];delete projBonus[pid];delete projBonusOn[pid];delete projRateStep[pid];delete projRateStepOn[pid];delete projAddInv[pid];delete projExtRateOn[pid];delete projExtRate[pid];delete projExtFrom[pid];delete projOwner[pid];delete projInclude[pid];delete projMemo[pid];
+    renderSP();renderPOpts();renderShort();
+    if(typeof renderMoIncome==='function')try{renderMoIncome(dailyDate||todayStr());}catch(_){}
+    save();
+  });
 }
 
 let userGrade=null;
@@ -3042,7 +3043,7 @@ function projCardHtml(p,hdrBtn){
       </div>
     </div>`;
 }
-function rmP(id){var _p=_freshP({id:id});if(_p&&!confirm('「'+(_p.name||'')+'」을 로드맵에서 삭제할까요?\n(다시 추가하면 이전 투자금·설정으로 복원돼요)'))return;SP=SP.filter(p=>p.id!==id);delete projInvest[id];delete projSchedule[id];delete projRepay[id];delete projEarly[id];delete projAssetHide[id];delete projBonus[id];delete projBonusOn[id];delete projRateStep[id];delete projRateStepOn[id];delete projAddInv[id];delete projExtRateOn[id];delete projExtRate[id];delete projExtFrom[id];delete projOwner[id];delete projInclude[id];delete projMemo[id];renderSP();save();}
+function rmP(id){var _p=_freshP({id:id});var _do=function(){SP=SP.filter(p=>p.id!==id);delete projInvest[id];delete projSchedule[id];delete projRepay[id];delete projEarly[id];delete projAssetHide[id];delete projBonus[id];delete projBonusOn[id];delete projRateStep[id];delete projRateStepOn[id];delete projAddInv[id];delete projExtRateOn[id];delete projExtRate[id];delete projExtFrom[id];delete projOwner[id];delete projInclude[id];delete projMemo[id];renderSP();save();};if(_p)rsConfirm('「'+(_p.name||'')+'」을 로드맵에서 삭제할까요?§§다시 추가하면 이전 투자금·설정으로 복원돼요',_do);else _do();}
 function _ensureAddInv(pid){if(!projAddInv[pid])projAddInv[pid]=[];return projAddInv[pid];}
 function addAddInv(pid){var _mk=(typeof monthKey==='function')?monthKey(todayStr()):todayStr().slice(0,7);_ensureAddInv(pid).push({from:_mk,amount:''});renderSP();save();}
 function setAddInvFrom(pid,idx,val){var a=_ensureAddInv(pid);if(a[idx])a[idx].from=val||'';saveSoon();}

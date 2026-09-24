@@ -26,7 +26,7 @@ function downloadTemplate(kind){
   a.click();
   showToast(nm+" 양식을 받았어요. 값을 채워서 다시 불러오세요");
 }
-var RS_EXTRA_KEYS=["rs_shunit","rs_mdunit","rs_lgunit","rs_daily","rs_daily_cats","rs_daily_moods","rs_daily_budget","rs_daily_link","rs_daily_review","rs_daily_consume","rs_consume_empty","rs_assets","rs_asset_history","rs_cat_hidden","rs_fixed_due","rs_holidays","rs_help_hidden","rs_resist","rs_spend_rules","rs_spend_rules_on","rs_week_start","rs_month_start","rs_month_shortmode","rs_income","rs_income_cats","rs_income_map","rs_income_rm","rs_meal","rs_meal_on","rs_cal_layers","rs_special_plan","rs_nav_pin","rs_rmtab","rs_default_tab"];
+var RS_EXTRA_KEYS=["rs_income_fixed","rs_shunit","rs_mdunit","rs_lgunit","rs_daily","rs_daily_cats","rs_daily_moods","rs_daily_budget","rs_daily_link","rs_daily_review","rs_daily_consume","rs_consume_empty","rs_assets","rs_asset_history","rs_cat_hidden","rs_fixed_due","rs_holidays","rs_help_hidden","rs_resist","rs_spend_rules","rs_spend_rules_on","rs_week_start","rs_month_start","rs_month_shortmode","rs_income","rs_income_cats","rs_income_map","rs_income_rm","rs_meal","rs_meal_on","rs_cal_layers","rs_special_plan","rs_nav_pin","rs_rmtab","rs_default_tab"];
 // ── 구글 드라이브 저장/불러오기 (2단계) — 클라이언트 ID는 주인장이 발급해 넣을 때까지 빈 문자열 = 기능 전체 비활성 ──
 var DRIVE_CLIENT_ID="617085954049-ierh9liphmhhn11r352gh9or74k60hj7.apps.googleusercontent.com";
 // ── 백업 리마인드 (마지막 백업 후 경과 알림) ─────────────
@@ -52,11 +52,29 @@ function checkBackupReminder(){
     if(days>=14)msg='마지막 백업 후 '+days+'일 지났어요. 지금 백업해 두면 안전해요.';
   }
   var mb=g('backupReminderMsg');
+  var db=g('backupDriveBtn');if(db)db.style.display=_driveAvailable()?'inline-block':'none';
   if(msg&&mb){mb.textContent=msg;el.style.display='flex';}else{el.style.display='none';}
 }
 function doBackupNow(){exportData();}
 function snoozeBackupReminder(){try{lsSet('rs_backup_snooze',String(Date.now()+7*86400000),1);}catch(e){}var el=g('backupReminder');if(el)el.style.display='none';}
-function markBackupDone(){try{lsSet('rs_last_backup',String(Date.now()),1);localStorage.removeItem('rs_backup_snooze');}catch(e){}var el=g('backupReminder');if(el)el.style.display='none';}
+function markBackupDone(){try{lsSet('rs_last_backup',String(Date.now()),1);localStorage.removeItem('rs_backup_snooze');}catch(e){}rsMarkSigBaseline();var el=g('backupReminder');if(el)el.style.display='none';}
+// ── 창 닫을 때 미백업 경고 (beforeunload) — 브라우저가 문구를 고정하므로 「이번에 고쳤고 + 백업이 3일 넘게 없을 때」만 띄운다 ──
+// 이번 접속에서 데이터가 바뀌었는지는 rs7+백업 키들의 해시를 부팅 직후/백업 직후 값과 비교해 판단한다(파생 집계를 저장하지 않는다).
+function _rsSig(){var h=2166136261,s=localStorage.getItem('rs7')||'';RS_EXTRA_KEYS.forEach(function(k){s+='|'+(localStorage.getItem(k)||'');});for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+// 기준값은 save(true)로 한 번 정규화한 뒤에 잡는다 — 안 그러면 저장 직렬화 차이만으로 「고쳤다」고 오판한다.
+// 처음 온 사용자는 rs7이 없어야 하므로(있으면 「실제 데이터 있음」 판정이 바뀐다) 기준값만 잡고 rs7을 다시 지운다.
+// 값은 window._rsSavedSig(휘발성, 저장 안 함).
+function rsMarkSigBaseline(){try{var had=localStorage.getItem('rs7')!==null;if(!_preventSave&&!window._rsLoadError)save(true);window._rsSavedSig=_rsSig();if(!had)localStorage.removeItem('rs7');}catch(e){window._rsSavedSig=null;}}
+function rsUnloadWarn(e){
+  if(_preventSave||window._rsSavedSig==null)return;
+  try{
+    if(!_rsHasRealData())return;
+    var last=parseInt(localStorage.getItem('rs_last_backup')||'0',10);
+    if(last&&Date.now()-last<3*86400000)return;
+    if(_rsSig()===window._rsSavedSig)return;
+    e.preventDefault();e.returnValue='';
+  }catch(_){}
+}
 function _rsBuildPayload(){
   // ★ 백업 직전 강제 저장: saveSoon() 디바운스 대기 중인 입력(프로젝트 투자금 등)이
   //   rs7에 반영되기 전에 백업하면 최신 입력이 JSON에서 빠진다 — 반드시 먼저 flush.
@@ -513,7 +531,7 @@ function rlTdMove(key,label,moveId,moveFn,showDel,delFn){
   var upBtn="<button onclick='"+moveFn+"(\""+moveId+"\", -1)' style='background:none;border:none;cursor:pointer;color:var(--ac);font-size:13px;padding:0;line-height:1'>▲</button>";
   var dnBtn="<button onclick='"+moveFn+"(\""+moveId+"\", 1)' style='background:none;border:none;cursor:pointer;color:var(--ac);font-size:13px;padding:0;line-height:1'>▼</button>";
   var delBtn=showDel?"<button onclick='"+delFn+"' style='background:none;border:none;cursor:pointer;color:#ccc;font-size:13px;padding:0'>✕</button>":"";
-  return "<td class='rl' style='padding:4px 6px;vertical-align:middle;cursor:pointer' ondblclick='editRowLabel(\""+key+"\",\""+String(name).replace(/\n/g," ")+"\")' title='더블클릭: 이름 수정'>"+
+  return "<td class='rl segtip' style='padding:4px 6px;vertical-align:middle;cursor:pointer' ondblclick='editRowLabel(\""+key+"\",\""+String(name).replace(/\n/g," ")+"\")' data-tip='더블클릭: 이름 수정'>"+
     "<div style='display:flex;align-items:center;gap:2px'>"+
     "<div style='display:flex;flex-direction:column;gap:1px'>"+upBtn+dnBtn+"</div>"+
     "<span style='font-size:13px;flex:1;white-space:normal;word-break:break-word'>"+lblHtml(name)+"</span>"+
@@ -827,7 +845,7 @@ function importFromSheet(inputId){
 // 행 이름 셀 — 더블클릭으로 수정 가능
 function rlTd(key,def){
   var name=rowLabels[key]||def;
-  return "<td class='rl' ondblclick='editRowLabel(\""+key+"\",\""+def+"\")'  title='더블클릭: 이름 수정'>"+lblHtml(name)+"</td>";
+  return "<td class='rl segtip' ondblclick='editRowLabel(\""+key+"\",\""+def+"\")'  data-tip='더블클릭: 이름 수정'>"+lblHtml(name)+"</td>";
 }
 var _editLabelKey=null,_editLabelDef=null;
 function lblHtml(s){
@@ -914,7 +932,7 @@ function rsPromptTextarea(title,opt,cb){
 function cellNoteDot(key,openFnName){
   var has=!!(customNotes&&customNotes[key]);
   var tip=has?('메모: '+String(customNotes[key])):'메모 추가';
-  return "<span class='cell-note-dot"+(has?" has-note":"")+"' onclick='event.stopPropagation();"+openFnName+"("+jsArg(key)+")' title='"+dlEsc(tip)+"'></span>";
+  return "<span class='cell-note-dot segtip"+(has?" has-note":"")+"' onclick='event.stopPropagation();"+openFnName+"("+jsArg(key)+")' data-tip='"+dlEsc(tip)+"'></span>";
 }
 function _openCellNoteCore(key,renderFn){
   rsPromptTextarea('셀 메모',{value:(customNotes&&customNotes[key])||'',placeholder:'예) 아파트 3억 + 사업장 1억',desc:'이 칸의 숫자에 대한 메모예요. 계산에는 반영되지 않아요.'},function(v){
@@ -1030,11 +1048,12 @@ function addImgToYear(y,src){
   if(p>=80)showToast('저장공간 '+p+'% 사용 중 — ⚙ 메뉴 › 저장공간에서 사진을 정리할 수 있어요.');
 }
 function rmImgAt(y,idx){
-  if(!confirm('이 사진을 삭제할까요?'))return;
-  var arr=getImgs(y);
-  arr.splice(idx,1);
-  if(arr.length===0){delete EI[y];}else{EI[y]=arr;}
-  recalc();save();
+  rsConfirm('이 사진을 삭제할까요?§§이 칸의 다른 사진과 다른 연도는 그대로예요',function(){
+    var arr=getImgs(y);
+    arr.splice(idx,1);
+    if(arr.length===0){delete EI[y];}else{EI[y]=arr;}
+    recalc();save();
+  });
 }
 
 // ── 이미지 드래그 리사이즈 ──────────────────────────────────
