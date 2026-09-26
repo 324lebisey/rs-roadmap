@@ -1059,9 +1059,9 @@ function renderDashboard(){
   if(typeof monthSummaryStats==='function'&&typeof dailyData!=='undefined'&&dailyData.length){
     var _mstat=monthSummaryStats(todayStr());
     if(_mstat.total>0){
-      var _budTxt=_mstat.budget>0?(' · 예산 대비 '+_mstat.budgetPct+'%'):'';
-      var _prevTxt=_mstat.prevTotal>0?(' · 전월보다 '+(_mstat.prevDelta>=0?'+':'')+fmtWon(_mstat.prevDelta)):'';
-      monthCards+="<div class='dash-card dash-clickable' onclick=\"goDashDailyMonth()\"><div class='dash-card-t'>🧾 이번 달 소비</div><div class='dash-card-v'>"+fmtWon(_mstat.total)+"</div><div class='dash-card-sub'>"+(_mstat.topCat?('가장 많이 쓴 곳 '+dlEsc(_mstat.topCat)+' '+fmtWon(_mstat.topAmt)):'')+_budTxt+_prevTxt+"</div></div>";
+      var _budTxt=_mstat.budget>0?(' · 예산 대비 <b class="dash-em">'+_mstat.budgetPct+'%</b>'):'';
+      var _prevTxt=_mstat.prevTotal>0?(' · 전월보다 <b class="dash-em">'+(_mstat.prevDelta>=0?'+':'')+fmtWon(_mstat.prevDelta)+'</b>'):'';
+      monthCards+="<div class='dash-card dash-clickable' onclick=\"goDashDailyMonth()\"><div class='dash-card-t'>🧾 이번 달 소비</div><div class='dash-card-v'>"+fmtWon(_mstat.total)+"</div><div class='dash-card-sub'>"+(_mstat.topCat?('가장 많이 쓴 곳 '+dlEsc(_mstat.topCat)+' <b class="dash-em">'+fmtWon(_mstat.topAmt)+'</b>'):'')+_budTxt+_prevTxt+"</div></div>";
     }
     if(_mstat.total>0&&typeof anaSlideProjection==='function'&&typeof monthKey==='function'&&typeof monthFirstDate==='function'&&typeof monthLastDate==='function'){
       var _tmk=monthKey(todayStr());
@@ -1125,7 +1125,7 @@ function renderDashboard(){
   if(progressCards)html+="<div class='dash-section'><div class='dash-section-title'>진행 현황</div><div class='dash-grid'>"+progressCards+"</div></div>";
   var goalMonthHtml="";
   if(goalCards)goalMonthHtml+="<div class='dash-section-title'>올해 목표</div><div class='dash-grid'>"+goalCards+"</div>";
-  if(monthCards)goalMonthHtml+="<div class='dash-section-title'"+(goalCards?" style='margin-top:24px'":"")+">이번 달 소비</div><div class='dash-grid'>"+monthCards+"</div>";
+  if(monthCards)goalMonthHtml+="<div class='dash-section-title'"+(goalCards?" style='margin-top:24px'":"")+">이번 달 현황</div><div class='dash-grid'>"+monthCards+"</div>";
   if(goalMonthHtml)html+="<div class='dash-section'>"+goalMonthHtml+"</div>";
   if(noticeCards)html+="<div class='dash-section'><div class='dash-section-title'>알림</div><div class='dash-grid'>"+noticeCards+"</div></div>";
   html+="</div>";
