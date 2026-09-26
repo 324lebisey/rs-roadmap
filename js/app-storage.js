@@ -26,7 +26,7 @@ function downloadTemplate(kind){
   a.click();
   showToast(nm+" 양식을 받았어요. 값을 채워서 다시 불러오세요");
 }
-var RS_EXTRA_KEYS=["rs_income_fixed","rs_shunit","rs_mdunit","rs_lgunit","rs_daily","rs_daily_cats","rs_daily_moods","rs_daily_budget","rs_daily_link","rs_daily_review","rs_daily_consume","rs_consume_empty","rs_assets","rs_asset_history","rs_cat_hidden","rs_fixed_due","rs_holidays","rs_help_hidden","rs_resist","rs_spend_rules","rs_spend_rules_on","rs_week_start","rs_month_start","rs_month_shortmode","rs_income","rs_income_cats","rs_income_map","rs_income_rm","rs_meal","rs_meal_on","rs_cal_layers","rs_special_plan","rs_nav_pin","rs_rmtab","rs_default_tab"];
+var RS_EXTRA_KEYS=["rs_income_fixed","rs_shunit","rs_mdunit","rs_lgunit","rs_daily","rs_daily_cats","rs_daily_moods","rs_daily_budget","rs_daily_link","rs_daily_review","rs_daily_consume","rs_consume_empty","rs_assets","rs_asset_history","rs_cat_hidden","rs_fixed_due","rs_holidays","rs_help_hidden","rs_resist","rs_spend_rules","rs_spend_rules_on","rs_week_start","rs_month_start","rs_month_shortmode","rs_income","rs_income_cats","rs_income_map","rs_income_rm","rs_meal","rs_meal_on","rs_cal_layers","rs_special_plan","rs_nav_pin","rs_rmtab","rs_default_tab","rs_pcal_open","rs_xlw"];
 // ── 구글 드라이브 저장/불러오기 (2단계) — 클라이언트 ID는 주인장이 발급해 넣을 때까지 빈 문자열 = 기능 전체 비활성 ──
 var DRIVE_CLIENT_ID="617085954049-ierh9liphmhhn11r352gh9or74k60hj7.apps.googleusercontent.com";
 // ── 백업 리마인드 (마지막 백업 후 경과 알림) ─────────────
@@ -125,8 +125,10 @@ function _rsApplyPayload(parsed){
   location.reload();
 }
 function importData(){
+  /* Safari: 페이지에 안 붙은 input은 파일 고르는 동안 사라져 onchange가 안 불린다(상단 메뉴는 클릭 직후 닫혀 더 그렇다) → body에 숨겨 붙여 둔다. 다음 호출 때 정리 */
+  var _old=g("rsImportInput");if(_old)_old.remove();
   const inp=document.createElement("input");
-  inp.type="file";inp.accept=".json";
+  inp.id="rsImportInput";inp.type="file";inp.accept=".json";inp.style.display="none";document.body.appendChild(inp);
   inp.onchange=e=>{
     const f=e.target.files[0];if(!f)return;
     const r=new FileReader();

@@ -2636,7 +2636,9 @@ function projCalMove(step){
 function projCalToday(){renderProjCal._ym=todayStr().slice(0,7);renderProjCal();}
 function toggleProjCalPick(){renderProjCal._ymPick=!renderProjCal._ymPick;renderProjCal();}
 function projCalPick(v){if(!/^\d{4}-\d{2}$/.test(v||''))return;renderProjCal._ym=v;renderProjCal._ymPick=false;renderProjCal();}
-function toggleProjCal(){renderProjCal._open=(renderProjCal._open===false);renderProjCal();}
+/* 접힘 기억: rs_pcal_open='0'이면 접힌 채로 시작(표시 전용 — 로드맵·자산·백업 데이터 무관) */
+try{if(localStorage.getItem('rs_pcal_open')==='0')renderProjCal._open=false;}catch(e){}
+function toggleProjCal(){renderProjCal._open=(renderProjCal._open===false);lsSet('rs_pcal_open',renderProjCal._open===false?'0':'1',true);renderProjCal();}
 /* ===== 프로젝트 상단 요약 · 만기 타임라인 · 목록 필터 (세션 57 — 표시 전용, 새 계산 규칙 0개) =====
    전부 기존 함수(projMonthWon·projCumInfo·projStartAbsOf·getProjTerm·getEffectiveRate)를 읽기만 한다.
    로드맵·자산·누적 수익에는 어떤 경우에도 영향을 주지 않는다. */
@@ -2711,7 +2713,7 @@ function setProjView(v){renderSP._view=(v==='table')?'table':'card';renderSP();}
 function _projDate2(ds){return ds?ds.slice(2).replace(/-/g,'.'):'—';}
 function projTableHtml(live,done){
   var mk=monthKey(todayStr()),y=parseInt(mk.slice(0,4),10),mi=parseInt(mk.slice(5,7),10)-1;
-  var rows=[],tp=0,tm=0,ty=0,tf=0;
+  var rows=[],doneRows=[],tp=0,tm=0,ty=0,tf=0;
   var add=function(p,isDone){
     var fp=_freshP(p),info=projDayInfo(p),fw=projFutureWon(p);
     var pr=projPrincipalNow(p),mo=Math.round(projMonthWon(p,y,mi)||0);
@@ -2719,7 +2721,7 @@ function projTableHtml(live,done){
     var mos=((fp.termMonths||0)>0)?fp.termMonths:((info.start&&info.end)?_projMonthSpan(info.start,info.end):null);
     var term=(info.start&&info.end)?(_projDate2(info.start)+'~'+_projDate2(info.end)+(mos>0?(' ('+mos+'개월)'):'')):'—';
     var payd=info.start?('매월 '+parseInt(info.start.slice(8,10),10)+'일'):'—';
-    rows.push("<tr class='"+(isDone?"ptbl-done":"")+"'>"
+    (isDone?doneRows:rows).push("<tr class='"+(isDone?"ptbl-done":"")+"'>"
       +"<td><span class='ptbl-nm'>"+dlEsc(fp.name||'')+"</span>"
         +(projOwnerOf(p.id)?("<span class='ptl-own'>"+dlEsc(projOwnerOf(p.id))+"</span>"):"")
         +(projIncluded(p.id)?"":"<span class='ptbl-ex'>관리만</span>")+"</td>"
@@ -2735,11 +2737,12 @@ function projTableHtml(live,done){
   };
   live.forEach(function(p){add(p,false);});
   done.forEach(function(it){add(it.p,true);});
-  if(!rows.length)return "<p style='font-size:13px;color:#bbb;padding:8px 0'>표시할 프로젝트가 없어요.</p>";
+  if(!rows.length&&!doneRows.length)return "<p style='font-size:13px;color:#bbb;padding:8px 0'>표시할 프로젝트가 없어요.</p>";
   return "<div class='ptbl-wrap'><table class='ptbl'><thead><tr>"
     +"<th>프로젝트</th><th>D-day</th><th>상태</th><th>원금</th><th>수익률</th>"
     +"<th>운용</th><th>정산일</th><th>월 수령</th><th>앞으로 1년</th><th>만기까지</th>"
     +"</tr></thead><tbody>"+rows.join('')
+    +(doneRows.length?("<tr class='ptbl-donehd'><td colspan='10'><button type='button' onclick='toggleProjDone()'>🍯&nbsp;완료 "+doneRows.length+"개 "+(projDoneOpen?'▴':'▾')+"</button></td></tr>"+(projDoneOpen?doneRows.join(''):'')):'')
     +"<tr class='ptbl-tot'><td>합계 (진행 중)</td>"
     +"<td colspan='2'></td>"
     +"<td>"+(tp?(Math.round(tp/10000).toLocaleString()+'만'):'—')+"</td>"
@@ -2957,7 +2960,9 @@ function renderProjCal(){
   var y=parseInt(ym.slice(0,4),10),m1=parseInt(ym.slice(5,7),10);
   var list=projPayoutsInMonth(y,m1);
   var byDay={};list.forEach(function(it){var d=parseInt(it.ds.slice(8,10),10);(byDay[d]=byDay[d]||[]).push(it);});
-  var tot=list.reduce(function(a,b){return a+b.won;},0);
+  var isCur=(ym===today.slice(0,7));
+  var sumList=isCur?list.filter(function(it){return it.ds>=today;}):list;   /* 이번 달은 오늘 이후(오늘 포함)만 센다 — 다른 달은 그 달 전체 */
+  var tot=sumList.reduce(function(a,b){return a+b.won;},0);
   var first=new Date(y,m1-1,1).getDay(),dim=new Date(y,m1,0).getDate();
   var cells='';
   ['일','월','화','수','목','금','토'].forEach(function(w){cells+="<div class='pcal-wd'>"+w+"</div>";});
@@ -2977,7 +2982,6 @@ function renderProjCal(){
   }).join('');
   var undated=[];
   SP.forEach(function(p){if(!projPayoutStart(p)&&!projDoneInfo(p))undated.push(_freshP(p).name||'');});
-  var isCur=(ym===today.slice(0,7));
   var open=(renderProjCal._open!==false);
   /* 보는 달 기준 원금 — 달을 넘기면 함께 바뀐다(요약 스트립의 「투자 원금」은 오늘 기준이라 기준이 다르다) */
   var _pAbs=y*12+(m1-1),_heldWon=0;
@@ -2988,7 +2992,7 @@ function renderProjCal(){
       +"<button type='button' class='pcal-ttl segtip' onclick='toggleProjCalPick()' data-tip='달을 골라서 이동'>"+y+"년 "+m1+"월</button>"
       +"<button type='button' class='pcal-nav segtip' onclick='projCalMove(1)' data-tip='다음달'>▶</button>"
       +(isCur?'':"<button type='button' class='pcal-nav' onclick='projCalToday()'>이번 달</button>")
-      +"<span class='pcal-sum'>"+(list.length?("수령 예정 "+list.length+"건 · 합계 <b style='color:var(--ac);white-space:nowrap'>"+tot.toLocaleString()+"원</b>"):"이 달에 받을 수익금이 없어요")
+      +"<span class='pcal-sum'>"+(sumList.length?((isCur?"오늘 이후 ":"수령 예정 ")+sumList.length+"건 · 합계 <b style='color:var(--ac);white-space:nowrap'>"+tot.toLocaleString()+"원</b>"):(isCur&&list.length?"이번 달 남은 수령이 없어요":"이 달에 받을 수익금이 없어요"))
         +(_heldWon>0?("<span class='segtip' style='white-space:nowrap' data-tip='이 달에 운용 중인§§프로젝트의 남은 원금 합계'> · 운용 원금 <b style='color:#111'>"+_projWonShort(_heldWon)+"</b></span>"):"")
       +"</span>"
       +"<button type='button' class='pcal-nav pcal-fold' style='flex:0 0 auto' onclick='toggleProjCal()'>"+(open?"접기 ▾":"펼치기 ▸")+"</button>"
