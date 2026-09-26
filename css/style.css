@@ -558,6 +558,7 @@ body.fiesta .xl th,body.fiesta .xl td{font-family:"Hi Melody",sans-serif}
 .dash-card-t{font-size:16px;font-weight:700;color:#333;margin-bottom:7px;white-space:nowrap}
 .dash-card-v{font-size:25px;font-weight:700;color:var(--ac);word-break:keep-all}
 .dash-card-sub{font-size:14px;color:var(--gray);margin-top:5px;word-break:keep-all;line-height:1.5}
+.dash-card-sub .dash-em{font-weight:700;color:#333;white-space:nowrap}
 .dash-card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px 20px}
 .dash-mini-l{font-size:13px;color:var(--gray);white-space:nowrap}
 .dash-mini-v{font-size:17px;font-weight:700;color:#111;white-space:nowrap}
@@ -590,7 +591,7 @@ body.fiesta .xl th,body.fiesta .xl td{font-family:"Hi Melody",sans-serif}
 @media (max-width:640px){
   body .xl:not([data-xlr]){table-layout:fixed !important;width:max-content !important;min-width:100% !important}
   body .xl:not([data-xlr]) td:not(.rl),body .xl:not([data-xlr]) th:not(.rl){width:90px !important;min-width:90px !important;max-width:90px !important;padding:5px 5px !important}
-  body .xl[data-xlr]{width:max-content !important;min-width:0 !important}
+  body .xl[data-xlr]{table-layout:fixed !important;width:0 !important;min-width:0 !important}
   body .xl[data-xlr] td:not(.rl):not(.grp-c),body .xl[data-xlr] th:not(.rl):not(.grp-c){width:var(--xlw) !important;min-width:0 !important;max-width:none !important;padding:5px 5px !important}
   body .xl td:not(.rl) input,body .xl td:not(.rl) textarea{width:100% !important;min-width:0 !important;box-sizing:border-box;padding:2px 2px !important;text-align:right}
   body.fiesta .xl td:not(.rl){font-size:17px !important}
