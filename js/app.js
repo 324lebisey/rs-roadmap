@@ -26,7 +26,7 @@ function initApp(){
       if(d.shData)shData=d.shData; if(d.mdYR)mdYR=d.mdYR;
       if(d.nyHide)nyHide=parseInt(d.nyHide)||0;   /* 새해 열기 배너 닫음 */
       if(d.monthlyArchive){monthlyArchive=d.monthlyArchive;Object.keys(monthlyArchive).forEach(function(k){monthlyArchive[k]=_migRetroArr(monthlyArchive[k]);});}
-      if(d.userGrade)userGrade=d.userGrade;   /* 내 프로젝트 등급 — 복원 (세션 44) */
+      if(d.userGrade)userGrade=d.userGrade;   /* 저장 데이터 복원 (세션 44) */
     if(d.projRates)projRates=d.projRates;
     if(d.projSchedule)projSchedule=d.projSchedule;
     if(d.projTerm)projTerm=d.projTerm;if(d.projRepay)projRepay=d.projRepay;if(d.projEarly)projEarly=d.projEarly;if(d.projAssetHide)projAssetHide=d.projAssetHide;if(d.projOverride)projOverride=d.projOverride;
@@ -63,7 +63,7 @@ function initApp(){
     }
   }catch(e){
     console.error("데이터 로드 오류:",e);
-    window._rsLoadError=true; // 부분 복원 상태 → save()가 rs7을 덮어쓰면 미복원 데이터(프로젝트 등)가 영구 삭제됨. 저장 잠금.
+    window._rsLoadError=true; // 부분 복원 상태 → save()가 rs7을 덮어쓰면 미복원 데이터(로드맵 등)가 영구 삭제됨. 저장 잠금.
     try{showToast("⚠️ 저장된 데이터를 불러오지 못했어요. 덮어쓰기를 막기 위해 저장을 잠갔어요 — 메뉴 › 백업으로 먼저 내보내 주세요.");}catch(_){}
   }
   // 잘못된 저장 데이터 자동 복구
@@ -75,7 +75,7 @@ function initApp(){
     if(!(parseInt(g("sV").value)>0))g("sV").value=10000;
   }
   // 렌더링
-  try{initDragDrop();}catch(e){}
+/*@comm-start*/  try{initDragDrop();}catch(e){}/*@comm-end*/
   try{initPaste();}catch(e){}
   window.addEventListener('beforeunload',function(){if(!_preventSave)save();});
   window.addEventListener('beforeunload',rsUnloadWarn);   // 위 save() 뒤에 등록 — 저장이 끝난 상태로 비교
@@ -87,7 +87,7 @@ function initApp(){
     var cls=t.className||'';
     if(cls.indexOf('ri')>=0||cls.indexOf('si')>=0){recalc();save();}
     if(cls.indexOf('ev-in')>=0||cls.indexOf('ev-cell')>=0||cls.indexOf('cr-cell')>=0||cls.indexOf('qa')>=0){save();}
-    if(cls.indexOf('invest-input')>=0){renderSP();renderShort();if(typeof renderMoIncome==='function')renderMoIncome(dailyDate||todayStr());save();}
+    if(cls.indexOf('invest-input')>=0){/*@comm-start*/renderSP();/*@comm-end*/renderShort();if(typeof renderMoIncome==='function')renderMoIncome(dailyDate||todayStr());save();}
   });
 
   // 수익률 일괄 변경 기본값: 현재 시작연도~종료연도
@@ -104,14 +104,14 @@ function initApp(){
   // 각 렌더를 격리: 하나가 실패해도 나머지·토글은 반드시 실행
   try{recalc();}catch(e){console.error("recalc 오류:",e);}
   try{renderCBar();}catch(e){console.error("renderCBar 오류:",e);}   // 자녀 태그 — 부팅 시 누락돼 있던 렌더
-  try{syncGradeBtns();}catch(e){console.error("syncGradeBtns 오류:",e);} // 등급 버튼 활성표시 — 복원과 렌더는 한 쌍(§2.23)
-  try{renderSP();}catch(e){console.error("renderSP 오류:",e);}       // ★ 프로젝트 목록 — 복원은 됐는데 안 그려지던 근본 원인
+/*@comm-start*/  try{syncGradeBtns();}catch(e){console.error("syncGradeBtns 오류:",e);} // 등급 버튼 활성표시 — 복원과 렌더는 한 쌍(§2.23)/*@comm-end*/
+/*@comm-start*/  try{renderSP();}catch(e){console.error("renderSP 오류:",e);}       // ★ 프로젝트 목록 — 복원은 됐는데 안 그려지던 근본 원인/*@comm-end*/
   try{renderDaily();}catch(e){console.error("renderDaily 오류:",e);}
   try{dlRenderFocusBanners();}catch(e){}   // 배너는 renderActiveView에서만 그려져 부팅 시 비어 있었음(§2.23)
   try{dlRenderAsnapBanners();}catch(e){}   // 자산 기록 알림 — 부팅 렌더
   try{renderShort();}catch(e){console.error("renderShort 오류:",e);}
   try{renderMid();}catch(e){console.error("renderMid 오류:",e);}
-  try{syncImportToggle();}catch(e){console.error("토글 오류:",e);}  // 데이터 유무에 따라 가져오기 영역 열기/닫기
+/*@comm-start*/  try{syncImportToggle();}catch(e){console.error("토글 오류:",e);}  // 데이터 유무에 따라 가져오기 영역 열기/닫기/*@comm-end*/
   try{if(ensureIncomeSeed(monthKey(todayStr())))renderActiveView();}catch(e){}   // 고정수입 이어받기 — 복원·렌더가 끝난 뒤에 (§2.23)
   try{checkBackupReminder();}catch(e){}
   try{rsMarkSigBaseline();}catch(e){}   // 창 닫기 경고의 「이번 접속에서 바뀜」 기준값
@@ -189,7 +189,7 @@ function weeklyRsDirection(weekDate){
     var box=g('dlWeekDue');
     if(!box)return;
     if(!box.firstElementChild){
-      box.innerHTML='<div class="weekly-due-panel"><div style="font-size:13px;font-weight:600;color:#111;margin-bottom:6px">📅 이번 주 예정 고정지출</div><div style="font-size:13px;color:var(--gray);padding:8px 2px">예정된 고정지출이 없어요.</div></div>';
+      box.innerHTML='<div class="weekly-due-panel"><div style="font-size:13px;font-weight:600;color:#111;margin-bottom:6px">📅 이번 주 예정 고정·특별지출</div><div style="font-size:13px;color:var(--gray);padding:8px 2px">예정된 고정·특별지출이 없어요.</div></div>';
       return;
     }
     box.firstElementChild.classList.add('weekly-due-panel');
