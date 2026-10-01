@@ -1,6 +1,6 @@
 // ── 데이터 백업/복원 ─────────────────────────────────────
 
-function downloadTemplate(kind){
+/*@comm-start*/function downloadTemplate(kind){
   var sy=parseInt(g("sY")?g("sY").value:0)||new Date().getFullYear();
   var csv="";
   if(kind==="short"){
@@ -25,8 +25,8 @@ function downloadTemplate(kind){
   a.download="richsister_양식_"+nm+".csv";
   a.click();
   showToast(nm+" 양식을 받았어요. 값을 채워서 다시 불러오세요");
-}
-var RS_EXTRA_KEYS=["rs_income_fixed","rs_shunit","rs_mdunit","rs_lgunit","rs_daily","rs_daily_cats","rs_daily_moods","rs_daily_budget","rs_daily_link","rs_daily_review","rs_daily_consume","rs_consume_empty","rs_assets","rs_asset_history","rs_cat_hidden","rs_fixed_due","rs_holidays","rs_help_hidden","rs_resist","rs_spend_rules","rs_spend_rules_on","rs_week_start","rs_month_start","rs_month_shortmode","rs_income","rs_income_cats","rs_income_map","rs_income_rm","rs_meal","rs_meal_on","rs_cal_layers","rs_special_plan","rs_nav_pin","rs_rmtab","rs_default_tab","rs_pcal_open","rs_xlw"];
+}/*@comm-end*/
+var RS_EXTRA_KEYS=["rs_income_fixed","rs_shunit","rs_mdunit","rs_lgunit","rs_daily","rs_daily_cats","rs_daily_moods","rs_daily_budget","rs_budget_mk","rs_daily_link","rs_daily_review","rs_daily_consume","rs_consume_empty","rs_assets","rs_asset_history","rs_cat_hidden","rs_fixed_due","rs_holidays","rs_help_hidden","rs_resist","rs_spend_rules","rs_spend_rules_on","rs_week_start","rs_month_start","rs_month_shortmode","rs_income","rs_income_cats","rs_income_map","rs_income_rm","rs_meal","rs_meal_on","rs_cal_layers","rs_special_plan","rs_nav_pin","rs_rmtab","rs_default_tab","rs_pcal_open","rs_xlw"];
 // ── 구글 드라이브 저장/불러오기 (2단계) — 클라이언트 ID는 주인장이 발급해 넣을 때까지 빈 문자열 = 기능 전체 비활성 ──
 var DRIVE_CLIENT_ID="617085954049-ierh9liphmhhn11r352gh9or74k60hj7.apps.googleusercontent.com";
 // ── 백업 리마인드 (마지막 백업 후 경과 알림) ─────────────
@@ -76,7 +76,7 @@ function rsUnloadWarn(e){
   }catch(_){}
 }
 function _rsBuildPayload(){
-  // ★ 백업 직전 강제 저장: saveSoon() 디바운스 대기 중인 입력(프로젝트 투자금 등)이
+  // ★ 백업 직전 강제 저장: saveSoon() 디바운스 대기 중인 입력(투자금 등)이
   //   rs7에 반영되기 전에 백업하면 최신 입력이 JSON에서 빠진다 — 반드시 먼저 flush.
   var _flushOk=true;
   try{_flushOk=save();}catch(e){_flushOk=false;}
@@ -102,9 +102,9 @@ function exportData(){
   const blob=new Blob([JSON.stringify(payload)],{type:"application/json"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
-  a.download="richsister_backup_"+new Date().toISOString().slice(0,10)+".json";
+  a.download="richsister_backup_"+todayStr()+".json";
   a.click();
-  showToast(_flushOk?("✅ 백업 완료 — 프로젝트 "+_pc+"개 · 일일기록 "+_dc+"건 포함"):("⚠️ 저장에 실패한 상태로 백업했어요 (프로젝트 "+_pc+"개 · 일일기록 "+_dc+"건) — 방금 입력분이 빠졌을 수 있어요"));
+  showToast(_flushOk?("✅ 백업 완료 — "/*@comm-start*/+"프로젝트 "+_pc+"개 · "/*@comm-end*/+"일일기록 "+_dc+"건 포함"):("⚠️ 저장에 실패한 상태로 백업했어요 ("/*@comm-start*/+"프로젝트 "+_pc+"개 · "/*@comm-end*/+"일일기록 "+_dc+"건) — 방금 입력분이 빠졌을 수 있어요"));
   markBackupDone();
 }
 function _rsApplyPayload(parsed){
@@ -135,6 +135,8 @@ function importData(){
     r.onload=ev=>{
       try{
         var parsed=JSON.parse(ev.target.result); // 유효성 검사
+        // 백업 표시(__rsBackup) 없는 옛 형식은 rs7 대표 키가 있어야만 받는다 — 엉뚱한 .json이 메인 데이터를 덮어쓰는 것 차단
+        if(!parsed||typeof parsed!=="object"||(parsed.__rsBackup!==1&&!("sY" in parsed)&&!("YR" in parsed))){showToast("유효하지 않은 백업 파일입니다.");return;}
         rsConfirm(f.name+" 파일로 되돌릴까요?\n지금 이 기기의 기록은 모두 이 파일 내용으로 바뀌어요.\n되돌릴 수 없어요.",function(){
           _rsApplyPayload(parsed);
         });
@@ -216,7 +218,7 @@ function driveSave(){
     var _d=new Date();var _pad=function(n){return (n<10?"0":"")+n;};
     var _fname="richsister_backup_"+_d.getFullYear()+"-"+_pad(_d.getMonth()+1)+"-"+_pad(_d.getDate())+"_"+_pad(_d.getHours())+_pad(_d.getMinutes())+".json";
     return _driveApi.upload(token,_fname,JSON.stringify(payload)).then(function(){
-      showToast("☁️ 드라이브 저장 완료 — 프로젝트 "+_pc+"개 · 일일기록 "+_dc+"건");
+      showToast("☁️ 드라이브 저장 완료 — "/*@comm-start*/+"프로젝트 "+_pc+"개 · "/*@comm-end*/+"일일기록 "+_dc+"건");
       markBackupDone();
     });
   }).catch(function(e){
@@ -282,7 +284,7 @@ function _driveRestoreFrom(f){
 // ── debounce: 연속 입력 시 마지막 입력 후 500ms 뒤 실행 ────
 
 
-// ── 가져오기 중복 감지 & 검토 ─────────────────────────────
+/*@comm-start*/// ── 가져오기 중복 감지 & 검토 ─────────────────────────────
 function matchesCalcVals(crId,calcKey){
   if(!lastCalcRows.length)return false;
   var match=0,total=0;
@@ -312,7 +314,7 @@ function detectAndRemoveDuplicates(log){
     log.kept.push({id:cr.id,label:cr.label});
     return true;
   });
-}
+}/*@comm-end*/
 function showImportReview(){
   if(!lastImportLog)return;
   var log=lastImportLog,h="";
@@ -448,7 +450,7 @@ function moveShortRow(id,dir){
   }
   renderShort();save();
 }
-function loadShortData(rows){
+/*@comm-start*/function loadShortData(rows){
   if(!rows||rows.length<2){showToast("데이터가 없어요");return false;}
   var yr=parseInt(g("shYear").value)||new Date().getFullYear();
   var SKIP_PAT=[/합계/,/달성률/,/^계$/,/^\s*$/];
@@ -486,7 +488,7 @@ function loadShortData(rows){
   renderShort();save();
   showToast("단기 불러오기 완료 ("+customRowsShort.length+"개 항목)");
   return true;
-}
+}/*@comm-end*/
 
 function deleteCustomRowMid(id){
   rsConfirm("삭제할까요?",function(){
@@ -630,7 +632,7 @@ function deleteCustomRow(id){
 
 
 
-// ── 구글시트 불러오기 ─────────────────────────────────────
+/*@comm-start*/// ── 구글시트 불러오기 ─────────────────────────────────────
 // gviz JSON 응답 → 멀티블록 2D rows 변환
 function convertGvizJsonToRows(resp){
   var cols=resp.table.cols, rows=resp.table.rows;
@@ -811,7 +813,7 @@ function initDragDrop(){
   document.addEventListener("dragover",onDragOver);
   document.addEventListener("dragleave",onDragLeave);
   document.addEventListener("drop",onDrop);
-}
+}/*@comm-end*/
 
 function bulkSetRate(tab){
   // tab: 'long'(장기/YR) 또는 'mid'(중기/mdYR)
@@ -838,11 +840,11 @@ function bulkSetRate(tab){
   showToast("✅ "+from+"~"+to+"년 "+count+"개 → "+rate+"%");
 }
 
-function importFromSheet(inputId){
+/*@comm-start*/function importFromSheet(inputId){
   var url=(g(inputId)?g(inputId).value:"").trim();
   if(!url){alert("구글시트 URL을 입력해주세요.");return;}
   fetchGoogleSheet(url);
-}
+}/*@comm-end*/
 
 // 행 이름 셀 — 더블클릭으로 수정 가능
 function rlTd(key,def){
@@ -1231,7 +1233,7 @@ function mrsRun(){
 function getActiveTab(){var a="long";document.querySelectorAll(".tab").forEach(function(t){if(t.classList.contains("active")){var m=(t.getAttribute("onclick")||"").match(/'(\w+)'/);if(m)a=m[1];}});if(a==="roadmap")a=(rmTab==="short"||rmTab==="mid"||rmTab==="long")?rmTab:"long";return a;}
 function resetAll(){
   var tab=getActiveTab();
-  var nm={daily:"일일 기록",assets:"자산",short:"단기",mid:"중기",long:"장기",monthly:"월간회고",scenario:"시나리오",projects:"프로젝트"}[tab]||tab;if(tab==="daily")nm={daily:"일일",week:"주간",month:"월간",special:"특별"}[dailyView]||"일일";
+  var nm={daily:"일일 기록",assets:"자산",short:"단기",mid:"중기",long:"장기",monthly:"월간회고",scenario:"시나리오"/*@comm-start*/,projects:"프로젝트"/*@comm-end*/}[tab]||tab;if(tab==="daily")nm={daily:"일일",week:"주간",month:"월간",special:"특별"}[dailyView]||"일일";
   if(tab==="scenario"){showToast("시나리오 탭은 따로 저장되는 기록이 없어요");return;}
   if(tab==="daily"&&dailyView==="month"){openMonthReset();return;}
   var _msg;if(tab==="daily"){var _dd2=dailyDate||todayStr();var _pp=_dd2.split("-");if(dailyView==="week"){var _st=weekStartMon(_dd2);var _en=new Date(_st.getFullYear(),_st.getMonth(),_st.getDate()+6);_msg=(_st.getMonth()+1)+"/"+_st.getDate()+"–"+(_en.getMonth()+1)+"/"+_en.getDate()+" 주 예산을 초기화할까요?";}else if(dailyView==="month"){_msg=parseInt(_pp[1])+"월 예산을 초기화할까요?";}else if(dailyView==="special"){var _spYr=renderSpecialView._year||parseInt(_pp[0],10);_msg=_spYr+"년 특별지출 계획(이벤트·예산)을 초기화할까요?\n실제 지출 기록은 지워지지 않아요.";}else{_msg=parseInt(_pp[1])+"월 "+parseInt(_pp[2])+"일 기록과 예산을 초기화할까요?";}}else{_msg=nm+" 탭의 기록을 초기화할까요?";}rsConfirm(_msg+"\n진행 전 백업해두세요(⚙ 메뉴 › 💾 저장하기).\n되돌릴 수 없어요.",function(){
@@ -1241,7 +1243,7 @@ function resetAll(){
     else if(tab==="monthly"){clearMonthlyCore();}
     else if(tab==="daily"){var _dd=dailyDate||todayStr();if(dailyView==="week"){var _wk=weekKey(_dd);delete weeklyBudgetMap[_wk];delete catWeeklyPast[_wk];saveDailyBudget();}else if(dailyView==="month"){var _mk=monthKey(_dd);delete monthlyBudgetMap[_mk];if(_mk===monthKey(todayStr()))catMonthlyBudget={};else delete catMonthlyPast[_mk];saveDailyBudget();}else if(dailyView==="special"){var _spYr2=renderSpecialView._year||parseInt(_dd.slice(0,4),10);_doResetSpecialYear(_spYr2);}else{dailyData=dailyData.filter(function(e){return e.date!==_dd;});saveDaily();delete dailyBudgetMap[_dd];saveDailyBudget();}if(typeof renderDaily==="function")renderDaily();if(typeof renderActiveView==="function")renderActiveView();}
     else if(tab==="assets"){assets=[];saveAssets();if(typeof renderAssets==="function")renderAssets();}
-    else if(tab==="projects"){SP=[];projInvest={};projRates={};document.querySelectorAll("#pOpts input[type=checkbox]").forEach(function(c){c.checked=false;});if(typeof renderSP==="function")renderSP();recalc();}
+/*@comm-start*/    else if(tab==="projects"){SP=[];projInvest={};projRates={};document.querySelectorAll("#pOpts input[type=checkbox]").forEach(function(c){c.checked=false;});if(typeof renderSP==="function")renderSP();recalc();}/*@comm-end*/
     save();showToast(nm+" 초기화 완료");
     /* 자녀는 중기 표에도 쓰여서 장기 초기화에 묶지 않고 따로 묻는다(주인장 확정). 취소 = 그대로 */
     if(tab==="long"&&children.length){rsConfirm("자녀 목록("+children.map(function(c){return c.name;}).join(", ")+")도 지울까요?\n중기 표에도 함께 쓰이는 정보예요.\n취소하면 그대로 남아요.",function(){children=[];renderCBar();renderMid();recalc();save();showToast("자녀 목록을 지웠어요");});}
@@ -1250,7 +1252,7 @@ function resetAll(){
 
 
 
-function fetchGoogleSheet(overrideUrl){
+/*@comm-start*/function fetchGoogleSheet(overrideUrl){
   var url=overrideUrl||(g("gsUrl").value||"").trim();
   if(!url){alert("구글시트 URL을 입력해주세요.");return;}
   var sid=extractSheetId(url);
@@ -1322,5 +1324,5 @@ function fetchGoogleSheet(overrideUrl){
     resetUI("스크립트 로드 실패. 공유 설정을 확인해주세요.");
   };
   document.head.appendChild(script);
-}
+}/*@comm-end*/
 

@@ -43,11 +43,11 @@
     <div class="nav-group">
       <div class="nav-group-row">
         <button class="tab" onclick="showTab('assets')" id="navAssetsBtn">자산</button>
-        <button type="button" class="nav-fold-btn" id="navFoldBtn-assets" onclick="toggleNavFold('assets')">▸</button>
+<!--@comm-start-->        <button type="button" class="nav-fold-btn" id="navFoldBtn-assets" onclick="toggleNavFold('assets')">▸</button><!--@comm-end-->
       </div>
-      <div class="nav-sub" id="navSub-assets">
+<!--@comm-start-->      <div class="nav-sub" id="navSub-assets">
         <button class="tab nav-sub-item" onclick="showTab('projects')">프로젝트</button>
-      </div>
+      </div><!--@comm-end-->
     </div>
     <div class="nav-sep"></div>
     <div class="nav-group">
@@ -101,7 +101,7 @@
           <option value="dashboard">대시보드</option>
           <option value="roadmap">로드맵</option>
           <option value="monthly">월간 회고</option>
-          <option value="projects">프로젝트</option>
+<!--@comm-start-->          <option value="projects">프로젝트</option><!--@comm-end-->
           <option value="assets">자산</option>
           <option value="scenario">시나리오 비교</option>
         </select>
@@ -171,7 +171,7 @@
           <option value="dashboard">대시보드</option>
           <option value="roadmap">로드맵</option>
           <option value="monthly">월간 회고</option>
-          <option value="projects">프로젝트</option>
+<!--@comm-start-->          <option value="projects">프로젝트</option><!--@comm-end-->
           <option value="assets">자산</option>
           <option value="scenario">시나리오 비교</option>
         </select>
@@ -207,7 +207,7 @@
 <!-- 일일 기록 -->
 <!-- 대시보드(§4.2-20 STEP 3 · 읽기 전용, 자체 산식 없음 — 전부 원본 함수 값을 표시만 함) -->
 <div id="dashboard" class="section">
-  <div class="empty-guide">💡 로드맵·자산·프로젝트 곳곳의 숫자를 한눈에 모아 보여줘요. 여기서 값을 고치지는 않아요 — 고치려면 해당 탭으로 가세요.</div>
+  <div class="empty-guide">💡 로드맵·자산<!--@comm-start-->·프로젝트<!--@comm-end--> 곳곳의 숫자를 한눈에 모아 보여줘요. 여기서 값을 고치지는 않아요 — 고치려면 해당 탭으로 가세요.</div>
   <div id="dashboardBody"></div>
 </div>
 
@@ -415,7 +415,7 @@
 <!-- 자산 -->
 <div id="assets" class="section">
   <div id="assetMotto" style="font-size:14px;color:var(--ac);font-weight:600;margin-bottom:12px;line-height:1.5">부자되는 길의 첫걸음은 나의 자산 파악부터!</div>
-  <div class="empty-guide" id="gd-assets">💡 <b>프로젝트 탭에서 먼저</b> 참여 중인 프로젝트와 투자금을 입력하면 여기에 <b>자동 합산</b>돼요.<br>현금·예적금·주식 등 나머지는 <b>+ 항목 추가</b>로 직접 넣으세요. 금액은 <b>원 단위</b>로 넣고, 합계는 만원으로 보여줘요.</div>
+<!--@comm-start-->  <div class="empty-guide" id="gd-assets">💡 <b>프로젝트 탭에서 먼저</b> 참여 중인 프로젝트와 투자금을 입력하면 여기에 <b>자동 합산</b>돼요.<br>현금·예적금·주식 등 나머지는 <b>+ 항목 추가</b>로 직접 넣으세요. 금액은 <b>원 단위</b>로 넣고, 합계는 만원으로 보여줘요.</div><!--@comm-end--><!--@pub   <div class="empty-guide" id="gd-assets">💡 현금·예적금·주식·부동산 등 가진 자산을 <b>유형별로</b> 추가하면 비중과 <b>흐름</b>을 한눈에 볼 수 있어요. 장기 로드맵 시작 자산에 반영할 수도 있어요.</div> @pub-->
   <div class="as-top">
     <div class="as-top-l">
       <div class="as-top-k">총 자산</div>
@@ -457,7 +457,7 @@
 <div id="short" class="rm-sub">
   <div class="empty-guide" id="gd-short">💡 올 한 해의 <b>저축·수입·목표</b>를 월별로 계획해요. 일일 기록을 켜면 그 달 지출이 <b>자동 반영</b>(월별 ON/OFF)돼요. <span class="hlp" style="text-transform:none;letter-spacing:0" onclick="event.stopPropagation();this.classList.toggle('on')"><span style="font-size:14px">ⓘ</span><span class="hlp-pop"><b style="display:block;margin-bottom:8px;font-size:13px;color:#ffd2da;border-bottom:1px solid rgba(255,255,255,.18);padding-bottom:6px">표 다루는 법</b><span style="display:flex;flex-direction:column;gap:7px"><span><b style="color:#fff">＋ 항목 추가</b><br><span style="color:#cfcfcf">줄을 새로 추가해요</span></span><span><b style="color:#fff">✕</b><br><span style="color:#cfcfcf">그 줄을 지워요</span></span><span><b style="color:#fff">▲ ▼</b><br><span style="color:#cfcfcf">줄 순서를 위아래로 옮겨요</span></span><span><b style="color:#fff">이름 더블클릭</b><br><span style="color:#cfcfcf">항목 이름을 고쳐요</span></span><span><b style="color:#fff">원 / 만원</b><br><span style="color:#cfcfcf">⚙ 표 설정에서 단위를 바꿔요</span></span></span></span></span></div>
   <div style="padding:0 0 4px">
-    <div class="imp-box open" id="importShort" style="width:100%;margin-top:4px"><div class="imp-head" onclick="toggleImp('importShort')"><span class="imp-arrow">▶</span> 📂 엑셀·시트로 한 번에 채우기</div><div class="imp-body">
+<!--@comm-start-->    <div class="imp-box open" id="importShort" style="width:100%;margin-top:4px"><div class="imp-head" onclick="toggleImp('importShort')"><span class="imp-arrow">▶</span> 📂 엑셀·시트로 한 번에 채우기</div><div class="imp-body">
       <div style="margin-top:8px;padding:10px;background:var(--ac-light);border-radius:6px;border:1px solid var(--tbl-border);display:flex;flex-direction:column;gap:8px">
         <div style="font-size:13px;color:var(--gray);line-height:1.5">손으로 일일이 입력하지 않아도 돼요. 이미 만든 <strong>엑셀·CSV 파일</strong>이 있으면 올려서 한 번에 채울 수 있어요. 또는 <strong>「📋 양식 받기」</strong>로 빈 양식을 받아 값만 채우면 형식 걱정 없이 들어가요.</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -471,7 +471,7 @@
         </div>
           <p style="font-size:13px;color:var(--gray);margin:6px 0 0;line-height:1.5">💡 구글시트 → 공유 → <strong>"링크 있는 모든 사용자 — 뷰어"</strong> 설정 후 URL 붙여넣기 (불러온 뒤 비공개로 바꿔도 유지돼요). <span style="color:#b45309">숫자만 불러와요 — 메모·텍스트는 안 되니 엑셀 또는 CSV 파일로 다운받아 올리기를 권해요.</span></p>
       </div>
-    </div></div>
+    </div></div><!--@comm-end-->
   </div>
   <div class="controls">
     <div class="cg"><label>연도</label>
@@ -510,7 +510,7 @@
 <!-- 중기 -->
 <div id="mid" class="rm-sub">
   <div style="padding:4px 0 0">
-      <div class="imp-box open" id="importMid" style="width:100%;margin-top:4px"><div class="imp-head" onclick="toggleImp('importMid')"><span class="imp-arrow">▶</span> 📂 엑셀·시트로 한 번에 채우기</div><div class="imp-body">
+<!--@comm-start-->      <div class="imp-box open" id="importMid" style="width:100%;margin-top:4px"><div class="imp-head" onclick="toggleImp('importMid')"><span class="imp-arrow">▶</span> 📂 엑셀·시트로 한 번에 채우기</div><div class="imp-body">
       <div style="margin-top:8px;padding:10px;background:var(--ac-light);border-radius:6px;border:1px solid var(--tbl-border);display:flex;flex-direction:column;gap:8px">
         <div style="font-size:13px;color:var(--gray);line-height:1.5">손으로 일일이 입력하지 않아도 돼요. 이미 만든 <strong>엑셀·CSV 파일</strong>이 있으면 올려서 한 번에 채울 수 있어요. 또는 <strong>「📋 양식 받기」</strong>로 빈 양식을 받아 값만 채우면 형식 걱정 없이 들어가요.</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -524,7 +524,7 @@
         </div>
           <p style="font-size:13px;color:var(--gray);margin:6px 0 0;line-height:1.5">💡 구글시트 → 공유 → <strong>"링크 있는 모든 사용자 — 뷰어"</strong> 설정 후 URL 붙여넣기 (불러온 뒤 비공개로 바꿔도 유지돼요). <span style="color:#b45309">숫자만 불러와요 — 메모·텍스트는 안 되니 엑셀 또는 CSV 파일로 다운받아 올리기를 권해요.</span></p>
       </div>
-    </div></div>
+    </div></div><!--@comm-end-->
     </div>
   <div class="controls">
     <div class="cg"><label>시작 연도</label><input type="number" id="mdY" value="2026" min="2000" max="2060" onchange="renderMid();save()"></div>
@@ -565,7 +565,7 @@
 <!-- 장기 -->
 <div id="long" class="rm-sub">
   <div class="empty-guide" id="gd-long">💡 <b>현재 자산·저축·수익률·이벤트</b>를 넣으면 30년 후 자산을 그래프로 보여줘요. 자산 탭에서 시작 자산을 불러올 수도 있어요. <span class="hlp" style="text-transform:none;letter-spacing:0" onclick="event.stopPropagation();this.classList.toggle('on')"><span style="font-size:14px">ⓘ</span><span class="hlp-pop"><b style="display:block;margin-bottom:8px;font-size:13px;color:#ffd2da;border-bottom:1px solid rgba(255,255,255,.18);padding-bottom:6px">표 다루는 법</b><span style="display:flex;flex-direction:column;gap:7px"><span><b style="color:#fff">＋ 항목 추가</b><br><span style="color:#cfcfcf">줄을 새로 추가해요</span></span><span><b style="color:#fff">✕</b><br><span style="color:#cfcfcf">그 줄을 지워요</span></span><span><b style="color:#fff">▲ ▼</b><br><span style="color:#cfcfcf">줄 순서를 위아래로 옮겨요</span></span><span><b style="color:#fff">이름 더블클릭</b><br><span style="color:#cfcfcf">항목 이름을 고쳐요</span></span><span><b style="color:#fff">원 / 만원</b><br><span style="color:#cfcfcf">⚙ 표 설정에서 단위를 바꿔요</span></span></span></span></span></div>
-  <div class="imp-box open" id="importLong" style="width:100%;margin-bottom:8px"><div class="imp-head" onclick="toggleImp('importLong')"><span class="imp-arrow">▶</span> 📂 엑셀·시트로 한 번에 채우기</div><div class="imp-body">
+<!--@comm-start-->  <div class="imp-box open" id="importLong" style="width:100%;margin-bottom:8px"><div class="imp-head" onclick="toggleImp('importLong')"><span class="imp-arrow">▶</span> 📂 엑셀·시트로 한 번에 채우기</div><div class="imp-body">
   <div class="upload-zone" onclick="triggerExcel()" id="uploadZone" style="margin-top:8px">
     <span style="font-size:22px">📊</span>
     <div class="uz-text"><strong>기존 엑셀 파일 업로드</strong>클릭하거나 끌어다 놓거나 · .xlsx / .xls 지원 · 자동으로 표에 반영<br><span style="color:var(--ac);font-size:13px">양식에 맞춰 채우면 가장 확실해요</span><br><button class="btn btn-ol segtip" onclick="event.stopPropagation();downloadTemplate('long')" style="font-size:13px;margin-top:8px" data-tip="빈 양식 받기">📋 양식 받기</button></div>
@@ -580,7 +580,7 @@
     <p style="font-size:13px;color:var(--gray);margin:7px 0 0;line-height:1.5">💡 구글시트 → 공유 → <strong>"링크 있는 모든 사용자 — 뷰어"</strong> 설정 후 URL 붙여넣기 (불러온 뒤 비공개로 바꿔도 유지돼요). <span style="color:#b45309">숫자만 불러와요 — 메모·텍스트는 안 되니 엑셀 또는 CSV 파일로 다운받아 올리기를 권해요.</span></p>
     </div>
   </div></div>
-  <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcel(this)">
+  <input type="file" id="excelInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleExcel(this)"><!--@comm-end-->
   <div id="validBadge" class="valid-badge" style="display:none"></div>
   <div id="longYearBadge" style="display:none;align-items:center;gap:4px;font-size:13px;background:var(--ac-light);color:var(--ac);padding:6px 14px;border-radius:2px;border-left:3px solid var(--ac);margin-bottom:10px"></div>
   <div class="controls">
@@ -718,9 +718,9 @@
     <div class="qb"><div class="qt"><span class="qn">04</span>이번 달 가장 잘한 재무적 결정은 무엇인가요?</div><textarea class="qa" rows="1" data-q="가장 잘한 재무 결정" placeholder="답변..." oninput="ar(this)"></textarea></div>
     <div class="qb"><div class="qt"><span class="qn">05</span>돌아간다면 다르게 했을 결정이 있나요?</div><textarea class="qa" rows="1" data-q="다시 한다면 바꿀 결정" placeholder="답변..." oninput="ar(this)"></textarea></div>
   </div>
-  <div class="qs"><p class="qst">시장 &amp; 프로젝트</p>
+  <div class="qs"><p class="qst">시장 &amp; <!--@comm-start-->프로젝트<!--@comm-end--><!--@pub투자@pub--></p>
     <div class="qb"><div class="qt"><span class="qn">06</span>내 투자에 영향을 준 외부 변화가 있었나요? (금리, 환율, 부동산 등)</div><textarea class="qa" rows="1" data-q="외부 시장 변화" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">07</span>참여 중인 프로젝트에서 주목할 만한 변화가 있었나요?</div><textarea class="qa" rows="1" data-q="프로젝트 변화" placeholder="답변..." oninput="ar(this)"></textarea></div>
+<!--@comm-start-->    <div class="qb"><div class="qt"><span class="qn">07</span>참여 중인 프로젝트에서 주목할 만한 변화가 있었나요?</div><textarea class="qa" rows="1" data-q="프로젝트 변화" placeholder="답변..." oninput="ar(this)"></textarea></div><!--@comm-end--><!--@pub     <div class="qb"><div class="qt"><span class="qn">07</span>투자 포트폴리오에서 주목할 만한 변화가 있었나요?</div><textarea class="qa" rows="1" data-q="투자 변화" placeholder="답변..." oninput="ar(this)"></textarea></div> @pub-->
     <div class="qb"><div class="qt"><span class="qn">08</span>요즘 눈여겨보고 있는 새로운 투자 기회가 있나요?</div><textarea class="qa" rows="1" data-q="주목하는 투자 기회" placeholder="답변..." oninput="ar(this)"></textarea></div>
     <div class="qb"><div class="qt"><span class="qn">09</span>이번 달 가장 인상 깊었던 경제/투자 뉴스는 무엇인가요?</div><textarea class="qa" rows="1" data-q="인상 깊은 뉴스" placeholder="답변..." oninput="ar(this)"></textarea></div>
   </div>
@@ -729,7 +729,7 @@
     <div class="qb"><div class="qt"><span class="qn">11</span>반대로 가장 확신이 생긴 순간은요?</div><textarea class="qa" rows="1" data-q="확신이 생긴 순간" placeholder="답변..." oninput="ar(this)"></textarea></div>
     <div class="qb"><div class="qt"><span class="qn">12</span>투자에 대한 나의 감정 온도는 몇 도인가요? (0 냉정 ~ 100 과열)</div><textarea class="qa" rows="1" data-q="감정 온도" placeholder="답변..." oninput="ar(this)"></textarea></div>
     <div class="qb"><div class="qt"><span class="qn">13</span>흔들리지 않기 위해 스스로에게 되새긴 원칙이 있나요?</div><textarea class="qa" rows="1" data-q="되새긴 원칙" placeholder="답변..." oninput="ar(this)"></textarea></div>
-    <div class="qb"><div class="qt"><span class="qn">14</span>커뮤니티 멤버의 사례 중 나에게 자극이 된 것이 있었나요?</div><textarea class="qa" rows="1" data-q="커뮤니티 자극" placeholder="답변..." oninput="ar(this)"></textarea></div>
+<!--@comm-start-->    <div class="qb"><div class="qt"><span class="qn">14</span>커뮤니티 멤버의 사례 중 나에게 자극이 된 것이 있었나요?</div><textarea class="qa" rows="1" data-q="커뮤니티 자극" placeholder="답변..." oninput="ar(this)"></textarea></div><!--@comm-end--><!--@pub     <div class="qb"><div class="qt"><span class="qn">14</span>최근 주변 사람이나 다른 사람의 사례 중 나에게 자극이 된 것이 있었나요?</div><textarea class="qa" rows="1" data-q="사례 자극" placeholder="답변..." oninput="ar(this)"></textarea></div> @pub-->
   </div>
   <div class="qs"><p class="qst">30년 로드맵</p>
     <div class="qb"><div class="qt"><span class="qn">15</span>로드맵에서 수정하고 싶다고 느낀 부분이 있었나요?</div><textarea class="qa" rows="1" data-q="로드맵 수정 사항" placeholder="답변..." oninput="ar(this)"></textarea></div>
@@ -774,7 +774,7 @@
   <div class="tbl-wrap" id="scTableWrap"></div>
 </div>
 
-<!-- 프로젝트 -->
+<!--@comm-start--><!-- 프로젝트 -->
 <div id="projects" class="section">
   <div class="empty-guide" id="gd-projects">💡 <b>등급</b>을 고르고 참여 프로젝트와 <b>투자금</b>을 입력하면 수익이 <b>로드맵과 자산 탭</b>에 자동 반영돼요.</div>
   <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
@@ -806,7 +806,7 @@
     </div>
   </div>
   <div id="projList"></div>
-</div>
+</div><!--@comm-end-->
 </div>
 </div>
 <div class="modal-bg" id="cMod" onclick="if(event.target===this)closeM('cMod')">
@@ -816,7 +816,7 @@
     <div class="mf"><button class="mb mb-c" onclick="closeM('cMod')">취소</button><button class="mb mb-ok" onclick="addChild()">추가</button></div>
   </div>
 </div>
-<div class="modal-bg" id="pMod" onclick="if(event.target===this)closeM('pMod')">
+<!--@comm-start--><div class="modal-bg" id="pMod" onclick="if(event.target===this)closeM('pMod')">
   <div class="modal"><h3>프로젝트 선택</h3>
     <div id="pOpts"></div>
     <div class="mf"><button class="mb mb-c" onclick="closeM('pMod')">취소</button><button class="mb mb-ok" onclick="applyP()">확인</button></div>
@@ -849,7 +849,7 @@
     <div id="upCatNote" style="display:none;font-size:13px;color:var(--gray);word-break:keep-all;line-height:1.6;margin:-2px 0 12px;padding:7px 10px;background:var(--ac-light);border-left:3px solid var(--ac);border-radius:2px">공식 프로젝트예요. 여기서 고친 내용은 <b>내 화면에만</b> 적용되고 원래 공지 내용은 그대로 보관돼요. 「원래대로」로 언제든 되돌릴 수 있어요.</div>
     <div class="mf" style="flex-wrap:wrap;gap:6px"><button class="mb mb-c" id="upResetBtn" style="display:none;white-space:nowrap" onclick="resetProjOverride()">원래대로</button><button class="mb mb-c" onclick="closeM('userProjModal')">취소</button><button class="mb mb-ok" id="upOkBtn" onclick="confirmUserProj()">추가</button></div>
   </div>
-</div>
+</div><!--@comm-end-->
 
 <div class="modal-bg" id="helpModal" onclick="if(event.target===this)closeM('helpModal')">
   <div class="modal" style="max-width:460px">
@@ -860,9 +860,9 @@
 </div>
 <input type="file" id="gImg" accept="image/*" style="display:none" onchange="handleImg(this)">
 <div class="toast" id="toast"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" integrity="sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous"></script>
 
 <div id="importRevMod" class="modal-bg" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal" style="max-width:400px;max-height:80vh;display:flex;flex-direction:column">
