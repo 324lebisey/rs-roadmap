@@ -1778,14 +1778,154 @@ function certCompareData(scope,dateStr){
   return {cards:cards,groups:groups,total:total};
 }
 function certBuildData(scope,dateStr,includeSettle){if(!dailyTree)loadDailyCats();var entries=(scope==='weekly')?weekEntries(dateStr):monthEntries(dateStr);var spent={};entries.forEach(function(e){var a=entrySpend(e);if(a===0)return;var c=e.cat||e.category||'미분류';spent[c]=(spent[c]||0)+a;});var totalSpent=Object.keys(spent).reduce(function(s,c){return s+spent[c];},0);var totalBudget=sumCatBudget(scope,dateStr);var overallPct=totalBudget>0?Math.round(totalSpent/totalBudget*100):null;var fixed=[],variable=[],special=[];dailyCats.forEach(function(c){var grp=catGroupOf(c);var d=certGroupData(scope,c,spent,dateStr);if(!d)return;if(grp==='고정')fixed.push(d);else if(grp==='변동')variable.push(d);else if(grp==='특별')special.push(d);});fixed.sort(function(a,b){return b.pct-a.pct;});variable.sort(function(a,b){return b.pct-a.pct;});special.sort(function(a,b){return b.pct-a.pct;});var chart=certChartData(scope,dateStr);var donut=(scope==='monthly')?certCategoryDonutData(scope,dateStr):null;var settle=(scope==='monthly'&&includeSettle)?certIncomeData(dateStr):null;var compare=(scope==='monthly'&&includeSettle)?certCompareData(scope,dateStr):null;var review=certReviewData(scope,dateStr);return {overallPct:overallPct,overAll:(overallPct!==null&&overallPct>100),fixed:fixed,variable:variable,special:special,chart:chart,donut:donut,settle:settle,compare:compare,review:review};}
-function buildCertCanvas(scope,dateStr,data){var cs=getComputedStyle(document.body);var ac=(cs.getPropertyValue('--ac')||'').trim()||'#b3315a';var W=380,R=3;var scopeLabel=scope==='weekly'?'주간':'월간';var periodLabel='';if(scope==='weekly'){var st=weekStartMon(dateStr),en=new Date(st.getFullYear(),st.getMonth(),st.getDate()+6);periodLabel=(st.getMonth()+1)+'/'+st.getDate()+' – '+(en.getMonth()+1)+'/'+en.getDate();}else{var mk=monthKey(dateStr),mp=mk.split('-');periodLabel=mp[0]+'년 '+parseInt(mp[1],10)+'월';}
-  var headerH=88,topH=178,rowH=32,secHeadH=34,secGap=20,footH=14;
-  var chartBarH=86,chartLabelH=18,chartH=secHeadH+chartBarH+chartLabelH+secGap;
+/* ── 인증 카드 공용 그리기 — 정산 카드(buildCertCanvas)와 예산 카드(buildBudgetCanvas)가 같이 쓴다.
+   두 카드에 똑같이 보여야 하는 부분(머리글·섹션 제목·일별 막대·도넛·분류 막대)은 여기서만 고친다.
+   ※ 캔버스 상태(lineWidth 등)는 앞 섹션에서 이어진다 — 예: 도넛이 남긴 1.2px가 뒤 섹션 구분선에 그대로 쓰인다. 바꾸면 이미지가 달라진다. */
+var CERT_L={W:380,R:3,headerH:88,rowH:32,secHeadH:34,secGap:20,chartBarH:86,chartLabelH:18,donutR:84,FF:"'Pretendard','Noto Sans KR',sans-serif",SERIF:"'Cormorant Garamond',serif"};
+CERT_L.chartH=CERT_L.secHeadH+CERT_L.chartBarH+CERT_L.chartLabelH+CERT_L.secGap;
+function certPeriodLabel(scope,dateStr){
+  if(scope==='weekly'){var st=weekStartMon(dateStr),en=new Date(st.getFullYear(),st.getMonth(),st.getDate()+6);return (st.getMonth()+1)+'/'+st.getDate()+' – '+(en.getMonth()+1)+'/'+en.getDate();}
+  var mp=monthKey(dateStr).split('-');return mp[0]+'년 '+parseInt(mp[1],10)+'월';
+}
+function certSecH(items){var L=CERT_L;return items.length?(L.secHeadH+items.length*L.rowH+L.secGap):0;}
+function certDonutH(dn){var L=CERT_L;if(!dn||!dn.items.length)return 0;var gap=19;return L.secHeadH+Math.max(L.donutR*2,dn.leftN*gap,dn.rightN*gap)+18+L.secGap;}
+/* 캔버스(R배 해상도) + 머리글(배경·상단 띠·RICHSISTER·제목·기간·구분선). 그 아래는 y=L.headerH부터 이어 그린다 */
+function certCardCanvas(H,ac,title,periodLabel){
+  var L=CERT_L,W=L.W,R=L.R,FF=L.FF;
+  var cv=document.createElement('canvas');cv.width=W*R;cv.height=H*R;cv.style.width='100%';cv.style.maxWidth=W+'px';cv.style.height='auto';cv.style.display='block';
+  var ctx=cv.getContext('2d');ctx.scale(R,R);
+  ctx.fillStyle='#fbf8f3';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=ac;ctx.fillRect(0,0,W,6);
+  ctx.textBaseline='alphabetic';
+  ctx.fillStyle='#999';ctx.font="600 13px "+L.SERIF;ctx.textAlign='left';ctx.fillText('RICHSISTER 부자언니',24,36);
+  ctx.fillStyle='#111';ctx.font="700 21px "+FF;ctx.fillText(title,24,64);
+  ctx.fillStyle='#999';ctx.font="13px "+FF;ctx.textAlign='right';ctx.fillText(periodLabel,W-24,64);
+  ctx.textAlign='left';ctx.strokeStyle='#e8e2d8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(24,80);ctx.lineTo(W-24,80);ctx.stroke();
+  return cv;
+}
+/* 섹션 제목 + 구분선. y는 그대로 둔다(내리는 건 호출한 쪽) */
+function certSecHead(ctx,y,title){
+  var W=CERT_L.W;
+  ctx.fillStyle='#aaa';ctx.font="600 12px "+CERT_L.FF;ctx.textAlign='left';ctx.fillText(title,24,y+14);
+  ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
+}
+/* 일별 막대(변동·고정·특별 누적) + 예산 점선. 날짜가 없으면 아무것도 안 그리고 y를 그대로 돌려준다 */
+function certDailyChart(ctx,y,cd,ac,title){
+  var L=CERT_L,W=L.W,FF=L.FF;
+  if(!cd||!cd.dates.length)return y;
+  certSecHead(ctx,y,title);
+  if(cd.evenSplit){ctx.textAlign='right';ctx.font="10px "+FF;ctx.fillText('주간 예산 ÷ 7일',W-24,y+14);ctx.textAlign='left';}
+  var cy=y+L.secHeadH,ch=L.chartBarH;
+  var n=cd.dates.length,plotW=W-48,slotW=plotW/n,barW=Math.max(2,slotW*0.6);
+  var maxV=0;for(var i=0;i<n;i++){maxV=Math.max(maxV,cd.fix[i]+cd.vr[i]+(cd.spec[i]||0),cd.bud[i]||0);}
+  if(maxV<=0)maxV=1;
+  var fixColor=groupColor('고정'),varColor=groupColor('변동'),specColor=groupColor('특별');
+  var budColor=(typeof budgetLineColor==='function')?budgetLineColor():ac;
+  var pts=[];
+  for(var j=0;j<n;j++){
+    var slotX=24+j*slotW,barX=slotX+(slotW-barW)/2;
+    var fH=(cd.fix[j]/maxV)*ch,vH=(cd.vr[j]/maxV)*ch,sH=((cd.spec[j]||0)/maxV)*ch,by=cy+ch;
+    if(vH>0){ctx.fillStyle=varColor;ctx.fillRect(barX,by-vH,barW,vH);by-=vH;}
+    if(fH>0){ctx.fillStyle=fixColor;ctx.fillRect(barX,by-fH,barW,fH);by-=fH;}
+    if(sH>0){ctx.fillStyle=specColor;ctx.fillRect(barX,by-sH,barW,sH);}
+    var bv=cd.bud[j]||0;pts.push({x:slotX+slotW/2,y:cy+ch-Math.min(1,bv/maxV)*ch});
+    /* 날이 7일보다 많으면(월간) 날짜 라벨은 5일 간격 + 마지막 날만 */
+    if(cd.labels[j]!=null&&(n<=7||j%5===0||j===n-1)){ctx.fillStyle='#aaa';ctx.font="10px "+FF;ctx.textAlign='center';ctx.fillText(cd.labels[j],slotX+slotW/2,cy+ch+L.chartLabelH-4);}
+  }
+  if(cd.bud.some(function(v){return v>0;})){
+    ctx.save();ctx.setLineDash([4,3]);ctx.strokeStyle=budColor;ctx.lineWidth=1.5;ctx.beginPath();
+    pts.forEach(function(p,idx){if(idx===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);});
+    ctx.stroke();ctx.restore();
+  }
+  ctx.textAlign='left';
+  return y+L.chartH;
+}
+/* 분류 도넛: 큰 조각(6% 이상)은 안쪽에 이름·%, 작은 조각은 좌우 바깥에 리더선 라벨(겹치면 아래로 밀고, 넘치면 전체를 당긴다) */
+function certDonut(ctx,y,dn,title){
+  var L=CERT_L,W=L.W,FF=L.FF;
+  if(!dn||!dn.items.length)return y;
+  certSecHead(ctx,y,title);
+  y+=L.secHeadH;
+  var rOuter=L.donutR,rInner=L.donutR*0.55,gap=19;
+  var contentH=Math.max(rOuter*2,dn.leftN*gap,dn.rightN*gap)+18;
+  var cx=W/2+dn.shift,cy=y+contentH/2;
+  dn.items.forEach(function(it){
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,rOuter,it.startA,it.endA);ctx.closePath();
+    ctx.fillStyle=catColor(it.cat);ctx.fill();
+  });
+  ctx.beginPath();ctx.arc(cx,cy,rInner,0,Math.PI*2);ctx.fillStyle='#fbf8f3';ctx.fill();
+  var labelR=(rOuter+rInner)/2;
+  dn.bigItems.forEach(function(it){
+    var lx=cx+Math.cos(it.mid)*labelR,ly=cy+Math.sin(it.mid)*labelR;
+    ctx.textAlign='center';
+    ctx.fillStyle='#fff';ctx.font="12px "+FF;ctx.fillText(it.cat,lx,ly-2);
+    ctx.font="11px "+FF;ctx.fillText(it.pct+'%',lx,ly+12);
+  });
+  var topB=cy-contentH/2+8,botB=cy+contentH/2-8;
+  function layoutSide(items){
+    var arr=items.map(function(it){var p1x=cx+Math.cos(it.mid)*rOuter,p1y=cy+Math.sin(it.mid)*rOuter;return {it:it,p1x:p1x,p1y:p1y,labelY:p1y};});
+    arr.sort(function(a,b){return a.p1y-b.p1y;});
+    for(var i=1;i<arr.length;i++){if(arr[i].labelY<arr[i-1].labelY+gap)arr[i].labelY=arr[i-1].labelY+gap;}
+    if(arr.length){var over=arr[arr.length-1].labelY-botB;if(over>0)arr.forEach(function(a){a.labelY-=over;});var under=topB-arr[0].labelY;if(under>0)arr.forEach(function(a){a.labelY+=under;});}
+    return arr;
+  }
+  var leftArr=layoutSide(dn.smallItems.filter(function(e){return e.side==='left';}));
+  var rightArr=layoutSide(dn.smallItems.filter(function(e){return e.side==='right';}));
+  ctx.font="11px "+FF;
+  function drawSide(arr,side){
+    arr.forEach(function(o){
+      var kneeX=(side==='right')?(cx+rOuter+16):(cx-rOuter-16);
+      ctx.strokeStyle=catColor(o.it.cat);ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(o.p1x,o.p1y);ctx.lineTo(kneeX,o.labelY);ctx.stroke();
+      var tx=(side==='right')?(kneeX+6):(kneeX-6);
+      var avail=(side==='right')?(W-24-tx):(tx-24);
+      var pctStr=o.it.pct+'%';var disp=o.it.cat;var whole=disp+' '+pctStr;
+      while(ctx.measureText(whole).width>avail&&disp.length>1){disp=disp.slice(0,-1);whole=disp+'… '+pctStr;}
+      if(disp!==o.it.cat)disp=disp+'…';
+      var name=disp+' ';
+      if(side==='right'){
+        ctx.textAlign='left';
+        ctx.fillStyle='#666';ctx.fillText(name,tx,o.labelY+4);
+        var nw=ctx.measureText(name).width;
+        ctx.fillStyle=catColor(o.it.cat);ctx.font="600 11px "+FF;ctx.fillText(pctStr,tx+nw,o.labelY+4);ctx.font="11px "+FF;
+      }else{
+        ctx.textAlign='right';
+        ctx.fillStyle=catColor(o.it.cat);ctx.font="600 11px "+FF;ctx.fillText(pctStr,tx,o.labelY+4);ctx.font="11px "+FF;
+        var pw=ctx.measureText(pctStr).width;
+        ctx.fillStyle='#666';ctx.fillText(name,tx-pw,o.labelY+4);
+      }
+    });
+  }
+  drawSide(leftArr,'left');drawSide(rightArr,'right');
+  ctx.textAlign='left';
+  return y+contentH+L.secGap;
+}
+/* 분류별 막대 줄. relToMax=false(정산): 예산 대비 사용률 — 막대는 0~100%, 초과면 ⚠·빨강.
+   relToMax=true(예산): 가장 큰 항목 대비 상대 길이(금액 아님) */
+function certCatBars(ctx,y,title,items,relToMax){
+  var L=CERT_L,W=L.W,FF=L.FF;
+  if(!items.length)return y;
+  var maxPct=relToMax?(items.reduce(function(m,it){return Math.max(m,it.pct);},0)||1):100;
+  certSecHead(ctx,y,title);
+  y+=L.secHeadH;
+  items.forEach(function(it){
+    var color=catColor(it.cat);
+    ctx.beginPath();ctx.arc(28,y+9,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+    ctx.fillStyle='#333';ctx.font="600 14px "+FF;ctx.textAlign='left';ctx.fillText(it.cat,40,y+13);
+    ctx.fillStyle=it.over?'#d9534f':'#111';ctx.font="700 14px "+FF;ctx.textAlign='right';ctx.fillText((it.over?'⚠ ':'')+it.pct+'%',W-24,y+13);
+    ctx.textAlign='left';
+    var mbY=y+18,mbH=6;
+    ctx.fillStyle='#eee';ctx.fillRect(40,mbY,W-64,mbH);
+    var mw=relToMax?(it.pct/maxPct)*(W-64):Math.max(0,Math.min(100,it.pct))/100*(W-64);
+    ctx.fillStyle=color;ctx.fillRect(40,mbY,mw,mbH);
+    y+=L.rowH;
+  });
+  return y+L.secGap;
+}
+function buildCertCanvas(scope,dateStr,data){var cs=getComputedStyle(document.body);var ac=(cs.getPropertyValue('--ac')||'').trim()||'#b3315a';var L=CERT_L,W=L.W,FF=L.FF;var scopeLabel=scope==='weekly'?'주간':'월간';
+  var headerH=L.headerH,topH=178,secHeadH=L.secHeadH,secGap=L.secGap,footH=14;
   var gm='#3f9a68',rm='#d9534f';
   var chipRowH=22;
-  function secH(items){return items.length?(secHeadH+items.length*rowH+secGap):0;}
-  var donutR=84;
-  function donutH(dn){if(!dn||!dn.items.length)return 0;var gap=19;var contentH=Math.max(donutR*2,dn.leftN*gap,dn.rightN*gap)+18;return secHeadH+contentH+secGap;}
   var wfBarAreaH=100,wfLabelH=34,wfLegendGap=16;
   function waterfallH(s){if(!s)return 0;if(!s.hasIncome)return secHeadH+24+secGap;var legendH=s.legendRows.length?(wfLegendGap+s.legendRows.length*chipRowH):0;return secHeadH+wfBarAreaH+wfLabelH+legendH+secGap;}
   var reviewRowH=24,reviewBlockGap=10,reviewLineH=18,reviewHeadH=20;
@@ -1799,17 +1939,8 @@ function buildCertCanvas(scope,dateStr,data){var cs=getComputedStyle(document.bo
     if(cp.total)h+=cmpRowH;
     return secHeadH+h+secGap;
   }
-  var H=headerH+waterfallH(data.settle)+compareH(data.compare)+topH+chartH+donutH(data.donut)+secH(data.fixed)+secH(data.variable)+secH(data.special)+reviewH(data.review)+footH;
-  var cv=document.createElement('canvas');cv.width=W*R;cv.height=H*R;cv.style.width='100%';cv.style.maxWidth=W+'px';cv.style.height='auto';cv.style.display='block';
-  var ctx=cv.getContext('2d');ctx.scale(R,R);
-  var FF="'Pretendard','Noto Sans KR',sans-serif";var SERIF="'Cormorant Garamond',serif";
-  ctx.fillStyle='#fbf8f3';ctx.fillRect(0,0,W,H);
-  ctx.fillStyle=ac;ctx.fillRect(0,0,W,6);
-  ctx.textBaseline='alphabetic';
-  ctx.fillStyle='#999';ctx.font="600 13px "+SERIF;ctx.textAlign='left';ctx.fillText('RICHSISTER 부자언니',24,36);
-  ctx.fillStyle='#111';ctx.font="700 21px "+FF;ctx.fillText(scopeLabel+' 정산 인증',24,64);
-  ctx.fillStyle='#999';ctx.font="13px "+FF;ctx.textAlign='right';ctx.fillText(periodLabel,W-24,64);
-  ctx.textAlign='left';ctx.strokeStyle='#e8e2d8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(24,80);ctx.lineTo(W-24,80);ctx.stroke();
+  var H=headerH+waterfallH(data.settle)+compareH(data.compare)+topH+L.chartH+certDonutH(data.donut)+certSecH(data.fixed)+certSecH(data.variable)+certSecH(data.special)+reviewH(data.review)+footH;
+  var cv=certCardCanvas(H,ac,scopeLabel+' 정산 인증',certPeriodLabel(scope,dateStr));var ctx=cv.getContext('2d');
   var y=headerH;
   function drawChipRows(rows,startY){
     var yy=startY;
@@ -1828,8 +1959,7 @@ function buildCertCanvas(scope,dateStr,data){var cs=getComputedStyle(document.bo
   }
   (function(){
     var s=data.settle;if(!s)return;
-    ctx.fillStyle='#aaa';ctx.font="600 12px "+FF;ctx.textAlign='left';ctx.fillText('정산 · 이 달의 돈의 흐름',24,y+14);
-    ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
+    certSecHead(ctx,y,'정산 · 이 달의 돈의 흐름');
     y+=secHeadH;
     if(!s.hasIncome){
       ctx.fillStyle='#999';ctx.font="13px "+FF;ctx.textAlign='left';ctx.fillText('이 달 수입 기록이 없어요.',24,y+16);
@@ -1877,8 +2007,7 @@ function buildCertCanvas(scope,dateStr,data){var cs=getComputedStyle(document.bo
     var UP='#d9534f',DOWN='#1B6E4F',GRAY='#aaa';
     function col(k){return k==='up'?UP:(k==='down'?DOWN:(k==='ac'?ac:GRAY));}
     function fitText(t,maxW){var d=t;while(ctx.measureText(d).width>maxW&&d.length>1){d=d.slice(0,-1);}return d===t?t:(d.slice(0,-1)+'…');}
-    ctx.fillStyle='#aaa';ctx.font="600 12px "+FF;ctx.textAlign='left';ctx.fillText('정산 비교',24,y+14);
-    ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
+    certSecHead(ctx,y,'정산 비교');
     y+=secHeadH;
     /* 카드 3종 */
     if(cp.cards.length){
@@ -1935,7 +2064,7 @@ function buildCertCanvas(scope,dateStr,data){var cs=getComputedStyle(document.bo
       ctx.font="700 46px "+FF;var pctW=ctx.measureText(bigPct).width;
       var textW=Math.max(labelW,pctW);
       var groupW=gw+gap+textW,groupX=(W-groupW)/2,textX=groupX+gw+gap;
-      var gauge=certGaugeCanvas(gw,gh,data.overallPct,gaugeColor,'#e7ded0',scope==='weekly'?st:null);
+      var gauge=certGaugeCanvas(gw,gh,data.overallPct,gaugeColor,'#e7ded0',scope==='weekly'?weekStartMon(dateStr):null);
       ctx.drawImage(gauge,groupX,y+(topH-gh)/2,gw,gh);
       var textCY=y+topH/2;
       ctx.textAlign='left';
@@ -1951,122 +2080,17 @@ function buildCertCanvas(scope,dateStr,data){var cs=getComputedStyle(document.bo
     }
   })();
   y+=topH;
-  (function(){
-    var cd=data.chart;if(!cd||!cd.dates.length)return;
-    ctx.fillStyle='#aaa';ctx.font="600 12px "+FF;ctx.textAlign='left';ctx.fillText('지출 흐름',24,y+14);
-    ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
-    var cy=y+secHeadH,ch=chartBarH;
-    var n=cd.dates.length;var plotW=W-48;var slotW=plotW/n;var barW=Math.max(2,slotW*0.6);
-    var maxV=0;for(var i=0;i<n;i++){maxV=Math.max(maxV,cd.fix[i]+cd.vr[i]+(cd.spec[i]||0),cd.bud[i]||0);}if(maxV<=0)maxV=1;
-    var fixColor=groupColor('고정'),varColor=groupColor('변동'),specColor=groupColor('특별'),budColor=(typeof budgetLineColor==='function')?budgetLineColor():ac;
-    var pts=[];
-    for(var j=0;j<n;j++){
-      var slotX=24+j*slotW;var barX=slotX+(slotW-barW)/2;
-      var fH=(cd.fix[j]/maxV)*ch,vH=(cd.vr[j]/maxV)*ch,sH=((cd.spec[j]||0)/maxV)*ch;
-      var by=cy+ch;
-      if(vH>0){ctx.fillStyle=varColor;ctx.fillRect(barX,by-vH,barW,vH);by-=vH;}
-      if(fH>0){ctx.fillStyle=fixColor;ctx.fillRect(barX,by-fH,barW,fH);by-=fH;}
-      if(sH>0){ctx.fillStyle=specColor;ctx.fillRect(barX,by-sH,barW,sH);}
-      var bv=cd.bud[j]||0;pts.push({x:slotX+slotW/2,y:cy+ch-Math.min(1,bv/maxV)*ch});
-      if(cd.labels[j]!=null&&(n<=7||j%5===0||j===n-1)){ctx.fillStyle='#aaa';ctx.font="10px "+FF;ctx.textAlign='center';ctx.fillText(cd.labels[j],slotX+slotW/2,cy+ch+chartLabelH-4);}
-    }
-    var hasBud=cd.bud.some(function(v){return v>0;});
-    if(hasBud){
-      ctx.save();ctx.setLineDash([4,3]);ctx.strokeStyle=budColor;ctx.lineWidth=1.5;ctx.beginPath();
-      pts.forEach(function(p,idx){if(idx===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);});
-      ctx.stroke();ctx.restore();
-    }
-    ctx.textAlign='left';
-    y+=chartH;
-  })();
-  (function(){
-    var dn=data.donut;if(!dn||!dn.items.length)return;
-    ctx.fillStyle='#aaa';ctx.font="600 12px "+FF;ctx.textAlign='left';ctx.fillText('카테고리별 지출 비중',24,y+14);
-    ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
-    y+=secHeadH;
-    var rOuter=donutR,rInner=donutR*0.55,gap=19;
-    var contentH=Math.max(rOuter*2,dn.leftN*gap,dn.rightN*gap)+18;
-    var cx=W/2+dn.shift,cy=y+contentH/2;
-    dn.items.forEach(function(it){
-      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,rOuter,it.startA,it.endA);ctx.closePath();
-      ctx.fillStyle=catColor(it.cat);ctx.fill();
-    });
-    ctx.beginPath();ctx.arc(cx,cy,rInner,0,Math.PI*2);ctx.fillStyle='#fbf8f3';ctx.fill();
-    var labelR=(rOuter+rInner)/2;
-    dn.bigItems.forEach(function(it){
-      var lx=cx+Math.cos(it.mid)*labelR,ly=cy+Math.sin(it.mid)*labelR;
-      ctx.textAlign='center';
-      ctx.fillStyle='#fff';ctx.font="12px "+FF;ctx.fillText(it.cat,lx,ly-2);
-      ctx.font="11px "+FF;ctx.fillText(it.pct+'%',lx,ly+12);
-    });
-    var topB=cy-contentH/2+8,botB=cy+contentH/2-8;
-    function layoutSide(items){
-      var arr=items.map(function(it){var p1x=cx+Math.cos(it.mid)*rOuter,p1y=cy+Math.sin(it.mid)*rOuter;return {it:it,p1x:p1x,p1y:p1y,labelY:p1y};});
-      arr.sort(function(a,b){return a.p1y-b.p1y;});
-      for(var i=1;i<arr.length;i++){if(arr[i].labelY<arr[i-1].labelY+gap)arr[i].labelY=arr[i-1].labelY+gap;}
-      if(arr.length){var over=arr[arr.length-1].labelY-botB;if(over>0)arr.forEach(function(a){a.labelY-=over;});var under=topB-arr[0].labelY;if(under>0)arr.forEach(function(a){a.labelY+=under;});}
-      return arr;
-    }
-    var leftArr=layoutSide(dn.smallItems.filter(function(e){return e.side==='left';}));
-    var rightArr=layoutSide(dn.smallItems.filter(function(e){return e.side==='right';}));
-    ctx.font="11px "+FF;
-    function drawSide(arr,side){
-      arr.forEach(function(o){
-        var kneeX=(side==='right')?(cx+rOuter+16):(cx-rOuter-16);
-        ctx.strokeStyle=catColor(o.it.cat);ctx.lineWidth=1.2;
-        ctx.beginPath();ctx.moveTo(o.p1x,o.p1y);ctx.lineTo(kneeX,o.labelY);ctx.stroke();
-        var tx=(side==='right')?(kneeX+6):(kneeX-6);
-        var avail=(side==='right')?(W-24-tx):(tx-24);
-        var pctStr=o.it.pct+'%';var disp=o.it.cat;var whole=disp+' '+pctStr;
-        while(ctx.measureText(whole).width>avail&&disp.length>1){disp=disp.slice(0,-1);whole=disp+'… '+pctStr;}
-        if(disp!==o.it.cat)disp=disp+'…';
-        var name=disp+' ';
-        if(side==='right'){
-          ctx.textAlign='left';
-          ctx.fillStyle='#666';ctx.fillText(name,tx,o.labelY+4);
-          var nw=ctx.measureText(name).width;
-          ctx.fillStyle=catColor(o.it.cat);ctx.font="600 11px "+FF;ctx.fillText(pctStr,tx+nw,o.labelY+4);ctx.font="11px "+FF;
-        }else{
-          ctx.textAlign='right';
-          ctx.fillStyle=catColor(o.it.cat);ctx.font="600 11px "+FF;ctx.fillText(pctStr,tx,o.labelY+4);ctx.font="11px "+FF;
-          var pw=ctx.measureText(pctStr).width;
-          ctx.fillStyle='#666';ctx.fillText(name,tx-pw,o.labelY+4);
-        }
-      });
-    }
-    drawSide(leftArr,'left');drawSide(rightArr,'right');
-    ctx.textAlign='left';
-    y+=contentH+secGap;
-  })();
-  function drawSection(title,items){
-    if(!items.length)return;
-    ctx.fillStyle='#aaa';ctx.font="600 12px "+FF;ctx.textAlign='left';ctx.fillText(title,24,y+14);
-    ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
-    y+=secHeadH;
-    items.forEach(function(it){
-      var color=catColor(it.cat);
-      ctx.beginPath();ctx.arc(28,y+9,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
-      ctx.fillStyle='#333';ctx.font="600 14px "+FF;ctx.textAlign='left';ctx.fillText(it.cat,40,y+13);
-      ctx.fillStyle=it.over?'#d9534f':'#111';ctx.font="700 14px "+FF;ctx.textAlign='right';ctx.fillText((it.over?'\u26A0 ':'')+it.pct+'%',W-24,y+13);
-      ctx.textAlign='left';
-      var mbY=y+18,mbH=6;
-      ctx.fillStyle='#eee';ctx.fillRect(40,mbY,W-64,mbH);
-      var mw=Math.max(0,Math.min(100,it.pct))/100*(W-64);
-      ctx.fillStyle=color;ctx.fillRect(40,mbY,mw,mbH);
-      y+=rowH;
-    });
-    y+=secGap;
-  }
-  drawSection('고정지출',data.fixed);
-  drawSection('변동지출',data.variable);
-  drawSection('특별지출',data.special);
+  y=certDailyChart(ctx,y,data.chart,ac,'지출 흐름');
+  y=certDonut(ctx,y,data.donut,'카테고리별 지출 비중');
+  y=certCatBars(ctx,y,'고정지출',data.fixed,false);
+  y=certCatBars(ctx,y,'변동지출',data.variable,false);
+  y=certCatBars(ctx,y,'특별지출',data.special,false);
   (function(){
     var rv=data.review;if(!rv)return;
     var hasTal=(rv.carrot>0||rv.whip>0);
     var hasAny=hasTal||rv.carrotNoteLines.length||rv.whipNoteLines.length||rv.memoLines.length||rv.bestLines.length||rv.worstLines.length;
     if(!hasAny)return;
-    ctx.fillStyle='#aaa';ctx.font="600 12px "+FF;ctx.textAlign='left';ctx.fillText('되돌아보기',24,y+14);
-    ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
+    certSecHead(ctx,y,'되돌아보기');
     y+=secHeadH;
     if(hasTal){
       ctx.fillStyle='#333';ctx.font="600 13px "+FF;ctx.textAlign='left';
@@ -2188,22 +2212,9 @@ function certMealData(scope,dateStr){
 function buildBudgetCanvas(scope,dateStr,data){
   var cs=getComputedStyle(document.body);
   var ac=(cs.getPropertyValue('--ac')||'').trim()||'#b3315a';
-  var W=380,R=3;
+  var L=CERT_L,W=L.W,FF=L.FF;
   var scopeLabel=scope==='weekly'?'주간':'월간';
-  var periodLabel='';
-  if(scope==='weekly'){
-    var st=weekStartMon(dateStr),en=new Date(st.getFullYear(),st.getMonth(),st.getDate()+6);
-    periodLabel=(st.getMonth()+1)+'/'+st.getDate()+' – '+(en.getMonth()+1)+'/'+en.getDate();
-  }else{
-    var mk=monthKey(dateStr),mp=mk.split('-');
-    periodLabel=mp[0]+'년 '+parseInt(mp[1],10)+'월';
-  }
-  var FF="'Pretendard','Noto Sans KR',sans-serif";var SERIF="'Cormorant Garamond',serif";
-  var headerH=88,topH=118,rowH=32,secHeadH=34,secGap=20,footH=16;
-  var chartBarH=86,chartLabelH=18,chartH=secHeadH+chartBarH+chartLabelH+secGap;
-  var donutR=84;
-  function secH(items){return items.length?(secHeadH+items.length*rowH+secGap):0;}
-  function donutH(dn){if(!dn||!dn.items.length)return 0;var gap=19;return secHeadH+Math.max(donutR*2,dn.leftN*gap,dn.rightN*gap)+18+secGap;}
+  var headerH=L.headerH,topH=118,secHeadH=L.secHeadH,secGap=L.secGap,footH=16;
   /* 식단 섹션 배치(높이를 캔버스 생성 전에 알아야 해서 측정용 컨텍스트로 미리 계산).
      열 ≤4: 요일×끼니 표 — 칸 글자는 어절 단위로 최대 2줄 접고, 한 어절이 칸보다 넓으면 10px까지 줄인 뒤 …
      열 >4: 칸이 너무 좁아 「라벨 붙은 줄」 배치로 전환(줄 수 제한 없이 접힘) */
@@ -2243,19 +2254,9 @@ function buildBudgetCanvas(scope,dateStr,data){
     out.h=h;return out;
   }
   var meal=mealLayout(certMealData(scope,dateStr)),mealH=meal?meal.h:0;
-  var H=headerH+topH+(data.chart?chartH:0)+donutH(data.donut)+secH(data.fixed)+secH(data.variable)+mealH+footH;
+  var H=headerH+topH+(data.chart?L.chartH:0)+certDonutH(data.donut)+certSecH(data.fixed)+certSecH(data.variable)+mealH+footH;
 
-  var cv=document.createElement('canvas');
-  cv.width=W*R;cv.height=H*R;cv.style.width='100%';cv.style.maxWidth=W+'px';cv.style.height='auto';cv.style.display='block';
-  var ctx=cv.getContext('2d');ctx.scale(R,R);
-  ctx.fillStyle='#fbf8f3';ctx.fillRect(0,0,W,H);
-  ctx.fillStyle=ac;ctx.fillRect(0,0,W,6);
-  ctx.textBaseline='alphabetic';
-  ctx.fillStyle='#999';ctx.font="600 13px "+SERIF;ctx.textAlign='left';ctx.fillText('RICHSISTER 부자언니',24,36);
-  ctx.fillStyle='#111';ctx.font="700 21px "+FF;ctx.fillText(scopeLabel+' 예산 인증',24,64);
-  ctx.fillStyle='#999';ctx.font="13px "+FF;ctx.textAlign='right';ctx.fillText(periodLabel,W-24,64);
-  ctx.textAlign='left';ctx.strokeStyle='#e8e2d8';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(24,80);ctx.lineTo(W-24,80);ctx.stroke();
+  var cv=certCardCanvas(H,ac,scopeLabel+' 예산 인증',certPeriodLabel(scope,dateStr));var ctx=cv.getContext('2d');
   var y=headerH;
 
   /* 예산 구성: 고정 vs 변동 (100% 스택바) */
@@ -2279,127 +2280,18 @@ function buildBudgetCanvas(scope,dateStr,data){
   y+=topH;
 
   /* 주간: 일별 막대 + 예산 점선 */
-  (function(){
-    var cd=data.chart;if(!cd||!cd.dates.length)return;
-    ctx.fillStyle='#aaa';ctx.font="600 12px "+FF;ctx.textAlign='left';ctx.fillText('일별 예산선',24,y+14);
-    if(cd.evenSplit){ctx.textAlign='right';ctx.font="10px "+FF;ctx.fillText('주간 예산 ÷ 7일',W-24,y+14);ctx.textAlign='left';}
-    ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
-    var cy=y+secHeadH,ch=chartBarH;
-    var n=cd.dates.length,plotW=W-48,slotW=plotW/n,barW=Math.max(2,slotW*0.6);
-    var maxV=0;for(var i=0;i<n;i++){maxV=Math.max(maxV,cd.fix[i]+cd.vr[i]+(cd.spec[i]||0),cd.bud[i]||0);}
-    if(maxV<=0)maxV=1;
-    var fixColor=groupColor('고정'),varColor=groupColor('변동'),specColor=groupColor('특별');
-    var budColor=(typeof budgetLineColor==='function')?budgetLineColor():ac;
-    var pts=[];
-    for(var j=0;j<n;j++){
-      var slotX=24+j*slotW,barX=slotX+(slotW-barW)/2;
-      var fH=(cd.fix[j]/maxV)*ch,vH=(cd.vr[j]/maxV)*ch,sH=((cd.spec[j]||0)/maxV)*ch,by=cy+ch;
-      if(vH>0){ctx.fillStyle=varColor;ctx.fillRect(barX,by-vH,barW,vH);by-=vH;}
-      if(fH>0){ctx.fillStyle=fixColor;ctx.fillRect(barX,by-fH,barW,fH);by-=fH;}
-      if(sH>0){ctx.fillStyle=specColor;ctx.fillRect(barX,by-sH,barW,sH);}
-      var bv=cd.bud[j]||0;pts.push({x:slotX+slotW/2,y:cy+ch-Math.min(1,bv/maxV)*ch});
-      if(cd.labels[j]!=null){ctx.fillStyle='#aaa';ctx.font="10px "+FF;ctx.textAlign='center';ctx.fillText(cd.labels[j],slotX+slotW/2,cy+ch+chartLabelH-4);}
-    }
-    if(cd.bud.some(function(v){return v>0;})){
-      ctx.save();ctx.setLineDash([4,3]);ctx.strokeStyle=budColor;ctx.lineWidth=1.5;ctx.beginPath();
-      pts.forEach(function(p,idx){if(idx===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);});
-      ctx.stroke();ctx.restore();
-    }
-    ctx.textAlign='left';
-    y+=chartH;
-  })();
+  y=certDailyChart(ctx,y,data.chart,ac,'일별 예산선');
 
   /* 분류별 예산 비중 도넛 */
-  (function(){
-    var dn=data.donut;if(!dn||!dn.items.length)return;
-    ctx.fillStyle='#aaa';ctx.font="600 12px "+FF;ctx.textAlign='left';ctx.fillText('분류별 예산 비중',24,y+14);
-    ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
-    y+=secHeadH;
-    var rOuter=donutR,rInner=donutR*0.55,gap=19;
-    var contentH=Math.max(rOuter*2,dn.leftN*gap,dn.rightN*gap)+18;
-    var cx=W/2+dn.shift,cy=y+contentH/2;
-    dn.items.forEach(function(it){
-      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,rOuter,it.startA,it.endA);ctx.closePath();
-      ctx.fillStyle=catColor(it.cat);ctx.fill();
-    });
-    ctx.beginPath();ctx.arc(cx,cy,rInner,0,Math.PI*2);ctx.fillStyle='#fbf8f3';ctx.fill();
-    var labelR=(rOuter+rInner)/2;
-    dn.bigItems.forEach(function(it){
-      var lx=cx+Math.cos(it.mid)*labelR,ly=cy+Math.sin(it.mid)*labelR;
-      ctx.textAlign='center';
-      ctx.fillStyle='#fff';ctx.font="12px "+FF;ctx.fillText(it.cat,lx,ly-2);
-      ctx.font="11px "+FF;ctx.fillText(it.pct+'%',lx,ly+12);
-    });
-    var topB=cy-contentH/2+8,botB=cy+contentH/2-8;
-    function layoutSide(items){
-      var arr=items.map(function(it){return {it:it,p1x:cx+Math.cos(it.mid)*rOuter,p1y:cy+Math.sin(it.mid)*rOuter,labelY:cy+Math.sin(it.mid)*rOuter};});
-      arr.sort(function(a,b){return a.p1y-b.p1y;});
-      for(var i=1;i<arr.length;i++){if(arr[i].labelY<arr[i-1].labelY+gap)arr[i].labelY=arr[i-1].labelY+gap;}
-      if(arr.length){
-        var over=arr[arr.length-1].labelY-botB;if(over>0)arr.forEach(function(a){a.labelY-=over;});
-        var under=topB-arr[0].labelY;if(under>0)arr.forEach(function(a){a.labelY+=under;});
-      }
-      return arr;
-    }
-    var leftArr=layoutSide(dn.smallItems.filter(function(e){return e.side==='left';}));
-    var rightArr=layoutSide(dn.smallItems.filter(function(e){return e.side==='right';}));
-    ctx.font="11px "+FF;
-    function drawSide(arr,side){
-      arr.forEach(function(o){
-        var kneeX=(side==='right')?(cx+rOuter+16):(cx-rOuter-16);
-        ctx.strokeStyle=catColor(o.it.cat);ctx.lineWidth=1.2;
-        ctx.beginPath();ctx.moveTo(o.p1x,o.p1y);ctx.lineTo(kneeX,o.labelY);ctx.stroke();
-        var tx=(side==='right')?(kneeX+6):(kneeX-6);
-        var avail=(side==='right')?(W-24-tx):(tx-24);
-        var pctStr=o.it.pct+'%',disp=o.it.cat,whole=disp+' '+pctStr;
-        while(ctx.measureText(whole).width>avail&&disp.length>1){disp=disp.slice(0,-1);whole=disp+'… '+pctStr;}
-        if(disp!==o.it.cat)disp=disp+'…';
-        var name=disp+' ';
-        if(side==='right'){
-          ctx.textAlign='left';
-          ctx.fillStyle='#666';ctx.fillText(name,tx,o.labelY+4);
-          var nw=ctx.measureText(name).width;
-          ctx.fillStyle=catColor(o.it.cat);ctx.font="600 11px "+FF;ctx.fillText(pctStr,tx+nw,o.labelY+4);ctx.font="11px "+FF;
-        }else{
-          ctx.textAlign='right';
-          ctx.fillStyle=catColor(o.it.cat);ctx.font="600 11px "+FF;ctx.fillText(pctStr,tx,o.labelY+4);ctx.font="11px "+FF;
-          var pw=ctx.measureText(pctStr).width;
-          ctx.fillStyle='#666';ctx.fillText(name,tx-pw,o.labelY+4);
-        }
-      });
-    }
-    drawSide(leftArr,'left');drawSide(rightArr,'right');
-    ctx.textAlign='left';
-    y+=contentH+secGap;
-  })();
+  y=certDonut(ctx,y,data.donut,'분류별 예산 비중');
 
   /* 고정·변동 분류별 비중 바 (막대는 최대 항목 기준 상대 길이 — 금액 아님) */
-  function drawSection(title,items){
-    if(!items.length)return;
-    var maxPct=items.reduce(function(m,it){return Math.max(m,it.pct);},0)||1;
-    ctx.fillStyle='#aaa';ctx.font="600 12px "+FF;ctx.textAlign='left';ctx.fillText(title,24,y+14);
-    ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
-    y+=secHeadH;
-    items.forEach(function(it){
-      var color=catColor(it.cat);
-      ctx.beginPath();ctx.arc(28,y+9,4,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
-      ctx.fillStyle='#333';ctx.font="600 14px "+FF;ctx.textAlign='left';ctx.fillText(it.cat,40,y+13);
-      ctx.fillStyle='#111';ctx.font="700 14px "+FF;ctx.textAlign='right';ctx.fillText(it.pct+'%',W-24,y+13);
-      ctx.textAlign='left';
-      var mbY=y+18,mbH=6;
-      ctx.fillStyle='#eee';ctx.fillRect(40,mbY,W-64,mbH);
-      ctx.fillStyle=color;ctx.fillRect(40,mbY,(it.pct/maxPct)*(W-64),mbH);
-      y+=rowH;
-    });
-    y+=secGap;
-  }
-  drawSection('고정지출 예산',data.fixed);
-  drawSection('변동지출 예산',data.variable);
+  y=certCatBars(ctx,y,'고정지출 예산',data.fixed,true);
+  y=certCatBars(ctx,y,'변동지출 예산',data.variable,true);
 
   /* 이번 주 식단 (주간 · 식단표를 켠 경우만) */
   if(meal){
-    ctx.fillStyle='#aaa';ctx.font="600 12px "+FF;ctx.textAlign='left';ctx.fillText('이번 주 식단',24,y+14);
-    ctx.strokeStyle='#e8e2d8';ctx.beginPath();ctx.moveTo(24,y+22);ctx.lineTo(W-24,y+22);ctx.stroke();
+    certSecHead(ctx,y,'이번 주 식단');
     y+=secHeadH;
     if(meal.mode==='table'){
       ctx.fillStyle='#aaa';ctx.font="11px "+FF;
