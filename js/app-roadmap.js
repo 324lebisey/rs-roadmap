@@ -1976,8 +1976,6 @@ function saveMonthly(){
 function setMonthStatus(t,on){var s=g("monthStatus");if(!s)return;s.textContent=t;s.classList.toggle("on",on);}
 function renderHistoryList(){
   const keys=Object.keys(monthlyArchive).sort().reverse();
-  const el=g("historyList");
-  if(el)el.innerHTML="";
   const dl=g("monthHistoryList");
   if(!dl)return;
   if(!keys.length){
@@ -3028,8 +3026,6 @@ function renderSP(){
 }
 function projCardHtml(p,hdrBtn){
     const accessible=canAccess(p);
-    const inv=projInvest[p.id]||"";
-    const fp=allP().find(function(x){return x.id===p.id;})||p;const isShort=(fp.termMonths||0)>0;
     const _dinf=projDayInfo(p),_dtx=projDdayText(_dinf);
     const _dbadge=_dtx?("<span class='proj-dday"+(_dinf.kind==='bad'?" pd-bad":(projDdaySoon(_dinf)?" pd-soon":""))+"'>"+_dtx+"</span>"):"";
     const _open=!!projEditOpen[p.id];   /* 편집 구역 열림은 오직 projEditOpen — 완료 카드의 「수정」이 이 값을 켠다(「편집 닫기」와 「접기」는 서로 독립) */
@@ -3126,8 +3122,6 @@ function updateShortBadge(yr){
   const badge=g("shortBadge");
   if(!badge)return;
   let ps=0,pc=0,done=0;
-  const now=new Date();
-  const curMo=now.getFullYear()===yr?now.getMonth():-1; // 현재 달 인덱스
   MONTHS.forEach((_,mi)=>{
     const tot=(shData.savings[yr+"_"+mi]||0)+(shData.income[yr+"_"+mi]||0)+getMonthlyProjectWon(yr,mi);
     const tgt=shData.target[yr+"_"+mi]||0;

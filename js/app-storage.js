@@ -529,7 +529,7 @@ function moveMidRow(id,dir){
   var tmp=order[idx];order[idx]=order[ni];order[ni]=tmp;
   mdRowOrder=order;renderMid();save();
 }
-// rlTdM: rlTd에 이동 버튼 추가
+// rlTdMove: rlTd에 이동 버튼 추가
 function rlTdMove(key,label,moveId,moveFn,showDel,delFn){
   var name=rowLabels[key]||label;
   var upBtn="<button onclick='"+moveFn+"(\""+moveId+"\", -1)' style='background:none;border:none;cursor:pointer;color:var(--ac);font-size:13px;padding:0;line-height:1'>▲</button>";
@@ -541,9 +541,6 @@ function rlTdMove(key,label,moveId,moveFn,showDel,delFn){
     "<span style='font-size:13px;flex:1;white-space:normal;word-break:break-word'>"+lblHtml(name)+"</span>"+
     delBtn+
     "</div></td>";
-}
-function rlTdM(key,label,moveId){
-  return rlTdMove(key,label,moveId,"moveShortRow",false,"");
 }
 function rlTdMBase(key,label,moveId){
   return rlTdMove(key,label,moveId,"moveShortRow",true,"deleteBaseRowShort(\""+moveId+"\")");

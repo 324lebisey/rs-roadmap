@@ -872,7 +872,6 @@ function dlBindDonutHover(chart){
   cv.addEventListener('touchend',dnHide);
 }
 var ASSET_TYPES=['현금','예적금','달러/외화','국내주식','해외주식','채권','금','펀드/ETF','부동산','연금','대출','기타'];
-var ASSET_COLORS=['#A01035','#5FA88A','#E0A96D','#7FA8C0','#B58DB0','#9CB86E','#C98E6D','#6E9C8A','#D98C9D','#9aa7b8'];
 var assets=null;
 function loadAssets(){var raw=localStorage.getItem('rs_assets');if(raw===null){var t=Date.now();assets=[{id:t+'_a',name:'',type:'현금',amount:0},{id:t+'_b',name:'',type:'예적금',amount:0},{id:t+'_c',name:'',type:'국내주식',amount:0},{id:t+'_c2',name:'',type:'해외주식',amount:0},{id:t+'_d',name:'',type:'금',amount:0},{id:t+'_e',name:'',type:'대출',amount:0}];saveAssets();return;}try{var v=JSON.parse(raw);assets=Array.isArray(v)?v:[];}catch(e){assets=[];}}
 function saveAssets(){try{lsSet('rs_assets',JSON.stringify(assets));}catch(e){}loanOvVer++;}
