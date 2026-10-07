@@ -456,6 +456,39 @@ function budgetCard(title,budget,spent,onch,locked,scope,seg,cbSum){
     cbKeptRowHtml(cbSum)+
   '</div>';
 }
+/* 주간 예산 카드 — RS 로고가 채워지는 미터(방향은 주마다 바뀜, weeklyRsDirection은 app.js) */
+function weeklyRsBudgetCard(title,budget,spent,onch,locked,cbSum){
+  var weeklyRsImage='assets/rs_.webp';
+  var weeklyRsMaskImage='assets/rs-fill-mask.webp?v=20260918-webp';
+  var pct=budget>0?Math.round(spent/budget*100):0;
+  var fill=Math.max(0,Math.min(100,pct));
+  var over=spent>budget&&budget>0;
+  var color=over?'#d9534f':'var(--ac)';
+  var bv=budget>0?budget:'';
+  var spentTxt=fmtComma(spent)+'원'+(budget>0?' · '+pct+'%':'');
+  var mobileSpentTxt=budget>0?fmtComma(spent)+' / '+fmtComma(budget)+'원':fmtComma(spent)+'원';
+  var rLabel=budget>0?(over?'초과':'남음'):'';
+  var rVal=budget>0?(over?fmtComma(spent-budget)+'원':fmtComma(budget-spent)+'원'):'예산을 정해보세요';
+  var rColor=budget>0?(over?'#d9534f':'var(--ac)'):'var(--gray)';
+  var rWeight=budget>0?'600':'400';
+  if(locked&&budget<=0){rLabel='';rVal='';}
+  var input='<input type="number" class="dlbgt" value="'+bv+'" placeholder="예산" onchange="'+onch+'(this.value)" style="width:84px;text-align:right;padding:4px 6px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:inherit;color:#111"><span style="font-size:13px;color:var(--gray)">원</span>';
+  var right=locked?(budget>0?'<span style="font-size:13px;color:var(--gray)">예산 '+fmtComma(budget)+'원</span>':'<span style="font-size:13px;color:var(--gray)">예산 미설정</span>'):'<span style="display:inline-flex;align-items:center;gap:3px">'+input+'</span>';
+  var direction=weeklyRsDirection(weekStartMon(dailyDate||todayStr()));
+  var maskId='weeklyRsMask'+direction.index;
+  var gradientId='weeklyRsGradient'+direction.index;
+  var aria='주간 예산 '+fill+'% 채움';
+  var ps=direction.dx*580+direction.dy*677.5,gx1=(580+direction.dx*(direction.lo-ps)).toFixed(1),gy1=(677.5+direction.dy*(direction.lo-ps)).toFixed(1),gx2=(580+direction.dx*(direction.hi-ps)).toFixed(1),gy2=(677.5+direction.dy*(direction.hi-ps)).toFixed(1),cut=direction.q[fill];
+  var meter='<div class="weekly-rs-meter"><svg viewBox="17 37 1140 1281" role="img" aria-label="'+aria+'">'+
+    '<defs><mask id="'+maskId+'" maskUnits="userSpaceOnUse" x="0" y="0" width="1160" height="1355" style="mask-type:alpha"><image href="'+weeklyRsMaskImage+'" x="0" y="0" width="1160" height="1355"></image></mask>'+
+    '<linearGradient id="'+gradientId+'" gradientUnits="userSpaceOnUse" x1="'+gx1+'" y1="'+gy1+'" x2="'+gx2+'" y2="'+gy2+'">'+
+    '<stop offset="0" stop-color="'+color+'"></stop><stop offset="'+cut+'" stop-color="'+color+'"></stop><stop offset="'+cut+'" stop-color="transparent"></stop><stop offset="1" stop-color="transparent"></stop></linearGradient></defs>'+
+    '<rect x="0" y="0" width="1160" height="1355" fill="var(--tbl-border)" mask="url(#'+maskId+')"></rect>'+
+    '<rect x="0" y="0" width="1160" height="1355" fill="url(#'+gradientId+')" mask="url(#'+maskId+')"></rect>'+
+    '<image class="weekly-rs-outline" href="'+weeklyRsImage+'" x="0" y="0" width="1160" height="1355"></image></svg></div>';
+  return '<div class="weekly-budget-panel"><div class="weekly-budget-head"><span style="font-size:13px;color:var(--gray)">'+title+'</span>'+right+'</div>'+meter+
+    '<div class="weekly-budget-desktop"><div class="weekly-budget-labels"><span>썼어요</span><span>'+rLabel+'</span></div><div class="weekly-budget-values"><span style="font-weight:600">'+spentTxt+'</span><span style="color:'+rColor+';font-weight:'+rWeight+'">'+rVal+'</span></div></div><div class="weekly-budget-mobile weekly-budget-values"><span style="font-weight:600;color:'+rColor+'">'+mobileSpentTxt+'</span></div>'+cbKeptRowHtml(cbSum)+'</div>';
+}
 function renderBudget(){var box=g('dlBudget');if(!box)return;var dd=dailyDate||todayStr();pruneStaleFixedFromWeek(dd);var dayTitle=(dd===todayStr())?'오늘 예산':((parseInt(dd.split('-')[1]))+'/'+parseInt(dd.split('-')[2])+' 예산');var spentDay=dayTotal(dd);var spentWeek=weekTotal(dd);var _ws=sumCatBudget('weekly',dd);box.innerHTML=budgetCard(dayTitle+helpIcon('예산칸에 <b>직접 입력</b>하거나, 「주간에서 가져오기」로 <b>그 주 예산에서 불러올</b> 수 있어요.'),dailyBudgetOf(dd),spentDay,'setDailyBudget',false,'day',null,cbKeptSum(dailyData.filter(function(x){return x.date===dd&&!dlIsMonthSum(x);})))+budgetCard('이번 주'+helpIcon('주간 예산은 <b>「주간」 탭</b>에서 설정하세요. 분류별 예산을 세우면 자동으로 합산돼 여기에 표시돼요.'),_ws>0?_ws:weeklyBudgetOf(dd),spentWeek,'setWeeklyBudget',true,null,null,cbKeptSum(weekEntries(dd)));}
 var budgetModalScope='';
 function onBudgetCardTap(e,scope){try{if(!window.matchMedia||!window.matchMedia('(max-width:560px)').matches)return;}catch(_){return;}openBudgetModal(scope);}
@@ -687,7 +720,7 @@ function renderDlCal(){
     +(groups?("<div class='dcal-list'>"+groups+"</div>")
       :("<div class='dcal-empty'>"+(fcat?"고른 분류에 해당하는 내용이 없어요.":"이 달에는 표시할 내용이 없어요.")+"</div>"));
 }
-function renderActiveView(){dlRenderFocusBanners();dlRenderAsnapBanners();if(dailyView==='week')renderWeekView();else if(dailyView==='month')renderMonthView();else if(dailyView==='calendar')renderDlCal();else if(dailyView==='special')renderSpecialView();else if(dailyView==='analysis')renderAnalysis();else renderBudget();}
+function renderActiveView(){dlRenderFocusBanners();dlRenderAsnapBanners();if(dailyView==='week')renderWeekView();else if(dailyView==='month')renderMonthView();else if(dailyView==='calendar')renderDlCal();else if(dailyView==='special')renderSpecialView();else if(dailyView==='analysis')renderAnalysis();else renderBudget();compactMobileSubSummaries();compactMobileWeekDueTitle();}
 var DL_PALETTES={
   crimson:['#A01035','#C96A78','#E0A96D','#8C6A56','#B58DB0','#6E9C8A','#D98C9D','#A85751','#C9A36A','#7A4A52'],
   mint:['#1B6E4F','#5FA88A','#8FB97E','#C2B96A','#5F9CA8','#A88FB0','#C98E6D','#3F8C6E','#7EC8A8','#9CAE5E'],
@@ -749,7 +782,9 @@ function _xlsClassify(item){
 function openExcelImport(){var inp=g('xlsImportInput');if(inp){inp.value='';inp.click();}}
 function onExcelImportFile(ev){
   var f=ev.target.files&&ev.target.files[0];if(!f)return;
-  if(typeof XLSX==='undefined'){alert('엑셀 기능을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.');return;}
+  rsLoadLib('xlsx').then(function(){readExcelImportFile(f);},function(){alert('엑셀 기능을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.');});
+}
+function readExcelImportFile(f){
   var name=(f.name||'').toLowerCase();var isCsv=name.indexOf('.csv')===name.length-4&&name.length>4;
   var rd=new FileReader();
   rd.onload=function(e){
@@ -1252,7 +1287,10 @@ function lgParseWeekly(rows,hdrIdx){
 function openLedgerImport(){var inp=g('lgFileInput');if(inp){inp.value='';inp.click();}}
 function onLedgerFiles(ev){
   var files=ev.target.files;if(!files||!files.length)return;
-  if(typeof XLSX==='undefined'){alert('엑셀 기능을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.');return;}
+  files=Array.prototype.slice.call(files);
+  rsLoadLib('xlsx').then(function(){readLedgerFiles(files);},function(){alert('엑셀 기능을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.');});
+}
+function readLedgerFiles(files){
   var pending=files.length,sheets=[],errFiles=[];
   Array.prototype.forEach.call(files,function(f){
     var nm=(f.name||'').toLowerCase();var isCsv=/\.csv$/.test(nm);
@@ -2378,14 +2416,14 @@ function loadMeal(){var v=null;try{v=JSON.parse(localStorage.getItem('rs_meal')|
   if(!mealData.amts||typeof mealData.amts!=='object')mealData.amts={};
   if(!mealData.cats||typeof mealData.cats!=='object')mealData.cats={};
   mealMigrate();}
-function mealMigrate(){if(mealData.v===2)return;var ch=false;
+function mealMigrate(){if(mealData.v===2)return;
   ['cells','amts'].forEach(function(k){var m=mealData[k]||{};Object.keys(m).forEach(function(ds){
-    if(m[ds]&&m[ds]['s']!==undefined){m[ds]['s1']=m[ds]['s'];delete m[ds]['s'];ch=true;}});});
+    if(m[ds]&&m[ds]['s']!==undefined){m[ds]['s1']=m[ds]['s'];delete m[ds]['s'];}});});
   Object.keys(mealData.weeks).forEach(function(wk){var w=mealData.weeks[wk];if(!w||!Array.isArray(w.rows))return;
     var ex=w.rows.filter(function(r){return r&&r.id!=='s';}).map(function(r){
       var o={id:r.id,label:r.label,type:(r.type==='cost'?'cost':'memo')};if(o.type==='cost')o.grp=r.grp||r.id;return o;});
-    w.rows=mealDefRows().concat(ex);ch=true;});
-  mealData.v=2;if(ch||true)saveMeal();}
+    w.rows=mealDefRows().concat(ex);});
+  mealData.v=2;saveMeal();}
 function saveMeal(){try{lsSet('rs_meal',JSON.stringify(mealData));}catch(e){}}
 function mealOn(){try{return localStorage.getItem('rs_meal_on')==='1';}catch(e){return false;}}
 function applyMealOn(){['mealToggleBtn','mealToggleBtn2'].forEach(function(id){var b=g(id);if(b)b.textContent=mealOn()?'표시':'숨김';});var box=g('dlMeal');if(box&&!mealOn())box.innerHTML='';}
@@ -2661,14 +2699,13 @@ function compactMobileWeekDueTitle(){
   if(!(window.matchMedia('(max-width:900px)').matches||window.matchMedia('(hover:none)').matches))return;
   var title=document.querySelector('#dlWeekDue .week-due-title,#dlWeekDue .weekly-due-panel>div:first-child');if(title)title.textContent='📅 이번 주 고정·특별지출';
 }
-var renderActiveViewBase=renderActiveView;renderActiveView=function(){renderActiveViewBase();compactMobileSubSummaries();compactMobileWeekDueTitle();};
 /* Direct renderer: status copy belongs to CSS, so mobile never needs a text-removal pass. */
-function renderWeekDue(){var box=g('dlWeekDue');if(!box)return;var dd=dailyDate||todayStr(),items=fixedDueForWeek(),nodate=fixedNoDateForWeek(dd);if(!items.length&&!nodate.length){box.innerHTML='';return;}function row(nm,label,amt,paid,cat,sub,can){var remove=can?'<button type="button" class="segtip week-due-remove" data-tip="예정 목록에서 빼기§§(분류·지난 기록은 그대로)" onclick="dismissFixedPlan('+jsArg(cat)+','+jsArg(sub||'')+')">×</button>':'';return '<div class="week-due-row"><span class="week-due-main"><span class="week-due-name">'+dlEsc(nm)+'</span><span class="week-due-meta"><span>'+label+'</span>'+(amt>0?'<span>'+fmtComma(amt)+'원</span>':'')+'</span></span><span class="week-due-actions"><span class="week-due-status '+(paid?'week-due-paid':'week-due-pending')+'"><span class="week-due-status-icon">'+(paid?'✅':'□')+'</span></span>'+remove+'</span></div>';}var rows=items.map(function(it){var p=it.due.split('-'),label=parseInt(p[1],10)+'/'+parseInt(p[2],10)+'('+dlWeekdayKo(it.due)+')'+(it.kind==='settle'?' · 상환 정산':'');return row(it.sub?(it.cat+' › '+it.sub):it.cat,label,it.amt,it.paid,it.cat,it.sub,it.cat!=='대출이자'&&it.kind!=='settle');}).join('');rows+=nodate.map(function(it){return row(it.sub?(it.cat+' › '+it.sub):it.cat,'날짜 미정',it.amt,it.paid,it.cat,it.sub,it.cat!=='대출이자');}).join('');box.innerHTML='<div class="week-due-box"><div class="week-due-title">📅 이번 주 예정 고정·특별지출</div>'+rows+'</div>';}
+function renderWeekDue(){var box=g('dlWeekDue');if(!box)return;var dd=dailyDate||todayStr(),items=fixedDueForWeek(),nodate=fixedNoDateForWeek(dd);if(!items.length&&!nodate.length){box.innerHTML='<div class="weekly-due-panel"><div style="font-size:13px;font-weight:600;color:#111;margin-bottom:6px">📅 이번 주 예정 고정·특별지출</div><div style="font-size:13px;color:var(--gray);padding:8px 2px">예정된 고정·특별지출이 없어요.</div></div>';return;}function row(nm,label,amt,paid,cat,sub,can){var remove=can?'<button type="button" class="segtip week-due-remove" data-tip="예정 목록에서 빼기§§(분류·지난 기록은 그대로)" onclick="dismissFixedPlan('+jsArg(cat)+','+jsArg(sub||'')+')">×</button>':'';return '<div class="week-due-row"><span class="week-due-main"><span class="week-due-name">'+dlEsc(nm)+'</span><span class="week-due-meta"><span>'+label+'</span>'+(amt>0?'<span>'+fmtComma(amt)+'원</span>':'')+'</span></span><span class="week-due-actions"><span class="week-due-status '+(paid?'week-due-paid':'week-due-pending')+'"><span class="week-due-status-icon">'+(paid?'✅':'□')+'</span></span>'+remove+'</span></div>';}var rows=items.map(function(it){var p=it.due.split('-'),label=parseInt(p[1],10)+'/'+parseInt(p[2],10)+'('+dlWeekdayKo(it.due)+')'+(it.kind==='settle'?' · 상환 정산':'');return row(it.sub?(it.cat+' › '+it.sub):it.cat,label,it.amt,it.paid,it.cat,it.sub,it.cat!=='대출이자'&&it.kind!=='settle');}).join('');rows+=nodate.map(function(it){return row(it.sub?(it.cat+' › '+it.sub):it.cat,'날짜 미정',it.amt,it.paid,it.cat,it.sub,it.cat!=='대출이자');}).join('');box.innerHTML='<div class="week-due-box weekly-due-panel"><div class="week-due-title">📅 이번 주 예정 고정·특별지출</div>'+rows+'</div>';}
 function setMoRevTab(t){dlMoRevTab=t;renderMonthReview();}
 function monthReviewHtml(dateStr){var r=monthReviewOf(dateStr);var tabs=[['carrot','🥕 당근','이번 달 잘한 점, 칭찬할 점'],['whip','<img src="'+WHIP_IMG+'" alt="채찍" style="height:1.15em;vertical-align:-3px;margin-right:1px"> 채찍','이번 달 아쉬운 점, 고칠 점'],['best','🏆 베스트','이번 달 베스트 지출'],['worst','💸 워스트','이번 달 워스트 지출']];var cur=tabs.filter(function(t){return t[0]===dlMoRevTab;})[0]||tabs[0];var tabColors={carrot:'var(--carrot-mk,#3f9a68)',whip:'var(--whip-mk,#d9534f)',best:'var(--dcal-pay,#3E7CB1)',worst:'var(--dcal-fix,#C97B3C)'};var btns='<div style="display:flex;gap:18px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:12px">';tabs.forEach(function(t){var on=(t[0]===dlMoRevTab),col=tabColors[t[0]];btns+='<button type="button" onclick="setMoRevTab('+jsArg(t[0])+')" style="border:none;background:none;padding:8px 2px;margin-bottom:-1px;white-space:nowrap;font-size:13px;border-bottom:2px solid '+(on?col:'transparent')+';color:'+(on?col:'var(--gray)')+';font-weight:'+(on?'700':'400')+';cursor:pointer;font-family:inherit">'+t[1]+'</button>';});btns+='</div>';return '<div style="text-align:center;margin-bottom:12px"><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><div style="position:relative;display:inline-block"><span style="position:absolute;top:-8px;left:-8px;z-index:2">'+helpIcon('이번 달 당근·채찍·무지출·총지출을 그림 한 장으로 만들어 저장·공유할 수 있어요.')+'</span><button type="button" class="btn btn-ol" onclick="openMonthSummaryCard()" style="font-size:13px;padding:7px 14px;white-space:nowrap">📸 이번 달 결산 카드</button></div> <button type="button" class="btn btn-ol" onclick="openYearRollup()" style="font-size:13px;padding:7px 14px;white-space:nowrap">'+yearRollupIconHtml()+' 올해 모아보기</button></div></div><div style="background:#fff;border:1px solid var(--tbl-border);border-radius:8px;padding:14px">'+btns+'<textarea rows="1" class="ul-textarea" oninput="setMoRev('+jsArg(cur[0])+',this.value)" onchange="renderMonthReview()" placeholder="'+cur[2]+'">'+dlEsc(r[cur[0]]||'')+'</textarea></div>'+monthRollupHtml(dateStr);}
 function withBudgetLine(dates){var ds=stackedCatDatasets(dates);var bdata=dates.map(function(d){var b=dailyBudgetOf(d);return b>0?b:0;});if(bdata.some(function(v){return v!=null;}))ds=ds.concat([{type:'line',label:'예산',data:bdata,borderColor:budgetLineColor(),backgroundColor:budgetLineColor(),borderDash:[6,4],borderWidth:2.5,pointRadius:2.8,pointBackgroundColor:budgetLineColor(),pointBorderWidth:0,pointHitRadius:6,fill:false,yAxisID:'yBudget',order:-1,spanGaps:false,tension:0}]);return ds;}
 function dlChartMax(datasets){var hasB=datasets.some(function(d){return d.label==='예산';});if(!hasB)return null;var n=0;datasets.forEach(function(d){if(d.data&&d.data.length>n)n=d.data.length;});var top=0;for(var i=0;i<n;i++){var s=0;datasets.forEach(function(d){if(d.stack==='spend')s+=(parseFloat(d.data[i])||0);});if(s>top)top=s;}datasets.forEach(function(d){if(d.label==='예산')d.data.forEach(function(v){if(v!=null&&v>top)top=v;});});return top>0?Math.ceil(top*1.1):null;}
-function renderWeekView(){if(!g('dlViewWeek'))return;['weekStartSel','weekStartSel2'].forEach(function(id){if(g(id))g(id).value=String(weekStartDay);});var dd=dailyDate||todayStr();var pastW=isPastPeriod('weekly',dd);var start=weekStartMon(dd);var endDt=new Date(start.getFullYear(),start.getMonth(),start.getDate()+6);var sLab=(start.getMonth()+1)+'/'+start.getDate();var eLab=(endDt.getMonth()+1)+'/'+endDt.getDate();var today=todayStr();var inWeek=(today>=localDateStr(start)&&today<=localDateStr(endDt));if(g('dlWkLabel'))g('dlWkLabel').textContent=(inWeek?'이번 주 ':'')+sLab+' – '+eLab;pruneStaleFixedFromWeek(dd);ensureFixedInWeekBudget(dd);renderWeekDue();renderMeal();if(g('dlWkBudget')){var _ws=sumCatBudget('weekly',dd);g('dlWkBudget').innerHTML=budgetCard('주간 예산',_ws>0?_ws:weeklyBudgetOf(dd),weekTotal(dd),'setWeeklyBudget',_ws>0,null,null,cbKeptSum(weekEntries(dd)));}if(g('dlWkCat'))g('dlWkCat').innerHTML=catBudgetHtml('weekly',dd,pastW);if(g('dlWkReview'))g('dlWkReview').innerHTML=weekReviewHtml(dd);applyReviewVis();var names=weekDayNames();var wdates=[];for(var i=0;i<7;i++){wdates.push(localDateStr(new Date(start.getFullYear(),start.getMonth(),start.getDate()+i)));}if(g('dlWeekChart')){var _wds=withBudgetLine(wdates);mkChart('dlWeekChart',{type:'bar',data:{labels:names,datasets:_wds},options:dlChartOpts(dlChartMax(_wds))});}}
+function renderWeekView(){if(!g('dlViewWeek'))return;['weekStartSel','weekStartSel2'].forEach(function(id){if(g(id))g(id).value=String(weekStartDay);});var dd=dailyDate||todayStr();var pastW=isPastPeriod('weekly',dd);var start=weekStartMon(dd);var endDt=new Date(start.getFullYear(),start.getMonth(),start.getDate()+6);var sLab=(start.getMonth()+1)+'/'+start.getDate();var eLab=(endDt.getMonth()+1)+'/'+endDt.getDate();var today=todayStr();var inWeek=(today>=localDateStr(start)&&today<=localDateStr(endDt));if(g('dlWkLabel'))g('dlWkLabel').textContent=(inWeek?'이번 주 ':'')+sLab+' – '+eLab;pruneStaleFixedFromWeek(dd);ensureFixedInWeekBudget(dd);renderWeekDue();renderMeal();if(g('dlWkBudget')){var _ws=sumCatBudget('weekly',dd);g('dlWkBudget').innerHTML=weeklyRsBudgetCard('주간 예산',_ws>0?_ws:weeklyBudgetOf(dd),weekTotal(dd),'setWeeklyBudget',_ws>0,cbKeptSum(weekEntries(dd)));}if(g('dlWkCat'))g('dlWkCat').innerHTML=catBudgetHtml('weekly',dd,pastW);if(g('dlWkReview'))g('dlWkReview').innerHTML=weekReviewHtml(dd);applyReviewVis();var names=weekDayNames();var wdates=[];for(var i=0;i<7;i++){wdates.push(localDateStr(new Date(start.getFullYear(),start.getMonth(),start.getDate()+i)));}if(g('dlWeekChart')){var _wds=withBudgetLine(wdates);mkChart('dlWeekChart',{type:'bar',data:{labels:names,datasets:_wds},options:dlChartOpts(dlChartMax(_wds))});}}
 var INCOME_CATS=['급여','상여','부수입','금융소득','기타'];
 var INCOME_IMG='assets/ico-money-bag.png';
 let incomeData={}; /* 수입: {정산월키:[{cat,amount(원)}]} — 월별만, localStorage rs_income */

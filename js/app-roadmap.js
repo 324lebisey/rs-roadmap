@@ -1717,6 +1717,9 @@ function loadSheetData(rows){
 function handleExcel(input){
   if(!input.files[0])return;
   var file=input.files[0];
+  rsLoadLib('xlsx').then(function(){readExcelFile(file);},function(){alert('엑셀 기능을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.');});
+}
+function readExcelFile(file){
   var isCsv=file.name.toLowerCase().endsWith(".csv");
   var reader=new FileReader();
   reader.onload=function(e){
@@ -1754,6 +1757,9 @@ function copyTbl(captureId){
   if(!el){alert("캡처 대상을 찾을 수 없습니다.");return;}
   const btn=event.currentTarget;
   btn.textContent="캡처 중...";btn.disabled=true;
+  rsLoadLib('html2canvas').then(function(){captureTbl(el,btn);},function(){btn.textContent="표 복사";btn.disabled=false;alert("캡처 기능을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.");});
+}
+function captureTbl(el,btn){
   // 모바일에서 .tbl-wrap 이 overflow-x:auto(!important) 라 보이는 폭만 캡처되던 문제
   // → 캡처 동안만 클리핑을 풀고 실제 내용 폭(scrollWidth)을 고정, 캡처 후 원복
   const capFix=[];

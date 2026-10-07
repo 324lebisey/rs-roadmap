@@ -1,3 +1,22 @@
+/* 엑셀(xlsx)·표 캡처(html2canvas) 라이브러리는 처음 쓸 때만 CDN에서 불러온다(매 방문 약 1MB 절약).
+   주소·무결성 해시는 예전 <script> 태그와 같다. 실패하면 다음 시도 때 다시 불러온다. */
+var RS_LIBS={
+  xlsx:{src:'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',sri:'sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==',ready:function(){return typeof XLSX!=='undefined';}},
+  html2canvas:{src:'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',sri:'sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==',ready:function(){return typeof html2canvas!=='undefined';}}
+};
+var _rsLibLoading={};
+function rsLoadLib(name){
+  var lib=RS_LIBS[name];
+  if(lib.ready())return Promise.resolve();
+  if(_rsLibLoading[name])return _rsLibLoading[name];
+  _rsLibLoading[name]=new Promise(function(res,rej){
+    var s=document.createElement('script');s.src=lib.src;s.integrity=lib.sri;s.crossOrigin='anonymous';
+    s.onload=function(){if(lib.ready())res();else rej(new Error(name));};
+    s.onerror=function(){if(s.parentNode)s.parentNode.removeChild(s);rej(new Error(name));};
+    document.head.appendChild(s);
+  }).catch(function(e){delete _rsLibLoading[name];throw e;});
+  return _rsLibLoading[name];
+}
 var _navFoldOpen=null,_navPinned=false;
 function openNav(){var d=document.getElementById("navDrawer");if(d)d.classList.add("open");if(window.matchMedia&&window.matchMedia("(hover:none)").matches){var dim=document.getElementById("navDim");if(dim)dim.classList.add("open");}}
 function closeNav(){if(_navPinned)return;var d=document.getElementById("navDrawer");if(d)d.classList.remove("open");var dim=document.getElementById("navDim");if(dim)dim.classList.remove("open");}
