@@ -142,62 +142,6 @@ function weeklyRsDirection(weekDate){
   ][index];
 }
 
-(function(){
-  var weeklyRsImage='assets/rs_.webp';
-  var weeklyRsMaskImage='assets/rs-fill-mask.webp?v=20260918-webp';
-
-  function weeklyRsBudgetCard(title,budget,spent,onch,locked,cbSum){
-    var pct=budget>0?Math.round(spent/budget*100):0;
-    var fill=Math.max(0,Math.min(100,pct));
-    var over=spent>budget&&budget>0;
-    var color=over?'#d9534f':'var(--ac)';
-    var bv=budget>0?budget:'';
-    var spentTxt=fmtComma(spent)+'원'+(budget>0?' · '+pct+'%':'');
-    var mobileSpentTxt=budget>0?fmtComma(spent)+' / '+fmtComma(budget)+'원':fmtComma(spent)+'원';
-    var rLabel=budget>0?(over?'초과':'남음'):'';
-    var rVal=budget>0?(over?fmtComma(spent-budget)+'원':fmtComma(budget-spent)+'원'):'예산을 정해보세요';
-    var rColor=budget>0?(over?'#d9534f':'var(--ac)'):'var(--gray)';
-    var rWeight=budget>0?'600':'400';
-    if(locked&&budget<=0){rLabel='';rVal='';}
-    var input='<input type="number" class="dlbgt" value="'+bv+'" placeholder="예산" onchange="'+onch+'(this.value)" style="width:84px;text-align:right;padding:4px 6px;border:1px solid var(--border);border-radius:2px;font-size:13px;font-family:inherit;color:#111"><span style="font-size:13px;color:var(--gray)">원</span>';
-    var right=locked?(budget>0?'<span style="font-size:13px;color:var(--gray)">예산 '+fmtComma(budget)+'원</span>':'<span style="font-size:13px;color:var(--gray)">예산 미설정</span>'):'<span style="display:inline-flex;align-items:center;gap:3px">'+input+'</span>';
-    var direction=weeklyRsDirection(weekStartMon(dailyDate||todayStr()));
-    var maskId='weeklyRsMask'+direction.index;
-    var gradientId='weeklyRsGradient'+direction.index;
-    var aria='주간 예산 '+fill+'% 채움';
-    var ps=direction.dx*580+direction.dy*677.5,gx1=(580+direction.dx*(direction.lo-ps)).toFixed(1),gy1=(677.5+direction.dy*(direction.lo-ps)).toFixed(1),gx2=(580+direction.dx*(direction.hi-ps)).toFixed(1),gy2=(677.5+direction.dy*(direction.hi-ps)).toFixed(1),cut=direction.q[fill];
-    var meter='<div class="weekly-rs-meter"><svg viewBox="17 37 1140 1281" role="img" aria-label="'+aria+'">'+
-      '<defs><mask id="'+maskId+'" maskUnits="userSpaceOnUse" x="0" y="0" width="1160" height="1355" style="mask-type:alpha"><image href="'+weeklyRsMaskImage+'" x="0" y="0" width="1160" height="1355"></image></mask>'+
-      '<linearGradient id="'+gradientId+'" gradientUnits="userSpaceOnUse" x1="'+gx1+'" y1="'+gy1+'" x2="'+gx2+'" y2="'+gy2+'">'+
-      '<stop offset="0" stop-color="'+color+'"></stop><stop offset="'+cut+'" stop-color="'+color+'"></stop><stop offset="'+cut+'" stop-color="transparent"></stop><stop offset="1" stop-color="transparent"></stop></linearGradient></defs>'+
-      '<rect x="0" y="0" width="1160" height="1355" fill="var(--tbl-border)" mask="url(#'+maskId+')"></rect>'+
-      '<rect x="0" y="0" width="1160" height="1355" fill="url(#'+gradientId+')" mask="url(#'+maskId+')"></rect>'+
-      '<image class="weekly-rs-outline" href="'+weeklyRsImage+'" x="0" y="0" width="1160" height="1355"></image></svg></div>';
-    return '<div class="weekly-budget-panel"><div class="weekly-budget-head"><span style="font-size:13px;color:var(--gray)">'+title+'</span>'+right+'</div>'+meter+
-      '<div class="weekly-budget-desktop"><div class="weekly-budget-labels"><span>썼어요</span><span>'+rLabel+'</span></div><div class="weekly-budget-values"><span style="font-weight:600">'+spentTxt+'</span><span style="color:'+rColor+';font-weight:'+rWeight+'">'+rVal+'</span></div></div><div class="weekly-budget-mobile weekly-budget-values"><span style="font-weight:600;color:'+rColor+'">'+mobileSpentTxt+'</span></div>'+cbKeptRowHtml(cbSum)+'</div>';
-  }
-
-  var originalBudgetCard=budgetCard;
-  budgetCard=function(title,budget,spent,onch,locked,scope,seg,cbSum){
-    if(title==='주간 예산')return weeklyRsBudgetCard(title,budget,spent,onch,locked,cbSum);
-    return originalBudgetCard.apply(this,arguments);
-  };
-
-  var originalRenderWeekDue=renderWeekDue;
-  renderWeekDue=function(){
-    originalRenderWeekDue();
-    var box=g('dlWeekDue');
-    if(!box)return;
-    if(!box.firstElementChild){
-      box.innerHTML='<div class="weekly-due-panel"><div style="font-size:13px;font-weight:600;color:#111;margin-bottom:6px">📅 이번 주 예정 고정·특별지출</div><div style="font-size:13px;color:var(--gray);padding:8px 2px">예정된 고정·특별지출이 없어요.</div></div>';
-      return;
-    }
-    box.firstElementChild.classList.add('weekly-due-panel');
-  };
-
-  if(g('dlViewWeek')&&g('dlViewWeek').style.display!=='none')renderWeekView();
-})();
-
 /* ── 표 칸 너비 조절: 헤더 줄 칸 경계를 잡고 드래그하면 그 표의 "모든" 칸이 한 번에 같은 너비로 늘거나 줄어든다(칸 하나씩 아님).
    더블클릭하면 그 표만 기본 너비로 되돌아간다. 표마다(부모 id 기준) 너비를 기억해서 다음에 열어도 유지된다.
    기존 .xl 표 렌더 함수들은 전혀 손대지 않는다 — 새로 생기는 .xl 표를 MutationObserver로 잡아서 씌운다. */
