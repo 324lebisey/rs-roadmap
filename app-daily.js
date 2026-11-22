@@ -2194,16 +2194,19 @@ function certBudgetData(scope,dateStr){
     items.push({cat:c,amt:bd,grp:catGroupOf(c)});
   });
   var total=items.reduce(function(s,it){return s+it.amt;},0);
-  if(total<=0)return {total:0,fixed:[],variable:[],fixPct:0,varPct:0,donut:null,chart:null};
+  if(total<=0)return {total:0,fixed:[],variable:[],special:[],fixPct:0,varPct:0,specPct:0,donut:null,chart:null};
   items.forEach(function(it){it.pct=Math.round(it.amt/total*100);it.frac=it.amt/total;});
   function bySize(a,b){return b.amt-a.amt;}
   var fixed=items.filter(function(it){return it.grp==='고정';}).sort(bySize);
-  var variable=items.filter(function(it){return it.grp!=='고정';}).sort(bySize);
+  var variable=items.filter(function(it){return it.grp==='변동';}).sort(bySize);
+  var special=items.filter(function(it){return it.grp==='특별';}).sort(bySize);
   var fixSum=fixed.reduce(function(s,it){return s+it.amt;},0);
   var fixPct=Math.round(fixSum/total*100);
+  var specSum=special.reduce(function(s,it){return s+it.amt;},0);
+  var specPct=Math.min(100-fixPct,Math.round(specSum/total*100));
   return {
-    total:total,fixed:fixed,variable:variable,
-    fixPct:fixPct,varPct:100-fixPct,
+    total:total,fixed:fixed,variable:variable,special:special,
+    fixPct:fixPct,varPct:100-fixPct-specPct,specPct:specPct,
     donut:certBudgetDonutData(items,total),
     chart:(scope==='weekly')?certBudgetChart(dateStr,total):null   /* 주간만 일별 막대+예산 점선 */
   };
@@ -2293,26 +2296,22 @@ function buildBudgetCanvas(scope,dateStr,data){
     out.h=h;return out;
   }
   var meal=mealLayout(certMealData(scope,dateStr)),mealH=meal?meal.h:0;
-  var H=headerH+topH+(data.chart?L.chartH:0)+certDonutH(data.donut)+certSecH(data.fixed)+certSecH(data.variable)+mealH+footH;
+  var H=headerH+topH+(data.chart?L.chartH:0)+certDonutH(data.donut)+certSecH(data.fixed)+certSecH(data.variable)+certSecH(data.special)+mealH+footH;
 
   var cv=certCardCanvas(H,ac,scopeLabel+' 예산 인증',certPeriodLabel(scope,dateStr));var ctx=cv.getContext('2d');
   var y=headerH;
 
-  /* 예산 구성: 고정 vs 변동 (100% 스택바) */
+  /* 예산 구성: 고정·변동·특별 (100% 스택바) */
   (function(){
-    var fixColor=groupColor('고정'),varColor=groupColor('변동');
+    var segments=[{label:'고정',pct:data.fixPct},{label:'변동',pct:data.varPct}];
+    if(data.special.length)segments.push({label:'특별',pct:data.specPct});
     ctx.fillStyle='#888';ctx.font="13px "+FF;ctx.textAlign='left';ctx.fillText('예산 구성',24,y+18);
-    ctx.textAlign='right';
-    ctx.fillStyle=fixColor;ctx.font="700 15px "+FF;
-    var t1='고정 '+data.fixPct+'%';var t2='변동 '+data.varPct+'%';
-    var w2=ctx.measureText(t2).width;
-    ctx.fillStyle=varColor;ctx.fillText(t2,W-24,y+18);
-    ctx.fillStyle=fixColor;ctx.fillText(t1,W-24-w2-12,y+18);
+    ctx.font="700 15px "+FF;ctx.textAlign='right';
+    var lx=W-24;
+    for(var i=segments.length-1;i>=0;i--){var seg=segments[i],label=seg.label+' '+seg.pct+'%';ctx.fillStyle=groupColor(seg.label);ctx.fillText(label,lx,y+18);lx-=ctx.measureText(label).width+12;}
     ctx.textAlign='left';
-    var barY=y+34,barH=14;
-    var fw=(W-48)*data.fixPct/100;
-    ctx.fillStyle=fixColor;ctx.fillRect(24,barY,fw,barH);
-    ctx.fillStyle=varColor;ctx.fillRect(24+fw,barY,(W-48)-fw,barH);
+    var barY=y+34,barH=14,bx=24;
+    segments.forEach(function(seg){var bw=(W-48)*seg.pct/100;ctx.fillStyle=groupColor(seg.label);ctx.fillRect(bx,barY,bw,barH);bx+=bw;});
     ctx.fillStyle='#aaa';ctx.font="11px "+FF;
     ctx.fillText('금액은 가렸어요 · 비중(%)만 보여요',24,y+70);
   })();
@@ -2324,9 +2323,10 @@ function buildBudgetCanvas(scope,dateStr,data){
   /* 분류별 예산 비중 도넛 */
   y=certDonut(ctx,y,data.donut,'분류별 예산 비중');
 
-  /* 고정·변동 분류별 비중 바 (막대는 최대 항목 기준 상대 길이 — 금액 아님) */
+  /* 고정·변동·특별 분류별 비중 바 (막대는 최대 항목 기준 상대 길이 — 금액 아님) */
   y=certCatBars(ctx,y,'고정지출 예산',data.fixed,true);
   y=certCatBars(ctx,y,'변동지출 예산',data.variable,true);
+  y=certCatBars(ctx,y,'특별지출 예산',data.special,true);
 
   /* 이번 주 식단 (주간 · 식단표를 켠 경우만) */
   if(meal){
